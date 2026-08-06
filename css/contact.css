@@ -1,0 +1,342 @@
+.contact-page {
+
+    min-height:100vh;
+
+    padding:120px 20px 60px;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+
+
+.contact-box {
+
+    width:100%;
+
+    max-width:1200px;
+
+    padding:50px;
+
+
+    background:rgba(255,255,255,.22);
+
+    border:1px solid rgba(255,255,255,.45);
+
+    border-radius:35px;
+
+
+    backdrop-filter:blur(20px);
+
+
+    box-shadow:
+    0 25px 70px rgba(0,0,0,.15);
+
+
+    text-align:center;
+
+}
+
+
+
+
+
+.contact-box h1 {
+
+    font-size:48px;
+
+    color:#111827;
+
+    margin-bottom:15px;
+
+}
+
+
+
+
+
+.contact-box > p {
+
+    font-size:20px;
+
+    line-height:1.8;
+
+    color:#4b5563;
+
+    margin-bottom:45px;
+
+}
+
+
+
+
+
+.contact-cards {
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(240px,1fr));
+
+    gap:25px;
+
+}
+
+
+
+
+
+.contact-card {
+
+    background:#d6d9ff;
+
+    padding:35px 25px;
+
+    border-radius:30px;
+
+
+    box-shadow:
+    0 15px 35px rgba(0,0,0,.12);
+
+
+    transition:.3s;
+
+}
+
+
+
+
+
+.contact-card:hover {
+
+    transform:translateY(-8px);
+
+}
+
+
+
+
+
+.contact-card h3 {
+
+    font-size:25px;
+
+    color:#111827;
+
+    margin-bottom:15px;
+
+}
+
+
+
+
+
+.contact-card p {
+
+    font-size:18px;
+
+    color:#6b7280;
+
+}
+
+
+
+
+
+.contact-card a {
+
+    display:inline-block;
+
+    margin-top:20px;
+
+
+    padding:12px 30px;
+
+
+    border-radius:25px;
+
+
+    background:linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+    );
+
+
+    color:white;
+
+    text-decoration:none;
+
+
+    transition:.3s;
+
+}
+
+
+
+
+
+.contact-card a:hover {
+
+    transform:scale(1.05);
+
+}
+
+
+
+
+
+.message-box {
+
+    margin-top:55px;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+
+
+
+
+.message-box h2 {
+
+    color:#111827;
+
+    font-size:30px;
+
+}
+
+
+
+
+
+.message-box input,
+.message-box textarea {
+
+
+    padding:16px;
+
+
+    border:none;
+
+
+    border-radius:18px;
+
+
+    font-size:17px;
+
+
+    background:rgb(209, 222, 255);
+
+
+    box-shadow:
+    0 8px 20px rgba(0,0,0,.08);
+
+}
+
+
+
+
+
+.message-box textarea {
+
+    height:160px;
+
+    resize:none;
+
+}
+
+
+
+
+
+.message-box button {
+
+
+    padding:17px;
+
+
+    border:none;
+
+
+    border-radius:25px;
+
+
+    background:linear-gradient(
+    135deg,
+    #111827,
+    #2563eb
+    );
+
+
+    color:white;
+
+
+    font-size:20px;
+
+    font-weight:bold;
+
+
+    cursor:pointer;
+
+
+    transition:.3s;
+
+}
+
+
+
+
+
+.message-box button:hover {
+
+
+    transform:translateY(-4px);
+
+
+    box-shadow:
+    0 15px 30px rgba(37,99,235,.3);
+
+
+}
+
+
+
+
+
+
+@media(max-width:700px){
+
+
+    .contact-box {
+
+        padding:25px;
+
+    }
+
+
+
+    .contact-box h1 {
+
+        font-size:34px;
+
+    }
+
+
+
+    .contact-box > p {
+
+        font-size:17px;
+
+    }
+
+
+
+}

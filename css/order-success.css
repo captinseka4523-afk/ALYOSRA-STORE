@@ -1,0 +1,252 @@
+.success-page{
+
+    min-height:100vh;
+
+    padding:120px 20px 60px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    background:
+    linear-gradient(
+        135deg,
+        #dbeafe,
+        #eff6ff,
+        #bfdbfe
+    );
+
+}
+
+
+
+.success-box{
+
+    width:90%;
+
+    max-width:600px;
+
+    padding:45px 35px;
+
+
+    background:rgba(255,255,255,.25);
+
+    border:1px solid rgba(255,255,255,.5);
+
+    border-radius:35px;
+
+
+    backdrop-filter:blur(20px);
+
+
+    box-shadow:
+    0 25px 60px rgba(0,0,0,.15);
+
+
+    text-align:center;
+
+}
+
+
+
+.success-icon{
+
+    width:90px;
+
+    height:90px;
+
+
+    margin:0 auto 25px;
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    border-radius:50%;
+
+
+    background:#2563eb;
+
+    color:white;
+
+
+    font-size:55px;
+
+    font-weight:bold;
+
+}
+
+
+
+.success-box h1{
+
+    color:#111827;
+
+    font-size:38px;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.success-box p{
+
+    color:#374151;
+
+    font-size:20px;
+
+    margin-bottom:30px;
+
+}
+
+
+
+.counter{
+
+    width:80px;
+
+    height:80px;
+
+
+    margin:0 auto 30px;
+
+
+    border-radius:50%;
+
+
+    background:white;
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    color:#2563eb;
+
+
+    font-size:40px;
+
+    font-weight:bold;
+
+
+    box-shadow:
+    0 10px 25px rgba(0,0,0,.12);
+
+}
+
+
+
+.success-box button{
+
+    border:none;
+
+    padding:15px 45px;
+
+
+    border-radius:25px;
+
+
+    background:#111827;
+
+
+    color:white;
+
+
+    font-size:18px;
+
+
+    cursor:pointer;
+
+
+    transition:.3s;
+
+}
+
+
+
+.success-box button:hover{
+
+    background:#2563eb;
+
+    transform:translateY(-3px);
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .success-page{
+
+        padding:100px 15px 40px;
+
+    }
+
+
+
+    .success-box{
+
+        width:95%;
+
+        padding:35px 20px;
+
+        border-radius:25px;
+
+    }
+
+
+
+    .success-box h1{
+
+        font-size:28px;
+
+    }
+
+
+
+    .success-box p{
+
+        font-size:17px;
+
+    }
+
+
+}
+.order-number{
+
+    margin:20px auto;
+
+    padding:12px 25px;
+
+    width:fit-content;
+
+    background:rgba(255,255,255,.5);
+
+    border-radius:20px;
+
+    color:#111827;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+}
+
+
+#orderId{
+
+    color:#2563eb;
+
+}
