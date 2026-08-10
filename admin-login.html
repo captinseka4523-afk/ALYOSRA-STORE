@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>تسجيل دخول الإدارة | AL YOSRA STORE</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<link rel="stylesheet" href="css/admin-login.css">
+
+</head>
+
+
+<body>
+
+
+<main class="admin-login-page">
+
+
+    <div class="admin-login-box">
+
+
+        <div class="admin-login-logo">
+            متجر اليُسرى
+        </div>
+
+
+        <h1>
+            تسجيل دخول الإدارة
+        </h1>
+
+
+        <p class="admin-login-subtitle">
+            لوحة تحكم متجر اليُسرى
+        </p>
+
+
+        <form id="adminLoginForm">
+
+
+            <div class="admin-input-group">
+
+                <label for="adminEmail">
+                    البريد الإلكتروني
+                </label>
+
+                <input
+                    id="adminEmail"
+                    type="email"
+                    autocomplete="email"
+                    required
+                >
+
+            </div>
+
+
+            <div class="admin-input-group">
+
+                <label for="adminPassword">
+                    كلمة المرور
+                </label>
+
+                <input
+                    id="adminPassword"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                id="adminLoginButton"
+                type="submit"
+            >
+                تسجيل الدخول
+            </button>
+
+
+            <div
+                id="adminLoginMessage"
+                class="admin-login-message"
+            ></div>
+
+
+        </form>
+
+
+        <a
+            href="index.html"
+            class="back-to-store"
+        >
+            العودة إلى المتجر
+        </a>
+
+
+    </div>
+
+
+</main>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase-client.js"></script>
+
+<script src="js/admin-login.js"></script>
+
+
+</body>
+
+</html>

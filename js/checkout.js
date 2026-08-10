@@ -1,20 +1,43 @@
+// ==========================================
+// AL YOSRA STORE
+// Checkout System
+// ==========================================
+
+
+// ==========================================
 // قراءة السلة
-cart = JSON.parse(localStorage.getItem("cart")) || {};
+// ==========================================
+
+const checkoutCart =
+    JSON.parse(localStorage.getItem("cart")) || {};
+
 
 // مكان عرض المنتجات
-const orderSummary = document.getElementById("orderSummary");
 
-// حساب المجموع
-let totalPrice = 0;
+const orderSummary =
+    document.getElementById("orderSummary");
+
+
+// ==========================================
+// عرض ملخص الطلب
+// ==========================================
 
 function displayCheckout() {
 
     if (!orderSummary) return;
 
+
     orderSummary.innerHTML = "";
 
+
+    let totalPrice = 0;
+
+
+    // --------------------------------------
     // السلة فارغة
-    if (Object.keys(cart).length === 0) {
+    // --------------------------------------
+
+    if (Object.keys(checkoutCart).length === 0) {
 
         orderSummary.innerHTML = `
             <p style="text-align:center;">
@@ -23,49 +46,72 @@ function displayCheckout() {
         `;
 
         return;
+
     }
 
-    // عرض المنتجات
-    Object.keys(cart).forEach(id => {
 
-        const product = products.find(p => p.id === id);
+    // --------------------------------------
+    // عرض المنتجات
+    // --------------------------------------
+
+    Object.keys(checkoutCart).forEach(id => {
+
+        const product =
+            window.products.find(
+                p => p.id === String(id)
+            );
+
 
         if (!product) return;
 
-        const quantity = cart[id];
 
-        const subtotal = product.price * quantity;
+        const quantity =
+            Number(checkoutCart[id]) || 0;
+
+
+        const price =
+            Number(product.price) || 0;
+
+
+        const subtotal =
+            price * quantity;
+
 
         totalPrice += subtotal;
+
 
         orderSummary.innerHTML += `
 
         <div class="order-item">
 
-            <img src="../${product.image}"
-            alt="${product.name}"
-            style="
-            width:80px;
-            height:80px;
-            object-fit:contain;
-            ">
+            <img
+                src="${product.image}"
+                alt="${product.name}"
+                style="
+                    width:80px;
+                    height:80px;
+                    object-fit:contain;
+                "
+            >
 
             <div style="flex:1;padding:0 15px;">
 
-                <h3>${product.name}</h3>
+                <h3>
+                    ${product.name}
+                </h3>
 
                 <p>
-                الكمية: ${quantity}
+                    الكمية: ${quantity}
                 </p>
 
                 <p>
-                السعر: ${product.price}$
+                    سعر القطعة: ${price}$
                 </p>
 
             </div>
 
             <strong>
-            ${subtotal}$
+                ${subtotal}$
             </strong>
 
         </div>
@@ -74,271 +120,551 @@ function displayCheckout() {
 
     });
 
-    // المجموع الكلي
+
+    // --------------------------------------
+    // المجموع المعروض
+    // --------------------------------------
 
     orderSummary.innerHTML += `
 
-    <hr>
+        <hr>
 
-    <h2 style="text-align:center;">
+        <h2 style="text-align:center;">
 
-        المجموع الكلي:
+            المجموع التقديري:
 
-        <span style="color:#2563eb;">
+            <span style="color:#2563eb;">
 
-            ${totalPrice}$
+                ${totalPrice}$
 
-        </span>
+            </span>
 
-    </h2>
+        </h2>
+
+        <p style="
+            text-align:center;
+            font-size:14px;
+            opacity:0.75;
+        ">
+
+            يتم اعتماد السعر النهائي عند تأكيد الطلب.
+
+        </p>
 
     `;
 
 }
 
-displayCheckout();
-
-document
-.getElementById("confirmOrder")
-.addEventListener("click", function(){
 
 
-    const name =
-    document.getElementById("customerName").value.trim();
+// ==========================================
+// انتظار تحميل المنتجات من Supabase
+// ==========================================
+
+document.addEventListener(
+    "productsLoaded",
+    displayCheckout
+);
 
 
-    const phone =
-    document.getElementById("customerPhone").value.trim();
+// إذا كانت المنتجات محملة مسبقاً
+
+if (
+    window.products &&
+    window.products.length > 0
+) {
+
+    displayCheckout();
+
+}
 
 
-    const address =
-    document.getElementById("customerAddress").value.trim();
+
+// ==========================================
+// زر تأكيد الطلب
+// ==========================================
+
+const confirmOrder =
+    document.getElementById("confirmOrder");
 
 
-    const note =
-    document.getElementById("customerNote").value.trim();
+if (confirmOrder) {
+
+    confirmOrder.addEventListener(
+        "click",
+        async function() {
+
+
+            // ==================================
+            // منع الضغط المتكرر
+            // ==================================
+
+            if (confirmOrder.disabled) return;
+
+
+            // ==================================
+            // التحقق من وجود المنتجات
+            // ==================================
+
+            if (
+                !window.products ||
+                window.products.length === 0
+            ) {
+
+                alert(
+                    "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // التحقق من السلة
+            // ==================================
+
+            if (
+                Object.keys(checkoutCart).length === 0
+            ) {
+
+                alert(
+                    "السلة فارغة."
+                );
+
+                return;
+
+            }
 
 
 
-    if(!name || !phone || !address){
+            // ==================================
+            // قراءة بيانات العميل
+            // ==================================
+
+            const name =
+                document
+                    .getElementById("customerName")
+                    .value
+                    .trim();
 
 
-        alert("يرجى تعبئة الاسم ورقم الهاتف والعنوان");
+            const phone =
+                document
+                    .getElementById("customerPhone")
+                    .value
+                    .trim();
 
 
-        return;
+            const address =
+                document
+                    .getElementById("customerAddress")
+                    .value
+                    .trim();
 
 
-    }
+            const note =
+                document
+                    .getElementById("customerNote")
+                    .value
+                    .trim();
 
 
+
+            // ==================================
+            // التحقق من البيانات المطلوبة
+            // ==================================
+
+            if (
+                !name ||
+                !phone ||
+                !address
+            ) {
+
+                alert(
+                    "يرجى تعبئة الاسم ورقم الهاتف والعنوان."
+                );
+
+                return;
+
+            }
+
+
+
+            // ==================================
+            // تجهيز المنتجات لإرسالها إلى Supabase
+            // ==================================
+
+            const orderItems = [];
+
+
+            for (
+                const id of Object.keys(checkoutCart)
+            ) {
+
+                const product =
+                    window.products.find(
+                        p => p.id === String(id)
+                    );
+
+
+                if (!product) {
+
+                    alert(
+                        "تعذر العثور على أحد المنتجات في قاعدة البيانات."
+                    );
+
+                    return;
+
+                }
+
+
+                const quantity =
+                    Number(checkoutCart[id]);
+
+
+                if (
+                    !Number.isInteger(quantity) ||
+                    quantity <= 0
+                ) {
+
+                    alert(
+                        "توجد كمية غير صالحة في السلة."
+                    );
+
+                    return;
+
+                }
+
+
+                orderItems.push({
+
+                    product_id:
+                        Number(product.id),
+
+                    quantity:
+                        quantity
+
+                });
+
+            }
+
+
+
+            // ==================================
+            // تغيير حالة الزر أثناء العملية
+            // ==================================
+
+            confirmOrder.disabled = true;
+
+            const originalButtonText =
+                confirmOrder.textContent;
+
+            confirmOrder.textContent =
+                "جاري تأكيد الطلب...";
+
+
+
+            try {
+
+
+                // ==================================
+                // إنشاء الطلب داخل Supabase
+                // ==================================
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.rpc(
+                        "create_order",
+                        {
+
+                            p_customer_name:
+                                name,
+
+                            p_customer_phone:
+                                phone,
+
+                            p_customer_address:
+                                address,
+
+                            p_customer_note:
+                                note || null,
+
+                            p_items:
+                                orderItems
+
+                        }
+                    );
+
+
+
+           // ==================================
+// التحقق من الخطأ
+// ==================================
+
+if (error) {
+
+    console.error(
+        "Supabase order error:",
+        {
+            message: error?.message,
+            details: error?.details,
+            hint: error?.hint,
+            code: error?.code
+        }
+    );
+
+    throw error;
+
+}
+
+
+
+                // ==================================
+                // التحقق من نتيجة الدالة
+                // ==================================
+
+                if (
+                    !data ||
+                    data.success !== true
+                ) {
+
+                    throw new Error(
+                        "لم يتم إنشاء الطلب بشكل صحيح."
+                    );
+
+                }
+
+
+
+                // ==================================
+                // بيانات الطلب التي أعادتها قاعدة البيانات
+                // ==================================
+
+                const orderNumber =
+                    data.order_number;
+
+
+                const total =
+                    Number(data.total) || 0;
+
+
+
+// ==================================
+// إنشاء رسالة WhatsApp
+// ==================================
 
 let message =
 
-`🦷 متجر اليُسرى
+`متجر اليُسرى
 
-━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 
-📦 طلب جديد
+طلب جديد
 
-👤 بيانات العميل:
+رقم الطلب:
+${orderNumber}
+
+بيانات العميل
 
 الاسم:
 ${name}
 
-📱 الهاتف:
+رقم الهاتف:
 ${phone}
 
-🏫 الجامعة:
+العنوان:
 ${address}
 
-━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 
-🛒 تفاصيل الطلب:
+تفاصيل الطلب
 
 `;
 
 
+// ==================================
+// إضافة المنتجات إلى الرسالة
+// ==================================
 
-    let total = 0;
-
-
-
-    Object.keys(cart).forEach(id => {
-
-
+Object.keys(checkoutCart).forEach(
+    id => {
 
         const product =
-        products.find(p => p.id === id);
+            window.products.find(
+                p =>
+                    p.id === String(id)
+            );
 
 
-
-        if(product){
-
-
-            const quantity = cart[id];
+        if (!product) return;
 
 
-            const subtotal =
-            product.price * quantity;
+        const quantity =
+            Number(
+                checkoutCart[id]
+            ) || 0;
 
 
-            total += subtotal;
+        const price =
+            Number(
+                product.price
+            ) || 0;
 
 
+        const subtotal =
+            price * quantity;
 
-message +=
+
+        message +=
 
 `
-🦷 ${product.name}
+${product.name}
 
 الكمية: ${quantity}
-السعر: ${subtotal}$
-
+سعر القطعة: ${price}$
+الإجمالي: ${subtotal}$
 `;
 
-
-        }
-
-
-    });
+    }
+);
 
 
+// ==================================
+// المجموع النهائي
+// ==================================
 
 message +=
 
 `
-━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 
-💰 المجموع الكلي:
+المجموع الكلي:
 ${total}$
 
-📝 ملاحظات:
-${note || "لا يوجد"}
+ملاحظات:
+${note || "لا توجد ملاحظات"}
 
-━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 
-شكراً لطلبكم من متجر اليُسرى 🦷
+شكراً لاختياركم متجر اليُسرى
+
+نتمنى لكم تجربة موفقة.
 `;
 
 
 
-    const whatsappNumber =
-    "963988902539";
+                // ==================================
+                // رقم WhatsApp الخاص بالمتجر
+                // ==================================
+
+                const whatsappNumber =
+                    "963988902539";
 
 
 
-    const whatsappURL =
+                // ==================================
+                // حفظ بيانات الطلب
+                // ==================================
 
-    "https://wa.me/" 
-    + whatsappNumber
-    + "?text="
-    + encodeURIComponent(message);
-
-
-
- // حفظ رسالة الواتساب للصفحة التالية
+                localStorage.setItem(
+                    "orderId",
+                    orderNumber
+                );
 
 
-const today = new Date();
-
-
-const date =
-today.getFullYear()
-+
-String(today.getMonth()+1).padStart(2,"0")
-+
-String(today.getDate()).padStart(2,"0");
+                localStorage.setItem(
+                    "whatsappMessage",
+                    message
+                );
 
 
 
-let orderNumber =
-Number(localStorage.getItem("orderNumber")) || 0;
+                // ==================================
+                // الانتقال إلى صفحة نجاح الطلب
+                // ==================================
+
+                window.location.href =
+                    "order-success.html";
 
 
-orderNumber++;
+            } catch (error) {
 
 
+                // ==================================
+                // في حال فشل إنشاء الطلب
+                // ==================================
 
-localStorage.setItem(
-    "orderNumber",
-    orderNumber
-);
-
-
-
-const orderId =
-
-"AL-"
-+
-date
-+
-"-"
-+
-String(orderNumber).padStart(3,"0");
+                console.error(
+                    "خطأ أثناء إنشاء الطلب:",
+                    error
+                );
 
 
-
-localStorage.setItem(
-    "orderId",
-    orderId
-);
-
+                alert(
+                    "تعذر تأكيد الطلب حالياً.\n\n" +
+                    "يرجى المحاولة مرة أخرى."
+                );
 
 
-message +=
+                // إعادة الزر إلى حالته الطبيعية
 
-"\n\nرقم الطلب:\n"
-+
-orderId;
+                confirmOrder.disabled =
+                    false;
 
 
-localStorage.setItem(
-    "orderId",
-    orderId
-);
+                confirmOrder.textContent =
+                    originalButtonText;
+
+            }
+
+        }
+    );
+
+}
 
 
 
+// ==========================================
+// حقول العميل
+// ==========================================
 
- localStorage.setItem(
-    "whatsappMessage",
-    message
-);
-
-
-// الانتقال إلى صفحة النجاح
-
-window.location.href =
-"order-success.html";
-
-
-});
 const customerFields = [
+
     "customerName",
     "customerPhone",
     "customerAddress",
     "customerNote"
+
 ];
 
 
 
+// ==========================================
 // حفظ البيانات أثناء الكتابة
+// ==========================================
 
 customerFields.forEach(id => {
 
-    const field = document.getElementById(id);
+    const field =
+        document.getElementById(id);
 
-    if(field){
 
-        field.addEventListener("input", ()=>{
+    if (field) {
 
-            localStorage.setItem(
-                id,
-                field.value
-            );
+        field.addEventListener(
+            "input",
+            () => {
 
-        });
+                localStorage.setItem(
+                    id,
+                    field.value
+                );
+
+            }
+        );
 
     }
 
@@ -346,21 +672,27 @@ customerFields.forEach(id => {
 
 
 
-// استرجاع البيانات عند فتح الصفحة
+// ==========================================
+// استرجاع البيانات المحفوظة
+// ==========================================
 
 customerFields.forEach(id => {
 
     const savedData =
-    localStorage.getItem(id);
+        localStorage.getItem(id);
 
 
     const field =
-    document.getElementById(id);
+        document.getElementById(id);
 
 
-    if(savedData && field){
+    if (
+        savedData !== null &&
+        field
+    ) {
 
-        field.value = savedData;
+        field.value =
+            savedData;
 
     }
 

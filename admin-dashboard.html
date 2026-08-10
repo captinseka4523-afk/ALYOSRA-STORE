@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>لوحة الإدارة | AL YOSRA STORE</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+
+</head>
+
+
+<body>
+
+
+<div class="admin-layout">
+
+
+    <!-- ================================= -->
+    <!-- Sidebar -->
+    <!-- ================================= -->
+
+    <aside class="admin-sidebar">
+
+
+        <div class="admin-brand">
+
+            متجر اليُسرى
+
+            <span>
+                لوحة الإدارة
+            </span>
+
+        </div>
+
+
+        <nav class="admin-nav">
+
+            <button
+                class="admin-nav-item active"
+                data-section="dashboard"
+            >
+                الرئيسية
+            </button>
+
+
+            <button
+                class="admin-nav-item"
+                data-section="products"
+            >
+                المنتجات
+            </button>
+
+
+            <button
+                class="admin-nav-item"
+                data-section="categories"
+            >
+                التصنيفات
+            </button>
+
+
+            <button
+                class="admin-nav-item"
+                data-section="orders"
+            >
+                الطلبات
+            </button>
+
+        </nav>
+
+
+        <button
+            id="logoutButton"
+            class="admin-logout"
+        >
+            تسجيل الخروج
+        </button>
+
+
+    </aside>
+
+
+
+    <!-- ================================= -->
+    <!-- Main -->
+    <!-- ================================= -->
+
+    <main class="admin-main">
+
+
+        <header class="admin-header">
+
+            <div>
+
+                <h1>
+                    لوحة التحكم
+                </h1>
+
+                <p>
+                    مرحبًا بك في إدارة متجر اليُسرى
+                </p>
+
+            </div>
+
+
+            <div
+                id="adminUserEmail"
+                class="admin-user-email"
+            ></div>
+
+        </header>
+
+
+
+        <!-- ================================= -->
+        <!-- Dashboard -->
+        <!-- ================================= -->
+
+        <section
+            id="dashboardSection"
+            class="admin-section active"
+        >
+
+            <div class="admin-section-title">
+
+                <h2>
+                    نظرة عامة
+                </h2>
+
+            </div>
+
+
+            <div class="admin-cards">
+
+
+                <div class="admin-card">
+
+                    <span>
+                        المنتجات
+                    </span>
+
+                    <strong id="productsCount">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <span>
+                        التصنيفات
+                    </span>
+
+                    <strong id="categoriesCount">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <span>
+                        الطلبات
+                    </span>
+
+                    <strong id="ordersCount">
+                        -
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="admin-welcome">
+
+                <h2>
+                    متجر اليُسرى
+                </h2>
+
+                <p>
+                    استخدم لوحة التحكم لإدارة المنتجات
+                    والمخزون والتصنيفات والطلبات.
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ================================= -->
+        <!-- Products -->
+        <!-- ================================= -->
+
+        <section
+            id="productsSection"
+            class="admin-section"
+        >
+
+
+            <div class="admin-section-title">
+
+                <div>
+
+                    <h2>
+                        إدارة المنتجات
+                    </h2>
+
+                    <p class="admin-section-description">
+                        إضافة وتعديل المنتجات والمخزون.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="addProductButton"
+                    class="admin-primary-button"
+                >
+                    + إضافة منتج
+                </button>
+
+            </div>
+
+
+
+            <!-- Search -->
+
+            <div class="admin-toolbar">
+
+                <input
+                    id="productSearch"
+                    type="search"
+                    placeholder="ابحث عن منتج..."
+                >
+
+            </div>
+
+
+
+            <!-- Products table -->
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                الصورة
+                            </th>
+
+                            <th>
+                                المنتج
+                            </th>
+
+                            <th>
+                                السعر
+                            </th>
+
+                            <th>
+                                المخزون
+                            </th>
+
+                            <th>
+                                التصنيف
+                            </th>
+
+                            <th>
+                                Product Code
+                            </th>
+
+                            <th>
+                                الإجراءات
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="adminProductsTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div
+                id="productsLoading"
+                class="admin-loading"
+            >
+                جاري تحميل المنتجات...
+            </div>
+
+
+            <div
+                id="productsEmpty"
+                class="admin-empty"
+                hidden
+            >
+                لا توجد منتجات.
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ================================= -->
+        <!-- Categories -->
+        <!-- ================================= -->
+
+       <section
+    id="categoriesSection"
+    class="admin-section"
+>
+
+    <div class="admin-section-title">
+
+        <div>
+
+            <h2>
+                إدارة التصنيفات
+            </h2>
+
+            <p class="admin-section-description">
+                إضافة وتعديل وحذف تصنيفات المنتجات.
+            </p>
+
+        </div>
+
+
+        <button
+            id="addCategoryButton"
+            class="admin-primary-button"
+            type="button"
+        >
+            + إضافة تصنيف
+        </button>
+
+    </div>
+
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        ID
+                    </th>
+
+                    <th>
+                        اسم التصنيف
+                    </th>
+
+                    <th>
+                        الإجراءات
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="adminCategoriesTable"
+            ></tbody>
+
+        </table>
+
+    </div>
+
+
+    <div
+        id="categoriesLoading"
+        class="admin-loading"
+    >
+        جاري تحميل التصنيفات...
+    </div>
+
+
+    <div
+        id="categoriesEmpty"
+        class="admin-empty"
+        hidden
+    >
+        لا توجد تصنيفات.
+    </div>
+
+</section>
+
+        <!-- ================================= -->
+        <!-- Orders -->
+        <!-- ================================= -->
+
+       <section
+    id="ordersSection"
+    class="admin-section"
+>
+
+    <div class="admin-section-title">
+
+        <div>
+
+            <h2>
+                إدارة الطلبات
+            </h2>
+
+            <p class="admin-section-description">
+                عرض ومتابعة طلبات العملاء.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        رقم الطلب
+                    </th>
+
+                    <th>
+                        العميل
+                    </th>
+
+                    <th>
+                        الهاتف
+                    </th>
+
+                    <th>
+                        الإجمالي
+                    </th>
+
+                    <th>
+                        الحالة
+                    </th>
+
+                    <th>
+                        التاريخ
+                    </th>
+
+                    <th>
+                        الإجراءات
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="adminOrdersTable"
+            ></tbody>
+
+        </table>
+
+    </div>
+
+
+    <div
+        id="ordersLoading"
+        class="admin-loading"
+    >
+        جاري تحميل الطلبات...
+    </div>
+
+
+    <div
+        id="ordersEmpty"
+        class="admin-empty"
+        hidden
+    >
+        لا توجد طلبات حاليًا.
+    </div>
+
+</section>
+    </main>
+
+</div>
+
+
+
+<!-- ================================= -->
+<!-- Product Modal -->
+<!-- ================================= -->
+
+<div
+    id="productModal"
+    class="admin-modal"
+    hidden
+>
+
+    <div class="admin-modal-box">
+
+
+        <div class="admin-modal-header">
+
+            <h2 id="productModalTitle">
+                إضافة منتج
+            </h2>
+
+
+            <button
+                id="closeProductModal"
+                class="admin-modal-close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <form id="productForm">
+
+
+            <input
+                id="productId"
+                type="hidden"
+            >
+
+
+            <div class="admin-form-grid">
+
+
+                <div class="admin-form-group">
+
+                    <label for="productName">
+                        اسم المنتج
+                    </label>
+
+                    <input
+                        id="productName"
+                        type="text"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group">
+
+                    <label for="productCode">
+                        Product Code
+                    </label>
+
+                    <input
+                        id="productCode"
+                        type="text"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group">
+
+                    <label for="productPrice">
+                        السعر
+                    </label>
+
+                    <input
+                        id="productPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group">
+
+                    <label for="productQuantity">
+                        الكمية
+                    </label>
+
+                    <input
+                        id="productQuantity"
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group">
+
+                    <label for="productCategory">
+                        التصنيف
+                    </label>
+
+                    <select
+                        id="productCategory"
+                        required
+                    >
+
+                        <option value="">
+                            اختر التصنيف
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="admin-form-group">
+
+                    <label for="productTarget">
+                        Target
+                    </label>
+
+                    <input
+                        id="productTarget"
+                        type="text"
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group admin-form-full">
+
+                    <label for="productImage">
+                        رابط الصورة
+                    </label>
+
+                    <input
+                        id="productImage"
+                        type="text"
+                        placeholder="images/product1.png"
+                    >
+
+                </div>
+
+
+
+                <div class="admin-form-group admin-form-full">
+
+                    <label for="productDescription">
+                        وصف المنتج
+                    </label>
+
+                    <textarea
+                        id="productDescription"
+                        rows="4"
+                    ></textarea>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div
+                id="productFormMessage"
+                class="admin-form-message"
+            ></div>
+
+
+
+            <div class="admin-form-actions">
+
+                <button
+                    type="button"
+                    id="cancelProductButton"
+                    class="admin-secondary-button"
+                >
+                    إلغاء
+                </button>
+
+
+                <button
+                    type="submit"
+                    id="saveProductButton"
+                    class="admin-primary-button"
+                >
+                    حفظ المنتج
+                </button>
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+<div
+    id="categoryModal"
+    class="admin-modal"
+    hidden
+>
+
+    <div class="admin-modal-box">
+
+        <div class="admin-modal-header">
+
+            <h2 id="categoryModalTitle">
+                إضافة تصنيف
+            </h2>
+
+
+            <button
+                id="closeCategoryModal"
+                class="admin-modal-close"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="categoryForm">
+
+            <input
+                id="categoryId"
+                type="hidden"
+            >
+
+
+            <div class="admin-form-group">
+
+                <label for="categoryName">
+                    اسم التصنيف
+                </label>
+
+                <input
+                    id="categoryName"
+                    type="text"
+                    required
+                    placeholder="مثال: أدوات الفحص"
+                >
+
+            </div>
+
+
+            <div
+                id="categoryFormMessage"
+                class="admin-form-message"
+            ></div>
+
+
+            <div class="admin-form-actions">
+
+                <button
+                    type="button"
+                    id="cancelCategoryButton"
+                    class="admin-secondary-button"
+                >
+                    إلغاء
+                </button>
+
+
+                <button
+                    type="submit"
+                    id="saveCategoryButton"
+                    class="admin-primary-button"
+                >
+                    حفظ التصنيف
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================================= -->
+<!-- Scripts -->
+<!-- ================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase-client.js"></script>
+
+<script src="js/admin-auth.js"></script>
+
+<script src="js/admin-products.js"></script>
+
+<script src="js/admin-categories.js"></script>
+
+<script src="js/admin-order.js"></script>
+
+</body>
+
+</html>

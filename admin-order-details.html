@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>تفاصيل الطلب | لوحة التحكم</title>
+
+    <link
+        rel="stylesheet"
+        href="css/admin.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/admin-order-details.css"
+    >
+
+</head>
+
+<body>
+
+    <div class="admin-container">
+
+        <header class="admin-header">
+
+            <div>
+
+                <h1>
+                    تفاصيل الطلب
+                </h1>
+
+                <p>
+                    عرض جميع معلومات الطلب والمنتجات
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="admin-logout-button"
+                id="logoutButton"
+            >
+                تسجيل الخروج
+            </button>
+
+        </header>
+
+
+        <main class="order-details-page">
+
+            <div
+                id="orderLoading"
+                class="order-loading"
+            >
+                جاري تحميل تفاصيل الطلب...
+            </div>
+
+
+            <div
+                id="orderError"
+                class="order-error"
+                hidden
+            >
+                حدث خطأ أثناء تحميل تفاصيل الطلب.
+            </div>
+
+
+            <section
+                id="orderContent"
+                hidden
+            >
+
+                <div class="order-details-top">
+
+                    <div>
+
+                        <h2 id="orderNumber">
+                            -
+                        </h2>
+
+                        <p id="orderDate">
+                            -
+                        </p>
+
+                    </div>
+
+                  <div class="order-status-container">
+
+    <span
+        id="orderStatus"
+        class="order-details-status"
+    >
+        -
+    </span>
+
+    <div class="order-status-message-wrapper">
+
+        <div
+            id="orderStatusMessage"
+            class="order-status-message"
+            aria-live="polite"
+        ></div>
+
+    </div>
+
+</div>
+
+                </div>
+
+
+
+                <div class="order-info-grid">
+
+                    <div class="order-info-card">
+
+                        <h3>
+                            بيانات العميل
+                        </h3>
+
+                        <p>
+                            <strong>الاسم:</strong>
+                            <span id="customerName">
+                                -
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong>الهاتف:</strong>
+                            <span id="customerPhone">
+                                -
+                            </span>
+                        </p>
+
+                    </div>
+
+
+                    <div class="order-info-card">
+
+                        <h3>
+                            العنوان
+                        </h3>
+
+                        <p id="customerAddress">
+                            -
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="order-info-card"
+                        id="customerNoteCard"
+                    >
+
+                        <h3>
+                            ملاحظات العميل
+                        </h3>
+
+                        <p id="customerNote">
+                            لا توجد ملاحظات
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <section class="order-products-section">
+
+                    <div class="section-title">
+
+                        <h3>
+                            المنتجات
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        id="orderItems"
+                        class="order-items"
+                    >
+                    </div>
+
+                </section>
+
+
+                <div class="order-total-card">
+
+                    <span>
+                        إجمالي الطلب
+                    </span>
+
+                    <strong id="orderTotal">
+                        0
+                    </strong>
+
+                    <span>
+                        ل.س
+                    </span>
+
+                </div>
+
+
+                <div class="order-details-actions">
+
+                    <button
+                        type="button"
+                        class="admin-secondary-button"
+                        id="backToOrders"
+                    >
+                        العودة إلى الطلبات
+                    </button>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Supabase -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <!-- Supabase Configuration -->
+
+    <script src="js/supabase-config.js"></script>
+
+
+    <!-- Authentication -->
+
+    <script src="js/admin-auth.js"></script>
+
+
+    <!-- Page JavaScript -->
+
+    <script src="js/admin-order-details.js"></script>
+
+</body>
+
+</html>
