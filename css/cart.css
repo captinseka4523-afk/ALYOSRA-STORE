@@ -1,499 +1,915 @@
+/* =========================
+   CART PAGE
+========================= */
+
 .cart-page {
+    min-height: 100vh;
 
-    min-height:100vh;
+    padding: 120px 20px 60px;
 
-    padding:120px 20px 60px;
-
-    display:flex;
-
-    justify-content:center;
-
+    display: flex;
+    justify-content: center;
 }
-
 
 
 .cart-box-page {
+    width: 100%;
+    max-width: 1200px;
 
-    width:100%;
+    padding: 45px;
 
-    max-width:1200px;
+    background: rgba(255, 255, 255, .22);
 
-    padding:45px;
+    border: 1px solid rgba(255, 255, 255, .4);
 
+    border-radius: 35px;
 
-    background:rgba(255,255,255,.22);
-
-    border:1px solid rgba(255,255,255,.4);
-
-    border-radius:35px;
-
-    backdrop-filter:blur(20px);
-
+    backdrop-filter: blur(20px);
 
     box-shadow:
-    0 25px 60px rgba(0,0,0,.15);
-
+        0 25px 60px rgba(0, 0, 0, .15);
 }
-
 
 
 .cart-box-page h1 {
+    text-align: center;
 
-    text-align:center;
+    font-size: 45px;
 
-    font-size:45px;
+    color: #111827;
 
-    color:#111827;
-
-    margin-bottom:15px;
-
+    margin-bottom: 15px;
 }
-
 
 
 .cart-box-page > p {
+    text-align: center;
 
-    text-align:center;
+    color: #4b5563;
 
-    color:#4b5563;
+    font-size: 19px;
 
-    font-size:19px;
-
-    margin-bottom:40px;
-
+    margin-bottom: 40px;
 }
 
 
-
-
+/* =========================
+   CART GRID
+========================= */
 
 #cartContainer {
+    width: 100%;
 
-    width:100%;
-
-    display:grid;
+    display: grid;
 
     grid-template-columns:
-    repeat(auto-fit,minmax(260px,1fr));
+        repeat(auto-fit, minmax(260px, 1fr));
 
-    gap:25px;
-
+    gap: 25px;
 }
 
 
-
-
+/* =========================
+   NORMAL PRODUCT CARD
+========================= */
 
 .cart-item {
+    background: #d0daff;
 
-    background:#d0daff;
+    border-radius: 30px;
 
-    border-radius:30px;
+    padding: 25px;
 
-    padding:25px;
+    display: flex;
 
+    flex-direction: column;
 
-    display:flex;
+    align-items: center;
 
-    flex-direction:column;
-
-    align-items:center;
-
-
-    text-align:center;
-
+    text-align: center;
 
     box-shadow:
-    0 15px 35px rgba(0,0,0,.12);
+        0 15px 35px rgba(0, 0, 0, .12);
 
-
-    transition:.3s;
-
+    transition: .3s;
 }
-
 
 
 .cart-item:hover {
-
-    transform:translateY(-6px);
-
+    transform: translateY(-6px);
 }
-
-
-
 
 
 .cart-item img {
+    width: 140px;
 
-    width:140px;
+    height: 140px;
 
-    height:140px;
+    object-fit: contain;
 
-    object-fit:contain;
-
-    margin-bottom:20px;
-
+    margin-bottom: 20px;
 }
-
-
-
 
 
 .cart-info {
-
-    width:100%;
-
+    width: 100%;
 }
-
-
-
 
 
 .cart-info h3 {
+    font-size: 22px;
 
-    font-size:22px;
+    color: #111827;
 
-    color:#111827;
-
-    margin-bottom:12px;
-
+    margin-bottom: 12px;
 }
-
-
-
 
 
 .cart-info p {
+    color: #6b7280;
 
-    color:#6b7280;
-
-    font-size:16px;
-
+    font-size: 16px;
 }
 
 
+/* =========================
+   OFFER CARD IN CART
+========================= */
+
+.offer-cart-item {
+    background:
+        linear-gradient(
+            145deg,
+            #eef2ff,
+            #dbe7ff
+        );
+
+    border: 1px solid #c7d2fe;
+
+    border-radius: 25px;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    text-align: right;
+
+    box-shadow:
+        0 10px 30px rgba(37, 99, 235, .14);
+
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease;
+}
 
 
+.offer-cart-item:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 16px 35px rgba(37, 99, 235, .20);
+}
+
+
+/* صورة العرض */
+
+.offer-cart-item > img {
+    width: 100%;
+
+    height: 190px;
+
+    object-fit: cover;
+
+    display: block;
+
+    margin: 0;
+
+    background: #f8fafc;
+}
+
+
+/* إذا لم توجد صورة */
+
+.offer-cart-item
+.cart-offer-placeholder {
+    width: 100%;
+
+    height: 190px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dbeafe,
+            #eef2ff
+        );
+
+    color: #2563eb;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* محتوى العرض */
+
+.offer-cart-item .cart-info {
+    width: auto;
+
+    padding: 20px 22px 22px;
+
+    text-align: right;
+}
+
+
+.offer-cart-item .cart-info h3 {
+    font-size: 21px;
+
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    line-height: 1.5;
+}
+
+
+/* سعر العرض */
+
+.offer-cart-item .cart-info p {
+    margin: 0;
+
+    color: #2563eb;
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+
+/* كمية العرض */
+
+.offer-cart-item .quantity-box {
+    justify-content: flex-start;
+
+    margin: 18px 0;
+
+    gap: 12px;
+}
+
+
+/* =========================
+   QUANTITY
+========================= */
 
 .quantity-box {
+    display: flex;
 
-    display:flex;
+    justify-content: center;
 
-    justify-content:center;
+    align-items: center;
 
-    align-items:center;
+    gap: 18px;
 
-    gap:18px;
-
-    margin:22px 0;
-
+    margin: 22px 0;
 }
-
-
-
 
 
 .quantity-box span {
+    min-width: 40px;
 
-    min-width:40px;
+    font-size: 24px;
 
-    font-size:24px;
+    font-weight: bold;
 
-    font-weight:bold;
+    color: #111827;
 
-    color:#111827;
-
+    text-align: center;
 }
-
-
-
 
 
 .quantity-btn {
+    width: 42px;
 
-    width:42px;
+    height: 42px;
 
-    height:42px;
+    border: none;
 
+    border-radius: 50%;
 
-    border:none;
+    background: #2563eb;
 
-    border-radius:50%;
+    color: white;
 
+    font-size: 25px;
 
-    background:#2563eb;
+    cursor: pointer;
 
-    color:white;
-
-
-    font-size:25px;
-
-    cursor:pointer;
-
-
-    transition:.3s;
-
+    transition: .3s;
 }
-
 
 
 .quantity-btn:hover {
+    background: #1d4ed8;
 
-    background:#1d4ed8;
-
-    transform:scale(1.12);
-
+    transform: scale(1.12);
 }
 
 
-
-
+/* =========================
+   REMOVE BUTTON
+========================= */
 
 .remove-btn {
+    border: none;
 
-    border:none;
+    padding: 11px 30px;
 
-    padding:11px 30px;
+    border-radius: 25px;
 
+    background: #ef4444;
 
-    border-radius:25px;
+    color: white;
 
+    font-size: 16px;
 
-    background:#ef4444;
+    cursor: pointer;
 
-    color:white;
-
-
-    font-size:16px;
-
-    cursor:pointer;
-
-
-    transition:.3s;
-
+    transition: .3s;
 }
-
 
 
 .remove-btn:hover {
+    background: #dc2626;
 
-    background:#dc2626;
-
-    transform:translateY(-2px);
-
+    transform: translateY(-2px);
 }
 
 
+/* زر الحذف في العرض */
+
+.offer-cart-item .remove-btn {
+    display: block;
+
+    width: 100%;
+
+    padding: 11px 20px;
+
+    margin-top: 4px;
+
+    border-radius: 12px;
+}
 
 
+/* =========================
+   CART TOTAL
+========================= */
 
 .cart-total {
+    margin-top: 45px;
 
-    margin-top:45px;
+    text-align: center;
 
+    font-size: 32px;
 
-    text-align:center;
+    font-weight: bold;
 
-
-    font-size:32px;
-
-    font-weight:bold;
-
-
-    color:#111827;
-
+    color: #111827;
 }
-
 
 
 #cartTotal {
-
-    color:#2563eb;
-
+    color: #2563eb;
 }
 
 
-
-
+/* =========================
+   CHECKOUT
+========================= */
 
 .checkout-btn {
+    display: block;
 
-    display:block;
+    margin: 30px auto 0;
 
-    margin:30px auto 0;
+    padding: 17px 55px;
 
+    border: none;
 
-    padding:17px 55px;
+    border-radius: 28px;
 
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #2563eb
+        );
 
-    border:none;
+    color: white;
 
-    border-radius:28px;
+    font-size: 20px;
 
+    font-weight: bold;
 
-    background:linear-gradient(
-    135deg,
-    #111827,
-    #2563eb
-    );
+    cursor: pointer;
 
+    transition: .3s;
 
-    color:white;
+    text-decoration: none;
 
-
-    font-size:20px;
-
-    font-weight:bold;
-
-
-    cursor:pointer;
-
-    transition:.3s;
-
+    text-align: center;
 }
-
 
 
 .checkout-btn:hover {
-
-    transform:translateY(-4px);
+    transform: translateY(-4px);
 
     box-shadow:
-    0 15px 30px rgba(37,99,235,.3);
+        0 15px 30px rgba(37, 99, 235, .3);
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .cart-page {
+        padding:
+            100px 10px 40px;
+    }
+
+
+    .cart-box-page {
+        width: 95%;
+
+        padding: 20px;
+
+        border-radius: 25px;
+    }
+
+
+    .cart-box-page h1 {
+        font-size: 32px;
+    }
+
+
+    .cart-box-page > p {
+        font-size: 16px;
+
+        margin-bottom: 25px;
+    }
+
+
+    #cartContainer {
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 12px;
+    }
+
+
+    /* المنتجات العادية */
+
+    .cart-item {
+        padding: 12px;
+
+        border-radius: 20px;
+    }
+
+
+    .cart-item img {
+        width: 80px;
+
+        height: 80px;
+
+        margin-bottom: 10px;
+    }
+
+
+    .cart-info h3 {
+        font-size: 15px;
+
+        margin-bottom: 5px;
+    }
+
+
+    .cart-info p {
+        font-size: 13px;
+    }
+
+
+    .quantity-box {
+        gap: 8px;
+
+        margin: 10px 0;
+    }
+
+
+    .quantity-box span {
+        font-size: 18px;
+
+        min-width: 28px;
+    }
+
+
+    .quantity-btn {
+        width: 30px;
+
+        height: 30px;
+
+        font-size: 18px;
+    }
+
+
+    .remove-btn {
+        padding: 7px 15px;
+
+        font-size: 13px;
+    }
+
+
+    /* =====================
+       OFFER ON MOBILE
+    ===================== */
+
+    .offer-cart-item {
+        border-radius: 18px;
+    }
+
+
+    .offer-cart-item > img {
+        height: 120px;
+    }
+
+
+    .offer-cart-item
+    .cart-offer-placeholder {
+        height: 120px;
+
+        font-size: 16px;
+    }
+
+
+    .offer-cart-item .cart-info {
+        padding: 13px;
+    }
+
+
+    .offer-cart-item .cart-info h3 {
+        font-size: 15px;
+
+        line-height: 1.4;
+
+        margin-bottom: 6px;
+    }
+
+
+    .offer-cart-item .cart-info p {
+        font-size: 13px;
+    }
+
+
+    .offer-cart-item .quantity-box {
+        justify-content: center;
+
+        margin: 10px 0;
+
+        gap: 7px;
+    }
+
+
+    .offer-cart-item .remove-btn {
+        padding: 7px;
+
+        font-size: 12px;
+    }
+
+
+    .cart-total {
+        font-size: 25px;
+    }
+
+
+    .checkout-btn {
+        width: 90%;
+
+        padding: 12px;
+
+        font-size: 17px;
+    }
+
+}
+
+/* =========================================================
+   OFFER CARD INSIDE CART
+========================================================= */
+
+.offer-cart-item {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #eef4ff,
+            #dce7ff
+        );
+
+    border: 1px solid rgba(37, 99, 235, 0.18);
+
+    overflow: hidden;
+
+    align-items: stretch;
+
+    text-align: right;
+}
+
+
+/* شارة العرض */
+
+.offer-cart-item::before {
+    content: "عرض خاص";
+
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    z-index: 2;
+
+    padding: 6px 11px;
+
+    border-radius: 16px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 11px;
+
+    font-weight: bold;
+}
+
+
+/* صورة العرض */
+
+.offer-cart-item > img {
+    width: 100%;
+
+    height: 180px;
+
+    object-fit: cover;
+
+    margin: 0 0 18px;
+
+    border-radius: 18px;
+
+    background: #f3f6fb;
+}
+
+
+/* في حال عدم وجود صورة */
+
+.cart-offer-placeholder {
+    width: 100%;
+
+    height: 180px;
+
+    margin-bottom: 18px;
+
+    border-radius: 18px;
+
+    background: #dbe5ff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #2563eb;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* معلومات العرض */
+
+.offer-cart-item .cart-info {
+    width: 100%;
+
+    text-align: right;
+}
+
+
+/* اسم العرض */
+
+.offer-cart-item .cart-info h3 {
+    margin-bottom: 8px;
+
+    font-size: 21px;
+
+    line-height: 1.5;
+}
+
+
+/* سعر العرض */
+
+.offer-cart-item .cart-info p {
+    margin: 0;
+
+    color: #2563eb;
+
+    font-size: 16px;
+
+    font-weight: bold;
+}
+
+
+/* أزرار الكمية */
+
+.offer-cart-item .quantity-box {
+    justify-content: flex-start;
+
+    margin: 18px 0;
+}
+
+
+/* زر الحذف */
+
+.offer-cart-item .remove-btn {
+    display: block;
+
+    margin-right: 0;
+}
+
+
+/* =========================================================
+   MOBILE OFFER CART CARD
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .offer-cart-item {
+        padding: 12px;
+    }
+
+
+    .offer-cart-item::before {
+        top: 8px;
+        right: 8px;
+
+        padding: 4px 7px;
+
+        font-size: 9px;
+    }
+
+
+    .offer-cart-item > img {
+        height: 105px;
+
+        margin-bottom: 10px;
+
+        border-radius: 13px;
+    }
+
+
+    .cart-offer-placeholder {
+        height: 105px;
+
+        margin-bottom: 10px;
+
+        border-radius: 13px;
+
+        font-size: 15px;
+    }
+
+
+    .offer-cart-item .cart-info h3 {
+        font-size: 14px;
+
+        margin-bottom: 4px;
+    }
+
+
+    .offer-cart-item .cart-info p {
+        font-size: 12px;
+    }
+
+
+    .offer-cart-item .quantity-box {
+        justify-content: flex-start;
+
+        margin: 10px 0;
+
+        gap: 7px;
+    }
+
+
+    .offer-cart-item .quantity-btn {
+        width: 30px;
+        height: 30px;
+
+        font-size: 17px;
+    }
+
+
+    .offer-cart-item .remove-btn {
+        padding: 7px 14px;
+
+        font-size: 12px;
+    }
+
+}
+/* =========================
+   CART TOAST
+========================= */
+
+.cart-toast {
+
+    position: fixed;
+
+    top: 90px;
+
+    left: 50%;
+
+    transform:
+        translate(-50%, -20px);
+
+    background: rgba(17, 24, 39, 0.95);
+
+    color: white;
+
+    padding: 13px 22px;
+
+    border-radius: 14px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.2);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        visibility 0.25s ease;
+
+    z-index: 9999;
+
+    white-space: nowrap;
+}
+
+
+.cart-toast.show {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translate(-50%, 0);
 
 }
 
 
+@media (max-width: 700px) {
 
+    .cart-toast {
 
+        top: 75px;
 
-@media(max-width:700px){
+        width: 90%;
 
-    .cart-box-page{
+        max-width: 360px;
 
-        width:95%;
+        text-align: center;
 
-        padding:20px;
+        white-space: normal;
 
-    }
-
-
-    .cart-box-page h1{
-
-        font-size:32px;
+        font-size: 14px;
 
     }
 
-
-    .cart-box-page > p{
-
-        font-size:16px;
-
-        margin-bottom:25px;
-
-    }
-
-
-    #cartContainer{
-
-        grid-template-columns:repeat(2,1fr);
-
-        gap:12px;
-
-    }
-
-
-    .cart-item{
-
-        padding:12px;
-
-        border-radius:20px;
-
-    }
-
-
-    .cart-item img{
-
-        width:80px;
-
-        height:80px;
-
-        margin-bottom:10px;
-
-    }
-
-
-    .cart-info h3{
-
-        font-size:15px;
-
-        margin-bottom:5px;
-
-    }
-
-
-    .cart-info p{
-
-        font-size:13px;
-
-    }
-
-
-    .quantity-box{
-
-        gap:8px;
-
-        margin:10px 0;
-
-    }
-
-
-    .quantity-box span{
-
-        font-size:18px;
-
-    }
-
-
-    .quantity-btn{
-
-        width:30px;
-
-        height:30px;
-
-        font-size:18px;
-
-    }
-
-
-    .remove-btn{
-
-        padding:7px 15px;
-
-        font-size:13px;
-
-    }
-
-
-    .cart-total{
-
-        font-size:25px;
-
-    }
-
-
-    .checkout-btn{
-
-        width:90%;
-
-        padding:12px;
-
-        font-size:17px;
-
-    }
-
-}
-.checkout-btn{
-    display:block;
-    text-decoration:none;
 }

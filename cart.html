@@ -24,6 +24,14 @@
 
 <nav class="navbar">
 
+<button
+    class="menu-toggle"
+    id="menuToggle"
+    aria-label="فتح القائمة"
+    type="button"
+>
+    ☰
+</button>
 
 <div class="nav-logo">
     متجر اليُسرى
@@ -47,6 +55,11 @@
 </a>
 </li>
 
+<li>
+    <a href="offers.html">
+        العروض
+    </a>
+</li>
 
 <li>
 <a class="active" href="cart.html">
@@ -99,7 +112,52 @@ stroke-width="2">
 </nav>
 
 
+<div class="side-menu-overlay" id="sideMenuOverlay"></div>
 
+<aside class="side-menu" id="sideMenu">
+
+    <div class="side-menu-header">
+
+        <span>القائمة</span>
+
+        <button
+            class="side-menu-close"
+            id="sideMenuClose"
+            type="button"
+            aria-label="إغلاق القائمة"
+        >
+            ×
+        </button>
+
+    </div>
+
+    <ul class="side-menu-links">
+
+        <li>
+            <a href="index.html">الرئيسية</a>
+        </li>
+
+        <li>
+            <a href="products.html">المنتجات</a>
+        </li>
+
+        <li>
+            <a class="active" href="cart.html">السلة</a>
+        </li>
+
+        <li>
+            <a href="contact.html">تواصل معنا</a>
+        </li>
+
+      <li>
+    <a href="offers.html">
+        العروض
+    </a>
+</li>
+
+    </ul>
+
+</aside>
 
 
 <main class="cart-page">
@@ -159,6 +217,54 @@ stroke-width="2">
 <script src="js/cart.js"></script>
 <script src="js/cart-count.js"></script>
 
+<script>
+
+    const menuToggle =
+        document.getElementById("menuToggle");
+
+    const sideMenu =
+        document.getElementById("sideMenu");
+
+    const sideMenuClose =
+        document.getElementById("sideMenuClose");
+
+    const sideMenuOverlay =
+        document.getElementById("sideMenuOverlay");
+
+
+    menuToggle.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.add("open");
+            sideMenuOverlay.classList.add("open");
+
+        }
+    );
+
+
+    sideMenuClose.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.remove("open");
+            sideMenuOverlay.classList.remove("open");
+
+        }
+    );
+
+
+    sideMenuOverlay.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.remove("open");
+            sideMenuOverlay.classList.remove("open");
+
+        }
+    );
+
+</script>
 
 </body>
 

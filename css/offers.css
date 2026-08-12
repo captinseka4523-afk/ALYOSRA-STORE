@@ -1,0 +1,276 @@
+/* =========================================================
+   AL YOSRA STORE
+   OFFERS PAGE
+========================================================= */
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.offers-page {
+    width: 92%;
+    max-width: 1200px;
+
+    margin: 120px auto 60px;
+
+    padding: 30px 20px;
+}
+
+
+.offers-page > h1 {
+    text-align: center;
+
+    margin: 0 0 10px;
+
+    font-size: 42px;
+
+    color: #111827;
+}
+
+
+.offers-page > p {
+    text-align: center;
+
+    margin: 0 0 40px;
+
+    color: #6b7280;
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   OFFERS GRID
+========================================================= */
+
+#offersContainer {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+
+    gap: 28px;
+}
+
+
+/* =========================================================
+   OFFER CARD
+========================================================= */
+
+.offer-card {
+    position: relative;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border: 1px solid rgba(37, 99, 235, 0.12);
+
+    border-radius: 24px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.10);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+
+    cursor: pointer;
+}
+
+
+.offer-card::before {
+    content: "عرض خاص";
+
+    position: absolute;
+
+    top: 16px;
+    right: 16px;
+
+    z-index: 2;
+
+    padding: 7px 14px;
+
+    border-radius: 20px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 5px 15px rgba(37, 99, 235, 0.25);
+}
+
+
+.offer-card:hover {
+    transform: translateY(-6px);
+
+    border-color: rgba(37, 99, 235, 0.25);
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+
+/* =========================================================
+   OFFER IMAGE
+========================================================= */
+
+.offer-image {
+    width: 100%;
+
+    height: 230px;
+
+    display: block;
+
+    object-fit: cover;
+
+    background: #f3f6fb;
+}
+
+
+/* =========================================================
+   OFFER CONTENT
+========================================================= */
+
+.offer-content {
+    padding: 24px;
+}
+
+
+.offer-content h2 {
+    margin: 0 0 18px;
+
+    color: #111827;
+
+    font-size: 22px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   OFFER PRICE
+========================================================= */
+
+.offer-price {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 105px;
+
+    padding: 9px 18px;
+
+    border-radius: 14px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    font-size: 23px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   OFFER DETAILS PAGE
+========================================================= */
+
+.offer-details-page {
+    width: 92%;
+
+    max-width: 1150px;
+
+    margin: 110px auto 60px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .offers-page {
+        width: 94%;
+
+        margin-top: 100px;
+
+        padding: 20px 5px;
+    }
+
+
+    .offers-page > h1 {
+        font-size: 32px;
+    }
+
+
+    .offers-page > p {
+        font-size: 15px;
+
+        margin-bottom: 25px;
+    }
+
+
+    #offersContainer {
+        grid-template-columns: 1fr 1fr;
+
+        gap: 12px;
+    }
+
+
+    .offer-card {
+        border-radius: 18px;
+    }
+
+
+    .offer-card::before {
+        top: 9px;
+        right: 9px;
+
+        padding: 5px 8px;
+
+        font-size: 10px;
+    }
+
+
+    .offer-image {
+        height: 135px;
+    }
+
+
+    .offer-content {
+        padding: 13px;
+    }
+
+
+    .offer-content h2 {
+        margin-bottom: 10px;
+
+        font-size: 15px;
+
+        line-height: 1.5;
+    }
+
+
+    .offer-price {
+        min-width: auto;
+
+        padding: 6px 11px;
+
+        border-radius: 10px;
+
+        font-size: 16px;
+    }
+
+}

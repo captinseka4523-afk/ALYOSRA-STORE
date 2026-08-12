@@ -40,7 +40,7 @@ body {
 
     display: flex;
 
-    justify-content: space-between;
+    justify-content: center;
 
     align-items: center;
 
@@ -128,6 +128,20 @@ body {
 
 }
 
+.navbar {
+    position: relative;
+    min-height: 80px;
+}
+
+.menu-toggle {
+    position: absolute;
+    right: 45px;
+}
+
+.nav-logo {
+    position: absolute;
+    right: 110px;
+}
 
 
 /* =========================
@@ -205,6 +219,10 @@ body {
 
 }
 
+.cart-icon {
+    position: absolute;
+    left: 45px;
+}
 
 
 /* =========================
@@ -547,5 +565,177 @@ h1 {
         white-space:nowrap;
 
     }
+
+}
+.menu-toggle {
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+
+    padding: 4px 7px;
+    margin: 0 8px 0 0;
+
+    font-size: 24px;
+    line-height: 1;
+
+    color: #000;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+/* =========================
+        SIDE MENU
+========================= */
+
+.side-menu {
+
+    position: fixed;
+
+    top: 0;
+    right: 0;
+
+    width: 300px;
+    max-width: 85vw;
+    height: 100vh;
+
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(15px);
+
+    box-shadow: -8px 0 25px rgba(0, 0, 0, 0.15);
+
+    z-index: 2000;
+
+    padding: 25px 20px;
+
+    box-sizing: border-box;
+
+    transform: translateX(100%);
+
+    transition: transform 0.3s ease;
+
+    direction: rtl;
+}
+
+
+.side-menu.open {
+
+    transform: translateX(0);
+
+}
+
+
+.side-menu-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 30px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
+.side-menu-header span {
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+    color: #111;
+}
+
+
+.side-menu-close {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 32px;
+
+    line-height: 1;
+
+    color: #111;
+
+    cursor: pointer;
+
+    padding: 2px 8px;
+
+}
+
+
+.side-menu-links {
+
+    list-style: none;
+
+    margin: 0;
+
+    padding: 0;
+}
+
+
+.side-menu-links li {
+
+    margin-bottom: 8px;
+}
+
+
+.side-menu-links a {
+
+    display: block;
+
+    padding: 13px 15px;
+
+    color: #111;
+
+    text-decoration: none;
+
+    font-size: 17px;
+
+    border-radius: 8px;
+
+    transition: 0.2s ease;
+}
+
+
+.side-menu-links a:hover {
+
+    background: rgba(37, 99, 235, 0.08);
+
+    color: #2563eb;
+
+}
+.side-menu-overlay {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    z-index: 1900;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+
+.side-menu-overlay.open {
+
+    opacity: 1;
+    visibility: visible;
 
 }

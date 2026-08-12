@@ -10,6 +10,56 @@ const cartContainer =
 const cartTotal =
     document.getElementById("cartTotal");
 
+    // ==========================================
+// رسالة غير مزعجة داخل السلة
+// ==========================================
+
+let cartToastTimer;
+
+function showCartToast(message) {
+
+    let toast =
+        document.getElementById("cartToast");
+
+    if (!toast) {
+
+        toast =
+            document.createElement("div");
+
+        toast.id = "cartToast";
+
+        toast.className = "cart-toast";
+
+        document.body.appendChild(toast);
+
+    }
+
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+
+    clearTimeout(cartToastTimer);
+
+
+    cartToastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove("show");
+
+            },
+            2500
+        );
+
+}
+
+// ==========================================
+// العروض المحملة
+// ==========================================
+
+let offers = [];
 
 
 // ==========================================
@@ -35,6 +85,65 @@ function saveCart() {
 
 }
 
+
+// ==========================================
+// تحميل العروض من Supabase
+// ==========================================
+
+async function loadOffersForCart() {
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from("offers")
+
+            .select(`
+                id,
+                name,
+                price,
+                image,
+                active,
+                offer_items (
+                    product_id,
+                    quantity
+                )
+            `)
+
+            .eq(
+                "active",
+                true
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        offers = data || [];
+
+
+    } catch (error) {
+
+        console.error(
+            "خطأ في تحميل العروض للسلة:",
+            error
+        );
+
+        offers = [];
+
+    }
+
+
+    displayCart();
+
+}
 
 
 // ==========================================
@@ -72,99 +181,239 @@ function displayCart() {
     }
 
 
-
     let total = 0;
-
 
 
     Object.keys(userCart).forEach(
         id => {
 
-
-            const product =
-                window.products.find(
-                    item =>
-                        item.id === String(id)
-                );
-
-
-            // إذا لم يصل المنتج من قاعدة البيانات
-            // نتجاهله مؤقتًا
-
-            if (!product) return;
-
-
-
             const quantity =
                 Number(userCart[id]) || 0;
 
 
+            if (quantity <= 0) {
+
+                return;
+
+            }
+
+
+            // ==================================
+            // العرض
+            // ==================================
+
+            if (
+                String(id).startsWith(
+                    "offer_"
+                )
+            ) {
+
+                const offerId =
+                    String(id).replace(
+                        "offer_",
+                        ""
+                    );
+
+
+                const offer =
+                    offers.find(
+                        item =>
+                            String(item.id) ===
+                            String(offerId)
+                    );
+
+
+                if (!offer) {
+
+                    return;
+
+                }
+
+
+                const price =
+                    Number(
+                        offer.price
+                    ) || 0;
+
+
+                total +=
+                    price * quantity;
+
+
+                cartContainer.innerHTML += `
+
+                    <div
+                        class="cart-item offer-cart-item"
+                    >
+
+                        ${
+                            offer.image
+                                ? `
+                                    <img
+                                        src="${offer.image}"
+                                        alt="${offer.name}"
+                                    >
+                                  `
+                                : `
+                                    <div
+                                        class="cart-offer-placeholder"
+                                    >
+                                        عرض
+                                    </div>
+                                  `
+                        }
+
+
+                        <div class="cart-info">
+
+                            <h3>
+                                ${offer.name}
+                            </h3>
+
+
+                            <p>
+                                عرض خاص:
+                                ${offer.price} $
+                            </p>
+
+
+                            <div class="quantity-box">
+
+                                <button
+                                    class="quantity-btn plus"
+                                    data-id="${id}"
+                                    type="button"
+                                >
+                                    +
+                                </button>
+
+
+                                <span>
+                                    ${quantity}
+                                </span>
+
+
+                                <button
+                                    class="quantity-btn minus"
+                                    data-id="${id}"
+                                    type="button"
+                                >
+                                    -
+                                </button>
+
+                            </div>
+
+
+                            <button
+                                class="remove-btn"
+                                data-id="${id}"
+                                type="button"
+                            >
+                                حذف
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            // ==================================
+            // المنتج العادي
+            // ==================================
+
+            const product =
+                window.products.find(
+                    item =>
+                        String(item.id) ===
+                        String(id)
+                );
+
+
+            if (!product) {
+
+                return;
+
+            }
+
+
             const price =
-                Number(product.price) || 0;
+                Number(
+                    product.price
+                ) || 0;
 
 
             total +=
                 price * quantity;
 
 
-
             cartContainer.innerHTML += `
 
-            <div class="cart-item">
+                <div class="cart-item">
 
-                <img
-                    src="${product.image}"
-                    alt="${product.name}"
-                >
-
-
-                <div class="cart-info">
-
-                    <h3>
-                        ${product.name}
-                    </h3>
+                    <img
+                        src="${product.image}"
+                        alt="${product.name}"
+                    >
 
 
-                    <p>
-                        السعر: ${product.price} $
-                    </p>
+                    <div class="cart-info">
+
+                        <h3>
+                            ${product.name}
+                        </h3>
 
 
-                    <div class="quantity-box">
+                        <p>
+                            السعر:
+                            ${product.price} $
+                        </p>
+
+
+                        <div class="quantity-box">
+
+                            <button
+                                class="quantity-btn plus"
+                                data-id="${id}"
+                                type="button"
+                            >
+                                +
+                            </button>
+
+
+                            <span>
+                                ${quantity}
+                            </span>
+
+
+                            <button
+                                class="quantity-btn minus"
+                                data-id="${id}"
+                                type="button"
+                            >
+                                -
+                            </button>
+
+                        </div>
+
 
                         <button
-                            class="quantity-btn plus"
+                            class="remove-btn"
                             data-id="${id}"
+                            type="button"
                         >
-                            +
-                        </button>
-
-
-                        <span>
-                            ${quantity}
-                        </span>
-
-
-                        <button
-                            class="quantity-btn minus"
-                            data-id="${id}"
-                        >
-                            -
+                            حذف
                         </button>
 
                     </div>
 
-
-                    <button
-                        class="remove-btn"
-                        data-id="${id}"
-                    >
-                        حذف
-                    </button>
-
                 </div>
-
-            </div>
 
             `;
 
@@ -172,6 +421,9 @@ function displayCart() {
     );
 
 
+    // ==================================
+    // المجموع
+    // ==================================
 
     if (cartTotal) {
 
@@ -183,6 +435,89 @@ function displayCart() {
 }
 
 
+// ==========================================
+// حساب الحد الأقصى للعرض
+// ==========================================
+
+function getMaxOfferQuantity(offer) {
+
+    if (
+        !offer ||
+        !Array.isArray(
+            offer.offer_items
+        ) ||
+        offer.offer_items.length === 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    let maxQuantity =
+        Infinity;
+
+
+    for (
+        const item of offer.offer_items
+    ) {
+
+        const product =
+            window.products.find(
+                product =>
+                    String(product.id) ===
+                    String(item.product_id)
+            );
+
+
+        if (!product) {
+
+            return 0;
+
+        }
+
+
+        const requiredQuantity =
+            Number(item.quantity) || 0;
+
+
+        const availableQuantity =
+            Number(product.quantity) || 0;
+
+
+        if (
+            requiredQuantity <= 0
+        ) {
+
+            return 0;
+
+        }
+
+
+        const possibleOffers =
+            Math.floor(
+                availableQuantity /
+                requiredQuantity
+            );
+
+
+        maxQuantity =
+            Math.min(
+                maxQuantity,
+                possibleOffers
+            );
+
+    }
+
+
+    return (
+        maxQuantity === Infinity
+            ? 0
+            : maxQuantity
+    );
+
+}
+
 
 // ==========================================
 // أزرار السلة
@@ -192,73 +527,200 @@ document.addEventListener(
     "click",
     function(event) {
 
+        const button =
+            event.target.closest(
+                ".quantity-btn, .remove-btn"
+            );
+
+
+        if (!button) return;
+
 
         const id =
-            event.target.dataset.id;
+            button.dataset.id;
 
 
         if (!id) return;
 
 
+        const isOffer =
+            String(id).startsWith(
+                "offer_"
+            );
 
+
+        // ==================================
         // زيادة الكمية
+        // ==================================
 
         if (
-            event.target.classList.contains(
+            button.classList.contains(
                 "plus"
             )
         ) {
 
+            // ------------------------------
+            // عرض
+            // ------------------------------
+
+            if (isOffer) {
+
+                const offerId =
+                    String(id).replace(
+                        "offer_",
+                        ""
+                    );
+
+
+                const offer =
+                    offers.find(
+                        item =>
+                            String(item.id) ===
+                            String(offerId)
+                    );
+
+
+                if (!offer) {
+
+                showCartToast(
+    "تعذر العثور على بيانات العرض."
+);
+                    return;
+
+                }
+
+
+                const currentQuantity =
+                    Number(
+                        userCart[id]
+                    ) || 0;
+
+
+                const maxQuantity =
+                    getMaxOfferQuantity(
+                        offer
+                    );
+
+
+                if (
+                    maxQuantity <= 0
+                ) {
+
+                  showCartToast(
+    "لا يمكن إضافة المزيد من هذا العرض لأن مخزون أحد منتجاته غير متوفر."
+);
+
+                    return;
+
+                }
+
+
+                if (
+                    currentQuantity >=
+                    maxQuantity
+                ) {
+
+                  showCartToast(
+    `الحد الأقصى المتاح من هذا العرض هو ${maxQuantity}.`
+);
+
+                    return;
+
+                }
+
+
+                userCart[id] =
+                    currentQuantity + 1;
+
+
+                saveCart();
+                displayCart();
+
+
+                return;
+
+            }
+
+
+            // ------------------------------
+            // منتج عادي
+            // ------------------------------
+
             const product =
                 window.products.find(
                     item =>
-                        item.id === String(id)
+                        String(item.id) ===
+                        String(id)
                 );
 
 
-            if (!product) return;
+            if (!product) {
+
+                return;
+
+            }
 
 
             const currentQuantity =
-                Number(userCart[id]) || 0;
+                Number(
+                    userCart[id]
+                ) || 0;
+
+
+            const availableQuantity =
+                Number(
+                    product.quantity
+                ) || 0;
 
 
             if (
                 currentQuantity <
-                product.quantity
+                availableQuantity
             ) {
 
                 userCart[id] =
                     currentQuantity + 1;
+
 
                 saveCart();
                 displayCart();
 
             } else {
 
-                alert(
-                    "لا توجد كمية إضافية متوفرة في المخزون."
-                );
+            showCartToast(
+    "لا توجد كمية إضافية متوفرة في المخزون."
+);
 
             }
+
+
+            return;
 
         }
 
 
-
+        // ==================================
         // إنقاص الكمية
+        // ==================================
 
         if (
-            event.target.classList.contains(
+            button.classList.contains(
                 "minus"
             )
         ) {
 
+            const currentQuantity =
+                Number(
+                    userCart[id]
+                ) || 0;
+
+
             if (
-                userCart[id] > 1
+                currentQuantity > 1
             ) {
 
-                userCart[id]--;
+                userCart[id] =
+                    currentQuantity - 1;
 
             } else {
 
@@ -270,14 +732,18 @@ document.addEventListener(
             saveCart();
             displayCart();
 
+
+            return;
+
         }
 
 
-
-        // حذف المنتج
+        // ==================================
+        // حذف العنصر
+        // ==================================
 
         if (
-            event.target.classList.contains(
+            button.classList.contains(
                 "remove-btn"
             )
         ) {
@@ -294,29 +760,29 @@ document.addEventListener(
 );
 
 
-
 // ==========================================
-// انتظار تحميل المنتجات من Supabase
+// انتظار تحميل المنتجات
 // ==========================================
 
 document.addEventListener(
     "productsLoaded",
-    displayCart
+    function() {
+
+        displayCart();
+
+    }
 );
 
 
-
-// في حال كانت المنتجات موجودة مسبقًا
+// ==========================================
+// بدء الصفحة
+// ==========================================
 
 document.addEventListener(
     "DOMContentLoaded",
     function() {
 
-        if (window.products.length > 0) {
-
-            displayCart();
-
-        }
+        loadOffersForCart();
 
     }
 );
