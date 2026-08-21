@@ -73,6 +73,14 @@
                 الطلبات
             </button>
 
+<button
+    class="admin-nav-item"
+    type="button"
+    id="offersButton"
+>
+    العروض
+</button>
+            
         </nav>
 
 
@@ -826,6 +834,17 @@
 <script src="js/admin-categories.js"></script>
 
 <script src="js/admin-order.js"></script>
+
+<script>
+    document
+        .getElementById("offersButton")
+        .addEventListener("click", function () {
+
+            window.location.href =
+                "admin-offers.html";
+
+        });
+</script>
 
 </body>
 
