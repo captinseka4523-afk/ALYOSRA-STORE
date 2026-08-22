@@ -107,6 +107,7 @@ async function loadOffersForCart() {
                 price,
                 image,
                 active,
+                quantity,
                 offer_items (
                     product_id,
                     quantity
@@ -441,79 +442,20 @@ function displayCart() {
 
 function getMaxOfferQuantity(offer) {
 
-    if (
-        !offer ||
-        !Array.isArray(
-            offer.offer_items
-        ) ||
-        offer.offer_items.length === 0
-    ) {
+    if (!offer) {
 
         return 0;
 
     }
 
 
-    let maxQuantity =
-        Infinity;
+    const availableQuantity =
+        Number(offer.quantity) || 0;
 
 
-    for (
-        const item of offer.offer_items
-    ) {
-
-        const product =
-            window.products.find(
-                product =>
-                    String(product.id) ===
-                    String(item.product_id)
-            );
-
-
-        if (!product) {
-
-            return 0;
-
-        }
-
-
-        const requiredQuantity =
-            Number(item.quantity) || 0;
-
-
-        const availableQuantity =
-            Number(product.quantity) || 0;
-
-
-        if (
-            requiredQuantity <= 0
-        ) {
-
-            return 0;
-
-        }
-
-
-        const possibleOffers =
-            Math.floor(
-                availableQuantity /
-                requiredQuantity
-            );
-
-
-        maxQuantity =
-            Math.min(
-                maxQuantity,
-                possibleOffers
-            );
-
-    }
-
-
-    return (
-        maxQuantity === Infinity
-            ? 0
-            : maxQuantity
+    return Math.max(
+        0,
+        availableQuantity
     );
 
 }
@@ -601,6 +543,7 @@ document.addEventListener(
                         offer
                     );
 
+                    
 
                 if (
                     maxQuantity <= 0
