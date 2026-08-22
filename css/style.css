@@ -6,6 +6,10 @@
     box-sizing: border-box;
 }
 
+html {
+    min-height: 100%;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
@@ -34,13 +38,14 @@ body {
     left: 0;
 
     width: 100%;
-    min-height: 80px;
+    height: 80px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    padding: 15px 45px;
+    padding: 0 45px;
 
     background: rgba(0, 0, 0, 0.25);
 
@@ -53,24 +58,23 @@ body {
 
 
 /* =========================================================
-   STORE LOGO
+   STORE NAME
 ========================================================= */
 
 .nav-logo {
     position: absolute;
 
-    right: 110px;
+    right: 160px;
 
     display: flex;
+
     align-items: center;
+
     gap: 8px;
 
-    font-size: 28px;
-    font-weight: bold;
-
-    color: #000;
-
     white-space: nowrap;
+
+    font-weight: bold;
 
     cursor: pointer;
 
@@ -78,21 +82,20 @@ body {
 }
 
 .nav-logo:hover {
-    color: #2563eb;
     transform: scale(1.03);
 }
 
 .nav-logo-ar {
-    display: inline;
+    font-size: 26px;
+    color: #000;
 }
 
 .nav-logo-en {
-    display: none;
-
     font-size: 18px;
-    font-weight: 700;
 
-    direction: ltr;
+    color: #000;
+
+    letter-spacing: 0.5px;
 }
 
 
@@ -102,6 +105,7 @@ body {
 
 .nav-links {
     display: flex;
+
     align-items: center;
 
     gap: 25px;
@@ -119,7 +123,7 @@ body {
 
     text-decoration: none;
 
-    font-size: 18px;
+    font-size: 17px;
 
     padding: 8px 12px;
 
@@ -148,7 +152,7 @@ body {
 
 
 /* =========================================================
-   SIDE MENU BUTTON
+   MENU TOGGLE
 ========================================================= */
 
 .menu-toggle {
@@ -156,30 +160,35 @@ body {
 
     right: 45px;
 
-    top: 50%;
+    width: 42px;
+    height: 42px;
 
-    transform: translateY(-50%);
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     border: 1px solid rgba(0, 0, 0, 0.18);
 
     background: rgba(255, 255, 255, 0.08);
 
-    padding: 4px 7px;
+    padding: 0;
 
     font-size: 24px;
+
     line-height: 1;
 
     color: #000;
 
-    border-radius: 6px;
+    border-radius: 8px;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition: 0.3s ease;
 }
 
 .menu-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 
@@ -190,28 +199,25 @@ body {
 .search-toggle {
     position: absolute;
 
-    left: 120px;
-
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    right: 95px;
 
     width: 42px;
     height: 42px;
 
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(0, 0, 0, 0.18);
+
+    background: rgba(255, 255, 255, 0.08);
+
     padding: 0;
 
-    border: none;
+    color: #000;
 
-    background: rgba(255, 255, 255, 0.15);
-
-    color: #1f2937;
-
-    border-radius: 50%;
+    border-radius: 8px;
 
     cursor: pointer;
 
@@ -219,19 +225,17 @@ body {
 }
 
 .search-toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
-
-    transform: translateY(-50%) scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .search-svg {
-    width: 23px;
-    height: 23px;
+    width: 22px;
+    height: 22px;
 }
 
 
 /* =========================================================
-   CART
+   CART ICON
 ========================================================= */
 
 .cart-icon {
@@ -239,11 +243,8 @@ body {
 
     left: 45px;
 
-    top: 50%;
-
-    transform: translateY(-50%);
-
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -265,7 +266,7 @@ body {
 .cart-icon:hover {
     background: rgba(255, 255, 255, 0.3);
 
-    transform: translateY(-50%) scale(1.05);
+    transform: scale(1.05);
 }
 
 .cart-svg {
@@ -286,16 +287,19 @@ body {
     border-radius: 50%;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     font-size: 13px;
+
     font-weight: bold;
 }
 
 
 /* =========================================================
-   MOBILE BOTTOM NAVIGATION
+   MOBILE BOTTOM NAV
+   Hidden on desktop
 ========================================================= */
 
 .mobile-bottom-nav {
@@ -304,7 +308,7 @@ body {
 
 
 /* =========================================================
-   HOME BOX
+   HOME CONTAINER
 ========================================================= */
 
 .container {
@@ -323,7 +327,6 @@ body {
     flex-direction: column;
 
     justify-content: center;
-
     align-items: center;
 
     text-align: center;
@@ -361,9 +364,10 @@ body {
 .main-logo:hover {
     transform: scale(1.08);
 
-    filter: drop-shadow(
-        0 0 20px rgba(3, 154, 255, 0.5)
-    );
+    filter:
+        drop-shadow(
+            0 0 20px rgba(3, 154, 255, 0.5)
+        );
 }
 
 
@@ -442,6 +446,7 @@ h1 {
     right: 0;
 
     width: 300px;
+
     max-width: 85vw;
 
     height: 100vh;
@@ -459,7 +464,8 @@ h1 {
 
     transform: translateX(100%);
 
-    transition: transform 0.3s ease;
+    transition:
+        transform 0.3s ease;
 
     direction: rtl;
 }
@@ -546,7 +552,8 @@ h1 {
 }
 
 .side-menu-links a:hover {
-    background: rgba(37, 99, 235, 0.08);
+    background:
+        rgba(37, 99, 235, 0.08);
 
     color: #2563eb;
 }
@@ -563,10 +570,10 @@ h1 {
     left: 0;
 
     width: 100%;
-
     height: 100vh;
 
-    background: rgba(0, 0, 0, 0.35);
+    background:
+        rgba(0, 0, 0, 0.35);
 
     z-index: 1900;
 
@@ -593,7 +600,16 @@ h1 {
 @media (max-width: 700px) {
 
     /* -----------------------------------------
-       TOP HEADER
+       Reserve space for bottom navigation
+    ----------------------------------------- */
+
+    body {
+        padding-bottom: 80px;
+    }
+
+
+    /* -----------------------------------------
+       TOP NAVBAR
     ----------------------------------------- */
 
     .navbar {
@@ -603,61 +619,19 @@ h1 {
         left: 0;
 
         width: 100%;
+        height: 70px;
 
-        height: 68px;
-        min-height: 68px;
-
-        padding: 0 12px;
-
-        display: flex;
-
-        justify-content: center;
-
-        align-items: center;
-    }
-
-
-    /* -----------------------------------------
-       MOBILE LOGO
-    ----------------------------------------- */
-
-    .nav-logo {
-        position: static;
+        padding: 0 15px;
 
         display: flex;
 
         align-items: center;
-
         justify-content: center;
-
-        gap: 6px;
-
-        max-width: calc(100% - 150px);
-
-        font-size: 18px;
-
-        white-space: nowrap;
-
-        transform: none;
-    }
-
-    .nav-logo:hover {
-        transform: none;
-    }
-
-    .nav-logo-ar {
-        font-size: 18px;
-    }
-
-    .nav-logo-en {
-        display: inline;
-
-        font-size: 14px;
     }
 
 
     /* -----------------------------------------
-       HIDE DESKTOP LINKS
+       Hide desktop links
     ----------------------------------------- */
 
     .nav-links {
@@ -666,77 +640,87 @@ h1 {
 
 
     /* -----------------------------------------
-       MENU BUTTON
+       Mobile logo
     ----------------------------------------- */
 
-    .menu-toggle {
-        right: 12px;
-
-        top: 50%;
-
-        width: 40px;
-        height: 40px;
+    .nav-logo {
+        position: static;
 
         display: flex;
 
         align-items: center;
         justify-content: center;
 
-        padding: 0;
+        gap: 6px;
 
-        font-size: 23px;
+        max-width: calc(100% - 150px);
 
-        transform: translateY(-50%);
+        text-align: center;
+    }
+
+    .nav-logo-ar {
+        font-size: 20px;
+
+        color: #000;
+    }
+
+    .nav-logo-en {
+        font-size: 14px;
+
+        color: #000;
+
+        letter-spacing: 0.3px;
     }
 
 
     /* -----------------------------------------
-       SEARCH
+       Menu button
     ----------------------------------------- */
 
-    .search-toggle {
-        left: auto;
-
-        right: 58px;
-
-        top: 50%;
+    .menu-toggle {
+        right: 15px;
 
         width: 38px;
         height: 38px;
 
-        transform: translateY(-50%);
-    }
-
-    .search-toggle:hover {
-        transform: translateY(-50%);
+        font-size: 22px;
     }
 
 
     /* -----------------------------------------
-       CART
+       Search button
+    ----------------------------------------- */
+
+    .search-toggle {
+        right: 60px;
+
+        width: 38px;
+        height: 38px;
+    }
+
+    .search-svg {
+        width: 20px;
+        height: 20px;
+    }
+
+
+    /* -----------------------------------------
+       Cart
     ----------------------------------------- */
 
     .cart-icon {
-        left: 10px;
-
-        top: 50%;
+        left: 15px;
 
         padding: 6px 8px;
 
         gap: 5px;
 
         border-radius: 12px;
-
-        transform: translateY(-50%);
-    }
-
-    .cart-icon:hover {
-        transform: translateY(-50%);
     }
 
     .cart-svg {
-        width: 27px;
-        height: 27px;
+        width: 28px;
+        height: 28px;
     }
 
     #cartCount {
@@ -748,7 +732,9 @@ h1 {
 
 
     /* -----------------------------------------
-       MOBILE BOTTOM NAVIGATION
+       MOBILE BOTTOM NAV
+       IMPORTANT:
+       This is completely separate from .navbar
     ----------------------------------------- */
 
     .mobile-bottom-nav {
@@ -759,19 +745,23 @@ h1 {
 
         width: 100%;
 
-        height: 64px;
+        height: 65px;
 
         display: flex;
 
-        align-items: stretch;
+        align-items: center;
         justify-content: space-around;
 
-        background: rgba(255, 255, 255, 0.94);
+        padding:
+            6px 4px;
+
+        background:
+            rgba(255, 255, 255, 0.94);
 
         backdrop-filter: blur(15px);
 
         border-top:
-            1px solid rgba(0, 0, 0, 0.1);
+            1px solid rgba(0, 0, 0, 0.12);
 
         box-shadow:
             0 -5px 20px rgba(0, 0, 0, 0.12);
@@ -786,10 +776,11 @@ h1 {
 
         min-width: 0;
 
+        height: 100%;
+
         display: flex;
 
         align-items: center;
-
         justify-content: center;
 
         padding: 5px 3px;
@@ -806,22 +797,28 @@ h1 {
 
         white-space: nowrap;
 
-        transition: 0.2s ease;
+        border-radius: 10px;
+
+        transition:
+            background 0.2s ease,
+            color 0.2s ease,
+            transform 0.2s ease;
     }
 
     .mobile-bottom-nav a.active {
         color: #2563eb;
+
+        background:
+            rgba(37, 99, 235, 0.10);
     }
 
-    .mobile-bottom-nav a:hover {
-        color: #2563eb;
-
-        background: rgba(37, 99, 235, 0.06);
+    .mobile-bottom-nav a:active {
+        transform: scale(0.96);
     }
 
 
     /* -----------------------------------------
-       PAGE CONTENT SPACE
+       HOME CONTAINER - MOBILE
     ----------------------------------------- */
 
     .container {
@@ -829,7 +826,7 @@ h1 {
 
         min-height: 65vh;
 
-        margin-top: 90px;
+        margin-top: 95px;
 
         margin-bottom: 90px;
 
@@ -838,7 +835,7 @@ h1 {
 
 
     /* -----------------------------------------
-       HEADINGS
+       HOME HEADING - MOBILE
     ----------------------------------------- */
 
     h1 {
@@ -847,13 +844,14 @@ h1 {
         font-size: 34px;
     }
 
+
     #message {
         font-size: 24px;
     }
 
 
     /* -----------------------------------------
-       SHOP BUTTON
+       SHOP BUTTON - MOBILE
     ----------------------------------------- */
 
     .shop-button {
@@ -861,45 +859,17 @@ h1 {
 
         font-size: 16px;
     }
-}
 
 
-/* =========================================================
-   VERY SMALL PHONES
-========================================================= */
+    /* -----------------------------------------
+       SIDE MENU
+    ----------------------------------------- */
 
-@media (max-width: 380px) {
-
-    .nav-logo {
-        gap: 4px;
-
-        max-width: calc(100% - 135px);
+    .side-menu {
+        z-index: 2000;
     }
 
-    .nav-logo-ar {
-        font-size: 16px;
-    }
-
-    .nav-logo-en {
-        font-size: 12px;
-    }
-
-    .cart-icon {
-        left: 6px;
-    }
-
-    .search-toggle {
-        right: 53px;
-    }
-
-    .menu-toggle {
-        right: 7px;
-    }
-
-    .mobile-bottom-nav a {
-        font-size: 10px;
-
-        padding-left: 1px;
-        padding-right: 1px;
+    .side-menu-overlay {
+        z-index: 1900;
     }
 }

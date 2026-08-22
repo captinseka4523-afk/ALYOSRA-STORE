@@ -20,44 +20,80 @@
 <nav class="navbar">
 
     <button
-    class="menu-toggle"
-    id="menuToggle"
-    aria-label="فتح القائمة"
-    type="button"
->
-    ☰
-</button>
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="فتح القائمة"
+        type="button"
+    >
+        ☰
+    </button>
+
+
+    <button
+        class="search-toggle"
+        id="searchToggle"
+        type="button"
+        aria-label="البحث"
+    >
+        <svg
+            class="search-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+    </button>
+
 
     <div class="nav-logo">
-  متجر اليُسرى
-    </div>
-   <span class="nav-logo-en">
+
+        <span class="nav-logo-ar">
+            متجر اليُسرى
+        </span>
+
+        <span class="nav-logo-en">
             AL YOSRA
         </span>
+
+    </div>
 
 
     <ul class="nav-links">
 
         <li>
-            <a class="active"href="index.html">الرئيسية</a>
+            <a class="active" href="index.html">
+                الرئيسية
+            </a>
         </li>
 
         <li>
-            <a href="products.html">المنتجات</a>
-        </li>
-
-        
-<li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
-        <li>
-            <a href="cart.html">السلة</a>
+            <a href="products.html">
+                المنتجات
+            </a>
         </li>
 
         <li>
-            <a href="contact.html">تواصل معنا</a>
+            <a href="offers.html">
+                العروض
+            </a>
+        </li>
+
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
         </li>
 
     </ul>
@@ -65,16 +101,16 @@
 
     <a href="cart.html" class="cart-icon">
 
-
-        <svg class="cart-svg"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
-
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
 
             <path d="M6 6h15l-2 8H8L6 6Z"></path>
 
@@ -84,19 +120,21 @@
 
             <circle cx="18" cy="20" r="1.5"></circle>
 
-
         </svg>
-
 
         <span id="cartCount">
             0
         </span>
 
-
     </a>
 
-
 </nav>
+
+
+<!--
+    هذا الشريط مستقل تمامًا عن الـNavbar العلوي.
+    يظهر على الهاتف فقط.
+-->
 
 <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
 
