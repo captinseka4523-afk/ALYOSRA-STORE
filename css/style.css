@@ -3,16 +3,17 @@
 }
 
 
+/* =========================
+        BODY
+========================= */
+
 body {
-
     margin: 0;
-
     min-height: 100vh;
 
     font-family: Arial, sans-serif;
 
     background: #a5c3ff;
-
     color: #1f2937;
 
     overflow-x: hidden;
@@ -23,84 +24,94 @@ body {
 }
 
 
-
 /* =========================
         NAVBAR
 ========================= */
 
-
 .navbar {
-
     position: fixed;
 
     top: 0;
     left: 0;
 
     width: 100%;
+    min-height: 80px;
 
     display: flex;
 
     justify-content: center;
-
     align-items: center;
 
     padding: 18px 45px;
 
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
 
     backdrop-filter: blur(15px);
 
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
     z-index: 1000;
-
 }
 
 
+/* =========================
+        NAV LOGO
+========================= */
 
 .nav-logo {
+    position: absolute;
+
+    right: 110px;
 
     font-size: 28px;
-
     font-weight: bold;
 
     color: #000;
 
     cursor: pointer;
 
+    white-space: nowrap;
+
     transition: 0.3s ease;
-
 }
-
 
 
 .nav-logo:hover {
-
     color: #2563eb;
 
     transform: scale(1.05);
-
 }
 
 
+/* =========================
+        NAV LINKS
+========================= */
 
 .nav-links {
-
     display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 
     gap: 35px;
 
     list-style: none;
 
     margin: 0;
-
     padding: 0;
 
+    white-space: nowrap;
 }
 
 
+.nav-links li {
+    flex-shrink: 0;
+}
+
 
 .nav-links a {
+    display: block;
 
     color: white;
 
@@ -112,35 +123,58 @@ body {
 
     border-radius: 8px;
 
+    white-space: nowrap;
+
     transition: 0.3s ease;
-
 }
-
 
 
 .nav-links a:hover {
-
     color: #4fbaf4;
 
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 
-    border: 1px solid rgba(255,255,255,0.4);
-
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-.navbar {
-    position: relative;
-    min-height: 80px;
+
+.nav-links a.active {
+    color: #2563eb !important;
+
+    background: rgba(255, 255, 255, 0.25);
+
+    border-radius: 8px;
 }
+
+
+/* =========================
+        MENU BUTTON
+========================= */
 
 .menu-toggle {
     position: absolute;
-    right: 45px;
-}
 
-.nav-logo {
-    position: absolute;
-    right: 110px;
+    right: 45px;
+
+    border: 1px solid rgba(0, 0, 0, 0.18);
+
+    background: rgba(255, 255, 255, 0.08);
+
+    padding: 4px 7px;
+
+    margin: 0;
+
+    font-size: 24px;
+
+    line-height: 1;
+
+    color: #000;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    z-index: 1001;
 }
 
 
@@ -148,8 +182,10 @@ body {
         CART ICON
 ========================= */
 
-
 .cart-icon {
+    position: absolute;
+
+    left: 45px;
 
     display: flex;
 
@@ -159,7 +195,7 @@ body {
 
     text-decoration: none;
 
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 
     padding: 10px 16px;
 
@@ -169,40 +205,33 @@ body {
 
     transition: 0.3s ease;
 
+    flex-shrink: 0;
 }
-
 
 
 .cart-icon:hover {
-
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
 
     transform: scale(1.05);
-
 }
 
 
-
 .cart-svg {
-
     width: 36px;
-
     height: 36px;
 
     color: #1f2937;
 
+    flex-shrink: 0;
 }
 
 
-
 #cartCount {
-
     background: #2563eb;
 
     color: white;
 
     width: 24px;
-
     height: 24px;
 
     border-radius: 50%;
@@ -210,18 +239,12 @@ body {
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     font-size: 13px;
-
     font-weight: bold;
 
-}
-
-.cart-icon {
-    position: absolute;
-    left: 45px;
+    flex-shrink: 0;
 }
 
 
@@ -229,9 +252,7 @@ body {
         HOME BOX
 ========================= */
 
-
 .container {
-
     width: 90%;
 
     max-width: 700px;
@@ -242,75 +263,61 @@ body {
 
     padding: 35px 25px;
 
-
     display: flex;
 
     flex-direction: column;
 
     justify-content: center;
-
     align-items: center;
-
 
     text-align: center;
 
+    background: rgba(255, 255, 255, 0.08);
 
-    background: rgba(255,255,255,0.08);
-
-    border: 1px solid rgba(255,255,255,0.35);
+    border: 1px solid rgba(255, 255, 255, 0.35);
 
     border-radius: 25px;
 
-
     backdrop-filter: blur(18px);
 
-
     box-shadow:
-
-    0 25px 50px rgba(0,0,0,0.18),
-
-    0 5px 15px rgba(255,255,255,0.25);
-
+        0 25px 50px rgba(0, 0, 0, 0.18),
+        0 5px 15px rgba(255, 255, 255, 0.25);
 
     transition: 0.5s ease;
-
 }
 
 
-
 /* =========================
-        LOGO
+        MAIN LOGO
 ========================= */
 
-
 .main-logo {
-
-    width: clamp(120px,25vw,200px);
+    width: clamp(120px, 25vw, 200px);
 
     height: auto;
 
     margin-bottom: 15px;
 
     transition: 0.4s ease;
-
 }
-
 
 
 .main-logo:hover {
-
     transform: scale(1.08);
 
-    filter: drop-shadow(0 0 20px rgba(3,154,255,0.5));
-
+    filter: drop-shadow(
+        0 0 20px rgba(3, 154, 255, 0.5)
+    );
 }
 
 
-
+/* =========================
+        HEADINGS
+========================= */
 
 h1 {
-
-    font-size: clamp(32px,8vw,60px);
+    font-size: clamp(32px, 8vw, 60px);
 
     font-weight: 800;
 
@@ -319,15 +326,11 @@ h1 {
     margin: 5px 0 10px;
 
     white-space: nowrap;
-
 }
 
 
-
-
 #message {
-
-    font-size: clamp(22px,5vw,35px);
+    font-size: clamp(22px, 5vw, 35px);
 
     color: #000;
 
@@ -336,15 +339,14 @@ h1 {
     margin: 10px 0 20px;
 
     line-height: 1.5;
-
 }
 
 
-
-
+/* =========================
+        SHOP BUTTON
+========================= */
 
 .shop-button {
-
     display: inline-block;
 
     margin-top: 20px;
@@ -364,250 +366,44 @@ h1 {
     text-decoration: none;
 
     transition: 0.3s ease;
-
 }
 
 
-
 .shop-button:hover {
-
     background: #2563eb;
 
     color: white;
 
     transform: scale(1.05);
-
 }
 
 
-
-/* =========================
-        MOBILE
-========================= */
-
-
-@media (max-width:700px){
-
-
-    .navbar {
-
-        padding: 15px 15px;
-
-    }
-
-
-
-    .nav-logo {
-
-        font-size: 20px;
-
-    }
-
-
-
-    .nav-links {
-
-        gap: 8px;
-
-    }
-
-
-
-    .nav-links a {
-
-        font-size: 13px;
-
-        padding: 6px;
-
-    }
-
-
-
-    .cart-icon {
-
-        padding: 8px;
-
-    }
-
-
-
-    .cart-svg {
-
-        width: 28px;
-
-        height: 28px;
-
-    }
-
-
-
-    .container {
-
-        width: 92%;
-
-        min-height: 65vh;
-
-        margin-top: 95px;
-
-        padding: 25px 15px;
-
-    }
-
-
-
-    h1 {
-
-        white-space: normal;
-
-        font-size: 34px;
-
-    }
-
-
-
-    #message {
-
-        font-size: 24px;
-
-    }
-
-
-
-    .shop-button {
-
-        padding: 14px 25px;
-
-        font-size: 16px;
-
-    }
-
-}
-.nav-links a.active {
-
-    color: #2563eb !important;
-
-    background: rgba(255,255,255,0.25);
-
-    border-radius: 8px;
-
-}
-@media(max-width:700px){
-
-    .navbar{
-
-        padding:15px 18px;
-
-    }
-
-
-    .nav-logo{
-
-        font-size:22px;
-
-    }
-
-
-    .nav-links{
-
-        gap:8px;
-
-    }
-
-
-    .nav-links a{
-
-        font-size:13px;
-
-        padding:6px 8px;
-
-    }
-
-}
-@media(max-width:700px){
-
-    .navbar{
-
-        padding:12px 15px;
-
-        flex-direction:row;
-
-        align-items:center;
-
-    }
-
-
-    .nav-logo{
-
-        font-size:20px;
-
-        white-space:nowrap;
-
-    }
-
-
-    .nav-links{
-
-        display:flex;
-
-        gap:2px;
-
-        flex-wrap:nowrap;
-
-    }
-
-
-    .nav-links a{
-
-        font-size:12px;
-
-        padding:5px 5px;
-
-        white-space:nowrap;
-
-    }
-
-}
-.menu-toggle {
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-
-    padding: 4px 7px;
-    margin: 0 8px 0 0;
-
-    font-size: 24px;
-    line-height: 1;
-
-    color: #000;
-
-    border-radius: 6px;
-
-    cursor: pointer;
-}
 /* =========================
         SIDE MENU
 ========================= */
 
 .side-menu {
-
     position: fixed;
 
     top: 0;
     right: 0;
 
     width: 300px;
+
     max-width: 85vw;
+
     height: 100vh;
 
     background: rgba(255, 255, 255, 0.96);
+
     backdrop-filter: blur(15px);
 
-    box-shadow: -8px 0 25px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        -8px 0 25px rgba(0, 0, 0, 0.15);
 
     z-index: 2000;
 
     padding: 25px 20px;
-
-    box-sizing: border-box;
 
     transform: translateX(100%);
 
@@ -618,14 +414,11 @@ h1 {
 
 
 .side-menu.open {
-
     transform: translateX(0);
-
 }
 
 
 .side-menu-header {
-
     display: flex;
 
     align-items: center;
@@ -636,12 +429,12 @@ h1 {
 
     padding-bottom: 15px;
 
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom:
+        1px solid rgba(0, 0, 0, 0.1);
 }
 
 
 .side-menu-header span {
-
     font-size: 24px;
 
     font-weight: bold;
@@ -651,7 +444,6 @@ h1 {
 
 
 .side-menu-close {
-
     border: none;
 
     background: transparent;
@@ -665,28 +457,23 @@ h1 {
     cursor: pointer;
 
     padding: 2px 8px;
-
 }
 
 
 .side-menu-links {
-
     list-style: none;
 
     margin: 0;
-
     padding: 0;
 }
 
 
 .side-menu-links li {
-
     margin-bottom: 8px;
 }
 
 
 .side-menu-links a {
-
     display: block;
 
     padding: 13px 15px;
@@ -704,14 +491,18 @@ h1 {
 
 
 .side-menu-links a:hover {
-
-    background: rgba(37, 99, 235, 0.08);
+    background:
+        rgba(37, 99, 235, 0.08);
 
     color: #2563eb;
-
 }
-.side-menu-overlay {
 
+
+/* =========================
+        SIDE MENU OVERLAY
+========================= */
+
+.side-menu-overlay {
     position: fixed;
 
     top: 0;
@@ -725,6 +516,7 @@ h1 {
     z-index: 1900;
 
     opacity: 0;
+
     visibility: hidden;
 
     transition:
@@ -734,8 +526,227 @@ h1 {
 
 
 .side-menu-overlay.open {
-
     opacity: 1;
-    visibility: visible;
 
+    visibility: visible;
+}
+
+
+/* ==================================================
+        TABLET / SMALL LAPTOP
+================================================== */
+
+@media (max-width: 1100px) {
+
+    .navbar {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+
+    .nav-links {
+        gap: 18px;
+    }
+
+    .nav-links a {
+        font-size: 16px;
+        padding: 7px 10px;
+    }
+
+    .nav-logo {
+        right: 75px;
+        font-size: 24px;
+    }
+
+    .menu-toggle {
+        right: 25px;
+    }
+
+    .cart-icon {
+        left: 25px;
+    }
+}
+
+
+/* ==================================================
+        MOBILE
+================================================== */
+
+@media (max-width: 700px) {
+
+    .navbar {
+        min-height: 68px;
+
+        padding: 10px 10px;
+
+        justify-content: center;
+
+        overflow: hidden;
+    }
+
+
+    .nav-logo {
+        position: absolute;
+
+        right: 48px;
+
+        font-size: 17px;
+
+        z-index: 2;
+    }
+
+
+    .nav-links {
+        display: flex;
+
+        gap: 2px;
+
+        align-items: center;
+        justify-content: center;
+
+        width: auto;
+
+        max-width: calc(100% - 125px);
+
+        overflow: hidden;
+    }
+
+
+    .nav-links li {
+        flex-shrink: 1;
+
+        min-width: 0;
+    }
+
+
+    .nav-links a {
+        font-size: 11px;
+
+        padding: 5px 4px;
+
+        white-space: nowrap;
+
+        border-radius: 6px;
+    }
+
+
+    .menu-toggle {
+        right: 10px;
+
+        font-size: 21px;
+
+        padding: 3px 6px;
+    }
+
+
+    .cart-icon {
+        left: 10px;
+
+        padding: 5px 7px;
+
+        gap: 4px;
+
+        border-radius: 10px;
+    }
+
+
+    .cart-svg {
+        width: 25px;
+        height: 25px;
+    }
+
+
+    #cartCount {
+        width: 19px;
+        height: 19px;
+
+        font-size: 10px;
+    }
+
+
+    .container {
+        width: 92%;
+
+        min-height: 65vh;
+
+        margin-top: 95px;
+
+        padding: 25px 15px;
+    }
+
+
+    h1 {
+        white-space: normal;
+
+        font-size: 34px;
+    }
+
+
+    #message {
+        font-size: 24px;
+    }
+
+
+    .shop-button {
+        padding: 14px 25px;
+
+        font-size: 16px;
+    }
+}
+
+
+/* ==================================================
+        VERY SMALL PHONES
+================================================== */
+
+@media (max-width: 430px) {
+
+    .nav-logo {
+        right: 43px;
+
+        font-size: 15px;
+    }
+
+
+    .nav-links {
+        max-width: calc(100% - 110px);
+
+        gap: 1px;
+    }
+
+
+    .nav-links a {
+        font-size: 10px;
+
+        padding: 4px 3px;
+    }
+
+
+    .menu-toggle {
+        right: 7px;
+
+        font-size: 19px;
+
+        padding: 3px 5px;
+    }
+
+
+    .cart-icon {
+        left: 7px;
+
+        padding: 4px 5px;
+    }
+
+
+    .cart-svg {
+        width: 23px;
+        height: 23px;
+    }
+
+
+    #cartCount {
+        width: 18px;
+        height: 18px;
+
+        font-size: 9px;
+    }
 }
