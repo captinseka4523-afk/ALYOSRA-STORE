@@ -23,94 +23,141 @@
 <body>
 
 
-    <nav class="navbar">
+ <nav class="navbar">
 
-        <button
-            class="menu-toggle"
-            id="menuToggle"
-            aria-label="فتح القائمة"
-            type="button"
+    <button
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="فتح القائمة"
+        type="button"
+    >
+        ☰
+    </button>
+
+
+    <button
+        class="search-toggle"
+        type="button"
+        aria-label="البحث"
+    >
+        <svg
+            class="search-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
         >
-            ☰
-        </button>
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+    </button>
 
 
-        <div class="nav-logo">
+    <div class="nav-logo">
+
+        <span class="nav-logo-ar">
             متجر اليُسرى
-        </div>
+        </span>
+
+        <span class="nav-logo-en">
+            AL YOSRA
+        </span>
+
+    </div>
 
 
-        <ul class="nav-links">
+    <ul class="nav-links">
 
-            <li>
-                <a href="index.html">
-                    الرئيسية
-                </a>
-            </li>
+        <li>
+            <a href="index.html">
+                الرئيسية
+            </a>
+        </li>
 
-            <li>
-                <a href="products.html">
-                    المنتجات
-                </a>
-            </li>
+        <li>
+            <a href="products.html">
+                المنتجات
+            </a>
+        </li>
 
-            <li>
-                <a class="active" href="offers.html">
-                    العروض
-                </a>
-            </li>
+        <li>
+            <a class="active" href="offers.html">
+                العروض
+            </a>
+        </li>
 
-            <li>
-                <a href="cart.html">
-                    السلة
-                </a>
-            </li>
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
 
-            <li>
-                <a href="contact.html">
-                    تواصل معنا
-                </a>
-            </li>
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
 
-        </ul>
+    </ul>
 
 
-        <a
-            href="cart.html"
-            class="cart-icon"
+    <a href="cart.html" class="cart-icon">
+
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
         >
 
-            <svg
-                class="cart-svg"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
+            <path d="M6 6h15l-2 8H8L6 6Z"></path>
 
-                <path d="M6 6h15l-2 8H8L6 6Z"></path>
+            <path d="M6 6L5 3H2"></path>
 
-                <path d="M6 6L5 3H2"></path>
+            <circle cx="9" cy="20" r="1.5"></circle>
 
-                <circle cx="9" cy="20" r="1.5"></circle>
+            <circle cx="18" cy="20" r="1.5"></circle>
 
-                <circle cx="18" cy="20" r="1.5"></circle>
+        </svg>
 
-            </svg>
+        <span id="cartCount">
+            0
+        </span>
 
+    </a>
 
-            <span id="cartCount">
-                0
-            </span>
+</nav>
 
-        </a>
+<nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
 
-    </nav>
+    <a href="index.html">
+        الرئيسية
+    </a>
 
+    <a href="products.html">
+        المنتجات
+    </a>
 
+    <a class="active" href="offers.html">
+        العروض
+    </a>
+
+    <a href="cart.html">
+        السلة
+    </a>
+
+    <a href="contact.html">
+        تواصل معنا
+    </a>
+
+</nav>
 
     <div
         class="side-menu-overlay"
