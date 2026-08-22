@@ -21,80 +21,129 @@
 
 <nav class="navbar">
 
+    <!-- زر القائمة الجانبية -->
     <button
-    class="menu-toggle"
-    id="menuToggle"
-    aria-label="فتح القائمة"
-    type="button"
->
-    ☰
-</button>
-
-<div class="nav-logo">
-    متجر اليُسرى
-</div>
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="فتح القائمة"
+        type="button"
+    >
+        ☰
+    </button>
 
 
-<ul class="nav-links">
+    <!-- اسم المتجر -->
+    <div class="nav-logo">
 
-<li>
-<a href="index.html">الرئيسية</a>
-</li>
+        <span class="nav-logo-ar">متجر اليُسرى</span>
 
-<li>
-<a class="active"href="products.html">المنتجات</a>
-</li>
+        <span class="nav-logo-en">AL YOSRA</span>
 
-<li>
-    <a href="offers.html">
-        العروض
+    </div>
+
+
+    <!-- روابط سطح المكتب -->
+    <ul class="nav-links">
+
+        <li>
+            <a href="index.html">الرئيسية</a>
+        </li>
+
+        <li>
+            <a class="active" href="products.html">المنتجات</a>
+        </li>
+
+        <li>
+            <a href="offers.html">العروض</a>
+        </li>
+
+        <li>
+            <a href="cart.html">السلة</a>
+        </li>
+
+        <li>
+            <a href="contact.html">تواصل معنا</a>
+        </li>
+
+    </ul>
+
+
+    <!-- البحث -->
+    <button
+        class="search-toggle"
+        id="searchToggle"
+        type="button"
+        aria-label="البحث"
+    >
+        <svg
+            class="search-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+    </button>
+
+
+    <!-- السلة -->
+    <a href="cart.html" class="cart-icon">
+
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+
+            <path d="M6 6h15l-2 8H8L6 6Z"></path>
+
+            <path d="M6 6L5 3H2"></path>
+
+            <circle cx="9" cy="20" r="1.5"></circle>
+
+            <circle cx="18" cy="20" r="1.5"></circle>
+
+        </svg>
+
+        <span id="cartCount">0</span>
+
     </a>
-</li>
-
-<li>
-<a href="cart.html">السلة</a>
-</li>
-
-<li>
-<a href="contact.html">تواصل معنا</a>
-</li>
-
-</ul>
 
 
+    <!-- شريط التنقل السفلي للهاتف -->
+    <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
 
-<a href="cart.html" class="cart-icon">
+        <a href="index.html">
+            <span>الرئيسية</span>
+        </a>
 
+        <a class="active" href="products.html">
+            <span>المنتجات</span>
+        </a>
 
-<svg class="cart-svg"
-xmlns="http://www.w3.org/2000/svg"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-stroke-width="2"
-stroke-linecap="round"
-stroke-linejoin="round">
+        <a href="offers.html">
+            <span>العروض</span>
+        </a>
 
+        <a href="cart.html">
+            <span>السلة</span>
+        </a>
 
-<path d="M6 6h15l-2 8H8L6 6Z"></path>
+        <a href="contact.html">
+            <span>تواصل معنا</span>
+        </a>
 
-<path d="M6 6L5 3H2"></path>
-
-<circle cx="9" cy="20" r="1.5"></circle>
-
-<circle cx="18" cy="20" r="1.5"></circle>
-
-
-</svg>
-
-
-<span id="cartCount">
-0
-</span>
-
-
-</a>
-
+    </nav>
 
 </nav>
 
