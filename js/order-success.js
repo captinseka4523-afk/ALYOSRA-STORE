@@ -101,16 +101,7 @@ startCountdown();
 
 
 
-// زر العودة إلى المنتجات
 
-function goProducts(){
-
-
-    window.location.href =
-    "products.html";
-
-
-}
 window.addEventListener("pageshow", function(){
 
     if(!localStorage.getItem("whatsappMessage")){

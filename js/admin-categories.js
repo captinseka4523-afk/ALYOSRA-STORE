@@ -6,6 +6,67 @@ let adminCategoriesList = [];
 
 
 // ==========================================
+// Category Toast
+// ==========================================
+
+function showCategoryToast(
+    message,
+    type = "success"
+) {
+
+    let toast =
+        document.getElementById(
+            "adminCategoryToast"
+        );
+
+
+    if (!toast) {
+
+        toast =
+            document.createElement("div");
+
+        toast.id =
+            "adminCategoryToast";
+
+        toast.className =
+            "admin-category-toast";
+
+        document.body.appendChild(
+            toast
+        );
+
+    }
+
+
+    toast.textContent =
+        message;
+
+
+    toast.className =
+        `admin-category-toast ${type} show`;
+
+
+    clearTimeout(
+        toast._timer
+    );
+
+
+    toast._timer =
+        setTimeout(
+            function() {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2800
+        );
+
+}
+
+
+// ==========================================
 // Load Categories
 // ==========================================
 
@@ -435,7 +496,7 @@ async function saveCategory(
         await loadCategoriesManagement();
 
 
-        alert(
+        showCategoryToast(
             id
                 ? "تم تعديل التصنيف بنجاح."
                 : "تمت إضافة التصنيف بنجاح."
@@ -538,14 +599,19 @@ async function deleteCategory(
             products.length > 0
         ) {
 
-            alert(
-                `لا يمكن حذف التصنيف "${category.name}" لأنه مستخدم حاليًا من قبل ${products.length} منتج.`
+            showCategoryToast(
+                `لا يمكن حذف التصنيف "${category.name}" لأنه مستخدم حاليًا من قبل ${products.length} منتج.`,
+                "error"
             );
 
             return;
 
         }
 
+
+        // ==================================
+        // Delete confirmation
+        // ==================================
 
         const confirmed =
             confirm(
@@ -578,7 +644,7 @@ async function deleteCategory(
         await loadCategoriesManagement();
 
 
-        alert(
+        showCategoryToast(
             "تم حذف التصنيف بنجاح."
         );
 
@@ -591,8 +657,9 @@ async function deleteCategory(
         );
 
 
-        alert(
-            "تعذر حذف التصنيف."
+        showCategoryToast(
+            "تعذر حذف التصنيف.",
+            "error"
         );
 
     }
@@ -729,7 +796,7 @@ function setupCategoryEvents() {
 
 
 // ==========================================
-// Messages
+// Messages - Modal
 // ==========================================
 
 function showCategoryMessage(

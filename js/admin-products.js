@@ -7,19 +7,85 @@ let adminCategories = [];
 
 
 // ==========================================
+// Admin Toast
+// ==========================================
+
+let adminProductToastTimer;
+
+function showAdminProductToast(
+    message,
+    type = "success"
+) {
+
+    let toast =
+        document.getElementById(
+            "adminProductToast"
+        );
+
+
+    if (!toast) {
+
+        toast =
+            document.createElement("div");
+
+        toast.id =
+            "adminProductToast";
+
+        document.body.appendChild(
+            toast
+        );
+
+    }
+
+
+    toast.textContent =
+        message;
+
+
+    toast.className =
+        `admin-product-toast ${type} show`;
+
+
+    clearTimeout(
+        adminProductToastTimer
+    );
+
+
+    adminProductToastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2800
+        );
+
+}
+
+
+// ==========================================
 // Load Products
 // ==========================================
 
 async function loadAdminProducts() {
 
     const table =
-        document.getElementById("adminProductsTable");
+        document.getElementById(
+            "adminProductsTable"
+        );
 
     const loading =
-        document.getElementById("productsLoading");
+        document.getElementById(
+            "productsLoading"
+        );
 
     const empty =
-        document.getElementById("productsEmpty");
+        document.getElementById(
+            "productsEmpty"
+        );
 
 
     if (loading) {
@@ -49,11 +115,11 @@ async function loadAdminProducts() {
         }
 
 
-        adminProducts = data || [];
+        adminProducts =
+            data || [];
 
 
         renderAdminProducts();
-
 
         updateProductsCount();
 
@@ -67,14 +133,21 @@ async function loadAdminProducts() {
 
 
         if (loading) {
+
             loading.textContent =
                 "حدث خطأ أثناء تحميل المنتجات.";
+
         }
+
+
+        showAdminProductToast(
+            "حدث خطأ أثناء تحميل المنتجات.",
+            "error"
+        );
 
     }
 
 }
-
 
 
 // ==========================================
@@ -107,7 +180,6 @@ async function loadAdminCategories() {
 
         renderCategoryOptions();
 
-
         updateCategoriesCount();
 
 
@@ -118,10 +190,14 @@ async function loadAdminCategories() {
             error
         );
 
+        showAdminProductToast(
+            "حدث خطأ أثناء تحميل التصنيفات.",
+            "error"
+        );
+
     }
 
 }
-
 
 
 // ==========================================
@@ -171,7 +247,6 @@ function renderCategoryOptions() {
     );
 
 }
-
 
 
 // ==========================================
@@ -410,13 +485,14 @@ function renderAdminProducts(
             `;
 
 
-            table.appendChild(row);
+            table.appendChild(
+                row
+            );
 
         }
     );
 
 }
-
 
 
 // ==========================================
@@ -471,7 +547,6 @@ function openAddProductModal() {
     modal.hidden = false;
 
 }
-
 
 
 // ==========================================
@@ -565,7 +640,6 @@ function openEditProductModal(
 }
 
 
-
 // ==========================================
 // Close Modal
 // ==========================================
@@ -586,7 +660,6 @@ function closeProductModalWindow() {
     clearFormMessage();
 
 }
-
 
 
 // ==========================================
@@ -661,9 +734,9 @@ async function saveProduct(
         ).value.trim();
 
 
-    // ------------------------------
+    // ======================================
     // Validation
-    // ------------------------------
+    // ======================================
 
     if (!name) {
 
@@ -778,9 +851,9 @@ async function saveProduct(
         let result;
 
 
-        // ------------------------------
+        // ==================================
         // Add
-        // ------------------------------
+        // ==================================
 
         if (!id) {
 
@@ -796,9 +869,9 @@ async function saveProduct(
         }
 
 
-        // ------------------------------
+        // ==================================
         // Update
-        // ------------------------------
+        // ==================================
 
         else {
 
@@ -819,9 +892,7 @@ async function saveProduct(
 
 
         if (result.error) {
-
             throw result.error;
-
         }
 
 
@@ -831,10 +902,11 @@ async function saveProduct(
         await loadAdminProducts();
 
 
-        alert(
+        showAdminProductToast(
             id
                 ? "تم تعديل المنتج بنجاح."
-                : "تمت إضافة المنتج بنجاح."
+                : "تمت إضافة المنتج بنجاح.",
+            "success"
         );
 
 
@@ -896,7 +968,6 @@ async function saveProduct(
 }
 
 
-
 // ==========================================
 // Delete Product
 // ==========================================
@@ -951,8 +1022,9 @@ async function deleteProduct(
         await loadAdminProducts();
 
 
-        alert(
-            "تم حذف المنتج بنجاح."
+        showAdminProductToast(
+            "تم حذف المنتج بنجاح.",
+            "success"
         );
 
 
@@ -968,16 +1040,18 @@ async function deleteProduct(
             error.code === "42501"
         ) {
 
-            alert(
-                "ليس لديك صلاحية لحذف المنتجات."
+            showAdminProductToast(
+                "ليس لديك صلاحية لحذف المنتجات.",
+                "error"
             );
 
         }
 
         else {
 
-            alert(
-                "تعذر حذف المنتج."
+            showAdminProductToast(
+                "تعذر حذف المنتج.",
+                "error"
             );
 
         }
@@ -985,7 +1059,6 @@ async function deleteProduct(
     }
 
 }
-
 
 
 // ==========================================
@@ -1041,7 +1114,6 @@ function clearFormMessage() {
 }
 
 
-
 // ==========================================
 // Search
 // ==========================================
@@ -1071,7 +1143,6 @@ function setupProductSearch() {
     );
 
 }
-
 
 
 // ==========================================
@@ -1139,7 +1210,6 @@ function setupProductTableActions() {
     );
 
 }
-
 
 
 // ==========================================
@@ -1219,7 +1289,6 @@ function setupAdminNavigation() {
 }
 
 
-
 // ==========================================
 // Dashboard Counts
 // ==========================================
@@ -1258,7 +1327,6 @@ function updateCategoriesCount() {
     }
 
 }
-
 
 
 // ==========================================
@@ -1314,7 +1382,6 @@ function escapeHtml(
         );
 
 }
-
 
 
 // ==========================================
@@ -1387,7 +1454,6 @@ function setupModalEvents() {
     }
 
 }
-
 
 
 // ==========================================

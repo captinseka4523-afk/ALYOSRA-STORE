@@ -10,7 +10,22 @@ const cartContainer =
 const cartTotal =
     document.getElementById("cartTotal");
 
-    // ==========================================
+
+// ==========================================
+// تنظيف أخطاء الأرقام العشرية في JavaScript
+// بدون تغيير الدقة الأصلية للسعر
+// ==========================================
+
+function cleanPrice(value) {
+
+    return Number(
+        Number(value || 0).toPrecision(15)
+    );
+
+}
+
+
+// ==========================================
 // رسالة غير مزعجة داخل السلة
 // ==========================================
 
@@ -54,6 +69,7 @@ function showCartToast(message) {
         );
 
 }
+
 
 // ==========================================
 // العروض المحملة
@@ -237,8 +253,16 @@ function displayCart() {
                     ) || 0;
 
 
-                total +=
-                    price * quantity;
+                const subtotal =
+                    cleanPrice(
+                        price * quantity
+                    );
+
+
+                total =
+                    cleanPrice(
+                        total + subtotal
+                    );
 
 
                 cartContainer.innerHTML += `
@@ -274,7 +298,7 @@ function displayCart() {
 
                             <p>
                                 عرض خاص:
-                                ${offer.price} $
+                                ${cleanPrice(offer.price)} $
                             </p>
 
 
@@ -350,8 +374,16 @@ function displayCart() {
                 ) || 0;
 
 
-            total +=
-                price * quantity;
+            const subtotal =
+                cleanPrice(
+                    price * quantity
+                );
+
+
+            total =
+                cleanPrice(
+                    total + subtotal
+                );
 
 
             cartContainer.innerHTML += `
@@ -373,7 +405,7 @@ function displayCart() {
 
                         <p>
                             السعر:
-                            ${product.price} $
+                            ${cleanPrice(product.price)} $
                         </p>
 
 
@@ -429,7 +461,7 @@ function displayCart() {
     if (cartTotal) {
 
         cartTotal.textContent =
-            total + "$";
+            cleanPrice(total) + "$";
 
     }
 
@@ -448,6 +480,8 @@ function getMaxOfferQuantity(offer) {
 
     }
 
+
+    // مخزون العرض مستقل عن مخزون المنتجات
 
     const availableQuantity =
         Number(offer.quantity) || 0;
@@ -524,9 +558,10 @@ document.addEventListener(
 
                 if (!offer) {
 
-                showCartToast(
-    "تعذر العثور على بيانات العرض."
-);
+                    showCartToast(
+                        "تعذر العثور على بيانات العرض."
+                    );
+
                     return;
 
                 }
@@ -543,15 +578,14 @@ document.addEventListener(
                         offer
                     );
 
-                    
 
                 if (
                     maxQuantity <= 0
                 ) {
 
-                  showCartToast(
-    "لا يمكن إضافة المزيد من هذا العرض لأن مخزون أحد منتجاته غير متوفر."
-);
+                    showCartToast(
+                        "لا يمكن إضافة المزيد من هذا العرض لأن مخزونه غير متوفر."
+                    );
 
                     return;
 
@@ -563,9 +597,9 @@ document.addEventListener(
                     maxQuantity
                 ) {
 
-                  showCartToast(
-    `الحد الأقصى المتاح من هذا العرض هو ${maxQuantity}.`
-);
+                    showCartToast(
+                        `الحد الأقصى المتاح من هذا العرض هو ${maxQuantity}.`
+                    );
 
                     return;
 
@@ -630,9 +664,9 @@ document.addEventListener(
 
             } else {
 
-            showCartToast(
-    "لا توجد كمية إضافية متوفرة في المخزون."
-);
+                showCartToast(
+                    "لا توجد كمية إضافية متوفرة في المخزون."
+                );
 
             }
 

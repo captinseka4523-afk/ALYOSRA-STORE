@@ -172,7 +172,7 @@ async function loadOrderDetails(
         document.getElementById(
             "orderTotal"
         ).textContent =
-        "$" +
+            "$" +
             formatPrice(
                 order.total
             );
@@ -313,10 +313,12 @@ function createStatusSelector(
     select.dataset.previousStatus =
         currentStatus || "pending";
 
-        console.log(
-    "Initial order status:",
-    select.dataset.previousStatus
-);
+
+    console.log(
+        "Initial order status:",
+        select.dataset.previousStatus
+    );
+
 
     select.addEventListener(
         "change",
@@ -487,10 +489,11 @@ function showStatusMessage(
                     "";
 
             },
-            3000
+            3500
         );
 
 }
+
 
 // ==========================================
 // Render Order Items
@@ -547,8 +550,6 @@ function renderOrderItems(
                     ${item.quantity}
                 </div>
 
-           
-
                 <div class="order-item-subtotal">
                     ${formatPrice(
                         item.subtotal
@@ -580,10 +581,9 @@ function formatPrice(
     return Number(
         value || 0
     ).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-}
-);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 
 }
 
@@ -682,10 +682,186 @@ document.addEventListener(
             "backToOrders"
         ) {
 
-        window.location.href =
-    "admin-dashboard.html?section=orders";
+            window.location.href =
+                "admin-dashboard.html?section=orders";
 
         }
 
     }
 );
+
+
+// ==========================================
+// Delete Order
+// ==========================================
+
+document.addEventListener(
+    "click",
+    async function(event) {
+
+        if (
+            event.target.id !==
+            "deleteOrderButton"
+        ) {
+
+            return;
+
+        }
+
+
+        const button =
+            event.target;
+
+
+        const orderId =
+            new URLSearchParams(
+                window.location.search
+            ).get("id");
+
+
+        if (!orderId) {
+
+            showStatusMessage(
+                "تعذر تحديد الطلب.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        // ==================================
+        // تأكيد الحذف
+        // ==================================
+
+        const confirmed =
+            confirm(
+                "هل أنت متأكد من حذف هذا الطلب؟\n\nسيتم حذف الطلب وإعادة الكميات إلى المخزون."
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        // ==================================
+        // منع الضغط المتكرر
+        // ==================================
+
+        if (button.disabled) {
+
+            return;
+
+        }
+
+
+        button.disabled =
+            true;
+
+
+        const originalText =
+            button.textContent;
+
+
+        button.textContent =
+            "جاري حذف الطلب...";
+
+
+        try {
+
+            // ==================================
+            // استدعاء دالة قاعدة البيانات
+            // ==================================
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.rpc(
+                    "delete_order",
+                    {
+                        p_order_id:
+                            Number(orderId)
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "Delete order error:",
+                    error
+                );
+
+                throw error;
+
+            }
+
+
+            // ==================================
+            // التحقق من النتيجة
+            // ==================================
+
+            if (
+                !data ||
+                data.success !== true
+            ) {
+
+                throw new Error(
+                    "لم يتم حذف الطلب بشكل صحيح."
+                );
+
+            }
+
+
+            // ==================================
+            // نجاح الحذف
+            // ==================================
+
+            showStatusMessage(
+                "تم حذف الطلب وإعادة الكميات إلى المخزون بنجاح.",
+                "success"
+            );
+
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        "admin-dashboard.html?section=orders";
+
+                },
+                3500
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "خطأ أثناء حذف الطلب:",
+                error
+            );
+
+
+            showStatusMessage(
+                "تعذر حذف الطلب حاليًا.",
+                "error"
+            );
+
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                originalText;
+
+        }
+
+    }
+);
+
