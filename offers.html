@@ -487,50 +487,67 @@ function displayOffers(
 
                 }
             );
+const productsText =
+    (offer.offer_items || [])
+        .map(
+            (item) =>
+                `${item.products?.name || "منتج"} × ${item.quantity}`
+        )
+        .join("، ");
 
 
-            const productsText =
-                (offer.offer_items || [])
-                    .map(
-                        (item) =>
-                            `${item.products?.name || "منتج"} × ${item.quantity}`
-                    )
-                    .join("، ");
+card.innerHTML = `
 
+    <div class="offer-image-wrapper">
 
-            card.innerHTML = `
-
-                ${
-                    offer.image
-                        ? `
-                            <img
-                                src="${offer.image}"
-                                alt="${offer.name}"
-                                class="offer-image"
-                            >
-                          `
-                        : ""
-                }
-
-
-                <div class="offer-content">
-
-                    <h2>
-                        ${offer.name}
-                    </h2>
-
-
-                    <div class="offer-price">
-
-                        $${Number(
-                            offer.price
-                        ).toFixed(2)}
-
+        ${
+            offer.image
+                ? `
+                    <img
+                        src="${offer.image}"
+                        alt="${offer.name}"
+                        class="offer-image"
+                    >
+                  `
+                : `
+                    <div class="offer-image-placeholder">
+                        <span>صورة العرض</span>
                     </div>
+                  `
+        }
 
-                </div>
+    </div>
 
-            `;
+
+    <div class="offer-content">
+
+        <h2>
+            ${offer.name}
+        </h2>
+
+
+        ${
+            offer.description
+                ? `
+                    <p class="offer-description">
+                        ${offer.description}
+                    </p>
+                  `
+                : ""
+        }
+
+
+        <div class="offer-price">
+
+            $${Number(
+                offer.price
+            ).toFixed(2)}
+
+        </div>
+
+    </div>
+
+`;
 
 
             offersContainer.appendChild(card);
