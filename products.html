@@ -31,11 +31,13 @@
     </button>
 
 
-    <button
-        class="search-toggle"
-        type="button"
-        aria-label="البحث"
-    >
+<button
+    class="search-toggle"
+    id="productSearchToggle"
+    type="button"
+    aria-label="البحث"
+    aria-expanded="false"
+>
         <svg
             class="search-svg"
             xmlns="http://www.w3.org/2000/svg"
@@ -130,6 +132,39 @@
     </a>
 
 </nav>
+
+<div
+    id="productSearchPopover"
+    class="search-popover"
+    aria-hidden="true"
+>
+    <div class="search-popover-field">
+
+        <svg
+            class="search-popover-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+
+        <input
+            id="productSearchInput"
+            type="search"
+            placeholder="ابحث عن منتج..."
+            autocomplete="off"
+            dir="rtl"
+        >
+
+    </div>
+</div>
 
 <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
 

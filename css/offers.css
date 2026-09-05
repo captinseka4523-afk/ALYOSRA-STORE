@@ -274,3 +274,190 @@
     }
 
 }
+/* =========================================================
+   OFFER SEARCH POPOVER
+========================================================= */
+
+.search-popover {
+    position: fixed;
+
+    width: min(420px, calc(100vw - 30px));
+
+    box-sizing: border-box;
+
+    padding: 12px 15px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    border: 1px solid rgba(37, 99, 235, 0.15);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.16);
+
+    backdrop-filter: blur(18px);
+
+    z-index: 99999;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transform:
+        translateY(-6px)
+        scale(0.98);
+
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease,
+        visibility 0.18s ease;
+
+    --search-arrow-left: 50%;
+}
+
+
+/* =========================================================
+   CONNECTING ARROW
+   جزء من مربع البحث نفسه
+========================================================= */
+
+.search-popover::before {
+    content: "";
+
+    position: absolute;
+
+    top: -8px;
+
+    left: var(--search-arrow-left);
+
+    width: 14px;
+    height: 14px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    border-left:
+        1px solid rgba(37, 99, 235, 0.15);
+
+    border-top:
+        1px solid rgba(37, 99, 235, 0.15);
+
+    transform:
+        translateX(-50%)
+        rotate(45deg);
+
+    z-index: -1;
+}
+
+
+/* =========================================================
+   OPEN STATE
+========================================================= */
+
+.search-popover.show {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+/* =========================================================
+   SEARCH FIELD
+========================================================= */
+
+.search-popover-field {
+    width: 100%;
+
+    min-height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.search-popover-icon {
+    width: 20px;
+    height: 20px;
+
+    flex-shrink: 0;
+
+    color: #2563eb;
+}
+
+
+.search-popover-field input {
+    width: 100%;
+
+    min-width: 0;
+
+    padding: 8px 0;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #111827;
+
+    font-family: inherit;
+
+    font-size: 16px;
+
+    text-align: right;
+}
+
+
+.search-popover-field input::placeholder {
+    color: #9ca3af;
+}
+
+
+.search-popover-field input::-webkit-search-decoration,
+.search-popover-field input::-webkit-search-cancel-button,
+.search-popover-field input::-webkit-search-results-button,
+.search-popover-field input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .search-popover {
+        width: calc(100vw - 24px);
+
+        padding: 11px 13px;
+
+        border-radius: 15px;
+    }
+
+    .search-popover-field {
+        min-height: 40px;
+
+        gap: 9px;
+    }
+
+    .search-popover-icon {
+        width: 19px;
+        height: 19px;
+    }
+
+    .search-popover-field input {
+        font-size: 15px;
+    }
+}

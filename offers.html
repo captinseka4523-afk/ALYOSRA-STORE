@@ -35,11 +35,13 @@
     </button>
 
 
-    <button
-        class="search-toggle"
-        type="button"
-        aria-label="البحث"
-    >
+  <button
+    class="search-toggle"
+    id="offerSearchToggle"
+    type="button"
+    aria-label="البحث"
+    aria-expanded="false"
+>
         <svg
             class="search-svg"
             xmlns="http://www.w3.org/2000/svg"
@@ -134,6 +136,39 @@
     </a>
 
 </nav>
+
+<div
+    id="offerSearchPopover"
+    class="search-popover"
+    aria-hidden="true"
+>
+    <div class="search-popover-field">
+
+        <svg
+            class="search-popover-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+
+        <input
+            id="offerSearchInput"
+            type="search"
+            placeholder="ابحث عن عرض..."
+            autocomplete="off"
+            dir="rtl"
+        >
+
+    </div>
+</div>
 
 <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
 
@@ -310,149 +345,575 @@
 
     <script>
 
-        const offersContainer =
-            document.getElementById("offersContainer");
+       const offersContainer =
+    document.getElementById("offersContainer");
+
+const offerSearchToggle =
+    document.getElementById("offerSearchToggle");
+
+const offerSearchPopover =
+    document.getElementById("offerSearchPopover");
+
+const offerSearchInput =
+    document.getElementById("offerSearchInput");
 
 
-        async function loadOffers() {
+/* =========================================================
+   بيانات العروض الموجودة في الصفحة
+========================================================= */
 
-            const {
-                data,
-                error
-            } = await supabaseClient
-                .from("offers")
-                .select(`
-                    id,
-                    name,
-                    description,
-                    price,
-                    image,
-                    active,
-                    offer_items (
-                        quantity,
-                        products (
-                            name
-                        )
-                    )
-                `)
-                .eq(
-                    "active",
-                    true
+let allOffers = [];
+
+
+/* =========================================================
+   تحميل العروض
+========================================================= */
+
+async function loadOffers() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("offers")
+        .select(`
+            id,
+            name,
+            description,
+            price,
+            image,
+            active,
+            offer_items (
+                quantity,
+                products (
+                    name
                 )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-            if (error) {
-
-                console.error(error);
-
-                offersContainer.textContent =
-                    "حدث خطأ أثناء تحميل العروض.";
-
-                return;
-
+            )
+        `)
+        .eq(
+            "active",
+            true
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
             }
+        );
 
 
-            if (
-                !data ||
-                data.length === 0
-            ) {
+    if (error) {
 
-                offersContainer.textContent =
-                    "لا توجد عروض حاليًا.";
+        console.error(error);
 
-                return;
+        offersContainer.textContent =
+            "حدث خطأ أثناء تحميل العروض.";
 
-            }
+        return;
 
-
-            offersContainer.innerHTML = "";
-
-
-            data.forEach(
-                (offer) => {
-
-                   const card =
-    document.createElement("div");
-
-card.className =
-    "offer-card";
-
-card.style.cursor =
-    "pointer";
-
-card.addEventListener(
-    "click",
-    () => {
-
-        window.location.href =
-            `offer-details.html?id=${offer.id}`;
-
-    }
-);
-
-                
-
-
-                    const productsText =
-                        (offer.offer_items || [])
-                            .map(
-                                (item) =>
-                                    `${item.products?.name || "منتج"} × ${item.quantity}`
-                            )
-                            .join("، ");
-
-
-                   card.innerHTML = `
-
-    ${
-        offer.image
-            ? `
-                <img
-                    src="${offer.image}"
-                    alt="${offer.name}"
-                    class="offer-image"
-                >
-              `
-            : ""
     }
 
 
-    <div class="offer-content">
+    if (
+        !data ||
+        data.length === 0
+    ) {
 
-        <h2>
-            ${offer.name}
-        </h2>
+        offersContainer.textContent =
+            "لا توجد عروض حاليًا.";
 
+        return;
 
-        <div class="offer-price">
-
-            $${Number(
-                offer.price
-            ).toFixed(2)}
-
-        </div>
-
-    </div>
-
-`;
+    }
 
 
-                    offersContainer.appendChild(card);
+    /*
+       نحفظ العروض التي تم تحميلها من Supabase
+       حتى يكون البحث محليًا بالكامل.
+    */
+
+    allOffers = data;
+
+    displayOffers(allOffers);
+
+}
+
+
+/* =========================================================
+   عرض العروض
+========================================================= */
+
+function displayOffers(
+    offersToDisplay
+) {
+
+    offersContainer.innerHTML = "";
+
+
+    if (
+        !offersToDisplay ||
+        offersToDisplay.length === 0
+    ) {
+
+        offersContainer.textContent =
+            "لا توجد عروض مطابقة لبحثك.";
+
+        return;
+
+    }
+
+
+    offersToDisplay.forEach(
+        (offer) => {
+
+            const card =
+                document.createElement("div");
+
+
+            card.className =
+                "offer-card";
+
+
+            card.style.cursor =
+                "pointer";
+
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    window.location.href =
+                        `offer-details.html?id=${offer.id}`;
 
                 }
             );
 
+
+            const productsText =
+                (offer.offer_items || [])
+                    .map(
+                        (item) =>
+                            `${item.products?.name || "منتج"} × ${item.quantity}`
+                    )
+                    .join("، ");
+
+
+            card.innerHTML = `
+
+                ${
+                    offer.image
+                        ? `
+                            <img
+                                src="${offer.image}"
+                                alt="${offer.name}"
+                                class="offer-image"
+                            >
+                          `
+                        : ""
+                }
+
+
+                <div class="offer-content">
+
+                    <h2>
+                        ${offer.name}
+                    </h2>
+
+
+                    <div class="offer-price">
+
+                        $${Number(
+                            offer.price
+                        ).toFixed(2)}
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            offersContainer.appendChild(card);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   تطبيع نص البحث
+========================================================= */
+
+function normalizeOfferSearchText(
+    value
+) {
+
+    return String(value || "")
+        .trim()
+        .toLocaleLowerCase("ar");
+
+}
+
+
+/* =========================================================
+   البحث المحلي في العروض
+========================================================= */
+
+function filterOffersLocally() {
+
+    if (!offerSearchInput) return;
+
+
+    const searchValue =
+        normalizeOfferSearchText(
+            offerSearchInput.value
+        );
+
+
+    /*
+       إذا كان البحث فارغًا،
+       نعيد جميع العروض التي تم تحميلها.
+    */
+
+    if (!searchValue) {
+
+        displayOffers(
+            allOffers
+        );
+
+        return;
+
+    }
+
+
+    /*
+       البحث يتم فقط داخل العروض الموجودة
+       في الذاكرة، دون أي طلب جديد إلى Supabase.
+    */
+
+    const filteredOffers =
+        allOffers.filter(
+            (offer) =>
+                normalizeOfferSearchText(
+                    offer.name
+                ).includes(
+                    searchValue
+                )
+        );
+
+
+    displayOffers(
+        filteredOffers
+    );
+
+}
+
+
+/* =========================================================
+   تحديد مكان مربع البحث
+========================================================= */
+
+function positionOfferSearchPopover() {
+
+    if (
+        !offerSearchToggle ||
+        !offerSearchPopover
+    ) {
+        return;
+    }
+
+
+    const buttonRect =
+        offerSearchToggle.getBoundingClientRect();
+
+
+    const popoverWidth =
+        offerSearchPopover
+            .getBoundingClientRect()
+            .width;
+
+
+    const viewportPadding =
+        15;
+
+
+    let left =
+        buttonRect.left +
+        (buttonRect.width / 2) -
+        (popoverWidth / 2);
+
+
+    left = Math.max(
+        viewportPadding,
+        Math.min(
+            left,
+            window.innerWidth -
+            popoverWidth -
+            viewportPadding
+        )
+    );
+
+
+    const arrowLeft =
+        buttonRect.left +
+        (buttonRect.width / 2) -
+        left;
+
+
+    offerSearchPopover.style.left =
+        `${left}px`;
+
+
+    offerSearchPopover.style.top =
+        `${buttonRect.bottom + 10}px`;
+
+
+    offerSearchPopover.style.setProperty(
+        "--search-arrow-left",
+        `${arrowLeft}px`
+    );
+
+}
+
+
+/* =========================================================
+   فتح مربع البحث
+========================================================= */
+
+function openOfferSearch() {
+
+    if (
+        !offerSearchPopover ||
+        !offerSearchToggle
+    ) {
+        return;
+    }
+
+
+    offerSearchPopover.classList.add(
+        "show"
+    );
+
+
+    offerSearchPopover.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    offerSearchToggle.setAttribute(
+        "aria-expanded",
+        "true"
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            positionOfferSearchPopover();
+
+
+            if (offerSearchInput) {
+
+                offerSearchInput.focus();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   إغلاق مربع البحث
+========================================================= */
+
+function closeOfferSearch() {
+
+    if (
+        !offerSearchPopover ||
+        !offerSearchToggle
+    ) {
+        return;
+    }
+
+
+    offerSearchPopover.classList.remove(
+        "show"
+    );
+
+
+    offerSearchPopover.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    offerSearchToggle.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+}
+
+
+/* =========================================================
+   زر البحث
+========================================================= */
+
+if (
+    offerSearchToggle &&
+    offerSearchPopover
+) {
+
+    offerSearchToggle.addEventListener(
+        "click",
+        function(event) {
+
+            event.stopPropagation();
+
+
+            const isOpen =
+                offerSearchPopover.classList
+                    .contains("show");
+
+
+            if (isOpen) {
+
+                closeOfferSearch();
+
+            } else {
+
+                openOfferSearch();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   البحث أثناء الكتابة
+========================================================= */
+
+if (offerSearchInput) {
+
+    offerSearchInput.addEventListener(
+        "input",
+        filterOffersLocally
+    );
+
+}
+
+
+/* =========================================================
+   الضغط خارج مربع البحث
+========================================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            !offerSearchPopover ||
+            !offerSearchToggle
+        ) {
+            return;
         }
 
 
-        loadOffers();
+        const clickedInsidePopover =
+            offerSearchPopover.contains(
+                event.target
+            );
+
+
+        const clickedSearchButton =
+            offerSearchToggle.contains(
+                event.target
+            );
+
+
+        if (
+            !clickedInsidePopover &&
+            !clickedSearchButton
+        ) {
+
+            closeOfferSearch();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   زر ESC
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            closeOfferSearch();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   الحفاظ على مكان مربع البحث
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (
+            offerSearchPopover &&
+            offerSearchPopover.classList
+                .contains("show")
+        ) {
+
+            positionOfferSearchPopover();
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "scroll",
+    function() {
+
+        if (
+            offerSearchPopover &&
+            offerSearchPopover.classList
+                .contains("show")
+        ) {
+
+            positionOfferSearchPopover();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   تشغيل تحميل العروض
+========================================================= */
+
+loadOffers();
 
     </script>
 

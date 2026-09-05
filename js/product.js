@@ -9,9 +9,6 @@ const productImage =
 const productName =
     document.getElementById("productName");
 
-const productDescription =
-    document.getElementById("productDescription");
-
 const productPrice =
     document.getElementById("productPrice");
 
@@ -51,17 +48,26 @@ function displayProductDetails() {
     if (!currentProduct) {
 
         if (productName) {
+
             productName.textContent =
                 "المنتج غير موجود";
+
         }
 
-        if (productDescription) {
-            productDescription.textContent =
-                "تعذر العثور على هذا المنتج.";
+        if (productSpecs) {
+
+            productSpecs.innerHTML = `
+                <li>
+                    تعذر العثور على هذا المنتج.
+                </li>
+            `;
+
         }
 
         if (addToCartBtn) {
+
             addToCartBtn.disabled = true;
+
         }
 
         return;
@@ -70,7 +76,9 @@ function displayProductDetails() {
 
 
 
+    // ======================================
     // الصورة
+    // ======================================
 
     if (productImage) {
 
@@ -84,7 +92,9 @@ function displayProductDetails() {
 
 
 
+    // ======================================
     // الاسم
+    // ======================================
 
     if (productName) {
 
@@ -95,18 +105,49 @@ function displayProductDetails() {
 
 
 
+    // ======================================
     // الوصف
+    // ======================================
 
-    if (productDescription) {
+    if (productSpecs) {
 
-        productDescription.textContent =
-            currentProduct.description;
+        productSpecs.innerHTML = "";
+
+
+        const description =
+            String(
+                currentProduct.description || ""
+            ).trim();
+
+
+        const descriptionItem =
+            document.createElement("li");
+
+
+        if (description) {
+
+            descriptionItem.textContent =
+                description;
+
+        } else {
+
+            descriptionItem.textContent =
+                "لا يوجد وصف مضاف لهذا المنتج حاليًا.";
+
+        }
+
+
+        productSpecs.appendChild(
+            descriptionItem
+        );
 
     }
 
 
 
+    // ======================================
     // السعر
+    // ======================================
 
     if (productPrice) {
 
@@ -117,45 +158,9 @@ function displayProductDetails() {
 
 
 
-    // المواصفات
-
-    if (productSpecs) {
-
-        productSpecs.innerHTML = "";
-
-
-        if (
-            Array.isArray(currentProduct.specs) &&
-            currentProduct.specs.length > 0
-        ) {
-
-            currentProduct.specs.forEach(
-                spec => {
-
-                    productSpecs.innerHTML += `
-                        <li>
-                            ${spec}
-                        </li>
-                    `;
-
-                }
-            );
-
-        } else {
-
-            productSpecs.innerHTML = `
-                <li>
-                    لا توجد مواصفات مضافة لهذا المنتج حاليًا.
-                </li>
-            `;
-
-        }
-
-    }
-
-
-
+    // ======================================
     // المخزون
+    // ======================================
 
     if (currentProduct.quantity <= 0) {
 
@@ -172,7 +177,9 @@ function displayProductDetails() {
 
 
 
+    // ======================================
     // الحد الأقصى للكمية
+    // ======================================
 
     if (quantityInput) {
 
@@ -302,7 +309,9 @@ if (addToCartBtn) {
 
 
             const currentCartQuantity =
-                Number(cart[currentProduct.id]) || 0;
+                Number(
+                    cart[currentProduct.id]
+                ) || 0;
 
 
             if (
@@ -385,7 +394,9 @@ document.addEventListener(
 
 
 
+// ==========================================
 // في حال كانت المنتجات موجودة مسبقًا
+// ==========================================
 
 if (window.products.length > 0) {
 

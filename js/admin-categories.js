@@ -60,7 +60,7 @@ function showCategoryToast(
                 );
 
             },
-            2800
+       3500
         );
 
 }

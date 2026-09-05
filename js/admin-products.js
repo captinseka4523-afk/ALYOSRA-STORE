@@ -60,7 +60,7 @@ function showAdminProductToast(
                 );
 
             },
-            2800
+          3500
         );
 
 }
