@@ -4,6 +4,7 @@
 
 let adminProducts = [];
 let adminCategories = [];
+let adminProductCosts = {};
 
 
 // ==========================================
@@ -60,7 +61,7 @@ function showAdminProductToast(
                 );
 
             },
-          3500
+            3500
         );
 
 }
@@ -119,6 +120,9 @@ async function loadAdminProducts() {
             data || [];
 
 
+        await loadAdminProductCosts();
+
+
         renderAdminProducts();
 
         updateProductsCount();
@@ -146,6 +150,44 @@ async function loadAdminProducts() {
         );
 
     }
+
+}
+
+
+// ==========================================
+// Load Product Costs
+// ==========================================
+
+async function loadAdminProductCosts() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("product_costs")
+        .select(
+            "product_id, purchase_cost"
+        );
+
+
+    if (error) {
+        throw error;
+    }
+
+
+    adminProductCosts = {};
+
+
+    (data || []).forEach(
+        cost => {
+
+            adminProductCosts[
+                String(cost.product_id)
+            ] =
+                cost.purchase_cost;
+
+        }
+    );
 
 }
 
@@ -535,6 +577,17 @@ function openAddProductModal() {
     }
 
 
+    const purchaseCost =
+        document.getElementById(
+            "productPurchaseCost"
+        );
+
+
+    if (purchaseCost) {
+        purchaseCost.value = "";
+    }
+
+
     if (title) {
         title.textContent =
             "إضافة منتج";
@@ -624,6 +677,26 @@ function openEditProductModal(
         product.description || "";
 
 
+    const purchaseCost =
+        document.getElementById(
+            "productPurchaseCost"
+        );
+
+
+    if (purchaseCost) {
+
+        const currentCost =
+            adminProductCosts[
+                String(product.id)
+            ];
+
+
+        purchaseCost.value =
+            currentCost ?? "";
+
+    }
+
+
     document.getElementById(
         "productModalTitle"
     ).textContent =
@@ -710,6 +783,14 @@ async function saveProduct(
         );
 
 
+    const purchaseCost =
+        Number(
+            document.getElementById(
+                "productPurchaseCost"
+            ).value
+        );
+
+
     const categoryId =
         document.getElementById(
             "productCategory"
@@ -792,6 +873,21 @@ async function saveProduct(
     }
 
 
+    if (
+        !Number.isFinite(purchaseCost) ||
+        purchaseCost <= 0
+    ) {
+
+        showFormMessage(
+            "يرجى إدخال تكلفة شراء صحيحة أكبر من صفر.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
     if (!categoryId) {
 
         showFormMessage(
@@ -848,16 +944,16 @@ async function saveProduct(
         };
 
 
-        let result;
-
-
         // ==================================
-        // Add
+        // Add Product
         // ==================================
 
         if (!id) {
 
-            result =
+            const {
+                data: newProduct,
+                error: productError
+            } =
                 await supabaseClient
                     .from("products")
                     .insert(
@@ -866,16 +962,104 @@ async function saveProduct(
                     .select()
                     .single();
 
+
+            if (productError) {
+                throw productError;
+            }
+
+
+            const {
+                error: costError
+            } =
+                await supabaseClient
+                    .from("product_costs")
+                    .insert({
+                        product_id:
+                            newProduct.id,
+
+                        purchase_cost:
+                            purchaseCost
+                    });
+
+
+            if (costError) {
+
+                console.error(
+                    "Product cost save error:",
+                    costError
+                );
+
+
+                // محاولة حذف المنتج الذي أُنشئ
+                // حتى لا يبقى منتج بلا تكلفة
+                await supabaseClient
+                    .from("products")
+                    .delete()
+                    .eq(
+                        "id",
+                        newProduct.id
+                    );
+
+
+                throw costError;
+
+            }
+
         }
 
 
         // ==================================
-        // Update
+        // Update Product
         // ==================================
 
         else {
 
-            result =
+            const oldProduct =
+                adminProducts.find(
+                    item =>
+                        String(item.id) ===
+                        String(id)
+                );
+
+
+            const oldProductData = oldProduct
+                ? {
+                    name:
+                        oldProduct.name,
+
+                    description:
+                        oldProduct.description,
+
+                    price:
+                        oldProduct.price,
+
+                    quantity:
+                        oldProduct.quantity,
+
+                    main_image:
+                        oldProduct.main_image,
+
+                    target:
+                        oldProduct.target,
+
+                    product_code:
+                        oldProduct.product_code,
+
+                    category_id:
+                        oldProduct.category_id
+                }
+                : null;
+
+
+            const oldPurchaseCost =
+                adminProductCosts[
+                    String(id)
+                ];
+
+
+            const {
+                error: productError
+            } =
                 await supabaseClient
                     .from("products")
                     .update(
@@ -884,15 +1068,87 @@ async function saveProduct(
                     .eq(
                         "id",
                         id
-                    )
-                    .select()
-                    .single();
-
-        }
+                    );
 
 
-        if (result.error) {
-            throw result.error;
+            if (productError) {
+                throw productError;
+            }
+
+
+            const {
+                error: costError
+            } =
+                await supabaseClient
+                    .from("product_costs")
+                    .upsert(
+                        {
+                            product_id:
+                                Number(id),
+
+                            purchase_cost:
+                                purchaseCost
+                        },
+                        {
+                            onConflict:
+                                "product_id"
+                        }
+                    );
+
+
+            if (costError) {
+
+                console.error(
+                    "Product cost update error:",
+                    costError
+                );
+
+
+                // محاولة إعادة المنتج إلى حالته السابقة
+                if (oldProductData) {
+
+                    await supabaseClient
+                        .from("products")
+                        .update(
+                            oldProductData
+                        )
+                        .eq(
+                            "id",
+                            id
+                        );
+
+                }
+
+
+                // محاولة إعادة تكلفة الشراء السابقة
+                if (
+                    oldPurchaseCost !== undefined &&
+                    oldPurchaseCost !== null
+                ) {
+
+                    await supabaseClient
+                        .from("product_costs")
+                        .upsert(
+                            {
+                                product_id:
+                                    Number(id),
+
+                                purchase_cost:
+                                    oldPurchaseCost
+                            },
+                            {
+                                onConflict:
+                                    "product_id"
+                            }
+                        );
+
+                }
+
+
+                throw costError;
+
+            }
+
         }
 
 
@@ -904,8 +1160,8 @@ async function saveProduct(
 
         showAdminProductToast(
             id
-                ? "تم تعديل المنتج بنجاح."
-                : "تمت إضافة المنتج بنجاح.",
+                ? "تم تعديل المنتج وتكلفة الشراء بنجاح."
+                : "تمت إضافة المنتج وتكلفة الشراء بنجاح.",
             "success"
         );
 
@@ -943,7 +1199,7 @@ async function saveProduct(
         else {
 
             showFormMessage(
-                "حدث خطأ أثناء حفظ المنتج.",
+                "حدث خطأ أثناء حفظ المنتج وتكلفة الشراء.",
                 "error"
             );
 

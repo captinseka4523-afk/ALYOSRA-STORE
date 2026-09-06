@@ -628,17 +628,57 @@
         class="finance-section"
     >
 
-        <div class="finance-section-heading">
+     <div class="finance-section-heading">
 
-            <div>
-                <span>المخزون</span>
+    <div>
+        <span>المخزون</span>
 
-                <h2>
-                    القيمة والأداء
-                </h2>
-            </div>
+        <h2>
+            القيمة والأداء
+        </h2>
+    </div>
 
-        </div>
+</div>
+
+<div class="finance-section-actions finance-inventory-search-trigger-wrapper">
+
+    <button
+        type="button"
+        class="finance-search-trigger"
+        id="financeInventorySearchToggle"
+        aria-label="البحث في المخزون"
+    >
+        <span class="finance-search-trigger-icon">⌕</span>
+
+        <span>
+            اضغط هنا للبحث عن منتج معين...
+        </span>
+    </button>
+
+</div>
+
+<div
+    class="finance-inventory-search"
+    id="financeInventorySearch"
+    hidden
+>
+    <input
+        type="search"
+        id="financeInventorySearchInput"
+        placeholder="ابحث عن اسم المنتج أو كود المنتج..."
+        autocomplete="off"
+    >
+
+    <button
+        type="button"
+        class="finance-search-close"
+        id="financeInventorySearchClose"
+        aria-label="إغلاق البحث"
+    >
+        ×
+    </button>
+
+</div>
 
 
         <div class="finance-inventory-cards">
@@ -724,31 +764,39 @@
 
                 <thead>
 
-                    <tr>
+    <tr>
 
-                        <th>
-                            المنتج
-                        </th>
+        <th>
+            المنتج
+        </th>
 
-                        <th>
-                            الكمية
-                        </th>
+        <th>
+            الكمية
+        </th>
 
-                        <th>
-                            سعر البيع
-                        </th>
+        <th>
+            سعر البيع
+        </th>
 
-                        <th>
-                            قيمة البيع
-                        </th>
+        <th>
+            تكلفة الشراء
+        </th>
 
-                        <th>
-                            الحالة
-                        </th>
+        <th>
+            قيمة المخزون بالتكلفة
+        </th>
 
-                    </tr>
+        <th>
+            الربح المتوقع
+        </th>
 
-                </thead>
+        <th>
+            الحالة
+        </th>
+
+    </tr>
+
+</thead>
 
                 <tbody id="financeInventoryTableBody">
 
