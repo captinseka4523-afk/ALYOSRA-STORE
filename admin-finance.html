@@ -1,0 +1,1592 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الإدارة المالية | متجر اليُسرى</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/admin-finance.css">
+
+</head><body class="admin-page finance-page">
+
+    <div class="admin-layout">
+
+        <aside class="admin-sidebar">
+
+    <div class="admin-brand">
+        متجر اليُسرى
+        <span>لوحة الإدارة</span>
+    </div>
+
+    <nav class="admin-nav">
+
+        <a href="admin-dashboard.html" class="admin-nav-item">
+            الرئيسية
+        </a>
+
+        <a href="admin-dashboard.html?section=products" class="admin-nav-item">
+            المنتجات
+        </a>
+
+        <a href="admin-dashboard.html?section=categories" class="admin-nav-item">
+            التصنيفات
+        </a>
+
+        <a href="admin-dashboard.html?section=orders" class="admin-nav-item">
+            الطلبات
+        </a>
+
+        <a href="admin-offers.html" class="admin-nav-item">
+            العروض
+        </a>
+
+        <a href="admin-finance.html" class="admin-nav-item active">
+            المالية
+        </a>
+
+    </nav>
+
+    <button id="logoutButton" class="admin-logout">
+        تسجيل الخروج
+    </button>
+
+</aside>
+
+
+<!-- =========================
+     Main Content
+========================== -->
+<main class="admin-main finance-main">
+
+    <!-- Header -->
+    <header class="finance-header">
+
+        <div class="finance-header-title">
+
+            <span class="finance-page-label">
+                النظام المالي
+            </span>
+
+            <h1>
+                الإدارة المالية
+            </h1>
+
+            <p>
+                مركز متكامل لمتابعة المبيعات والأرباح والمصروفات والمخزون
+                والتدفق النقدي والتقارير المالية.
+            </p>
+
+        </div>
+
+        <div class="finance-header-actions">
+
+            <button
+                type="button"
+                id="refreshFinanceButton"
+                class="finance-secondary-button"
+            >
+                تحديث البيانات
+            </button>
+
+            <button
+                type="button"
+                id="exportFinanceButton"
+                class="finance-primary-button"
+            >
+                تصدير التقرير
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         Period Control
+    ========================== -->
+    <section class="finance-control-panel">
+
+        <div class="finance-control-group">
+
+            <label for="financePeriod">
+                الفترة المالية
+            </label>
+
+            <select id="financePeriod">
+
+                <option value="today">
+                    اليوم
+                </option>
+
+                <option value="yesterday">
+                    أمس
+                </option>
+
+                <option value="week">
+                    هذا الأسبوع
+                </option>
+
+                <option value="last-week">
+                    الأسبوع السابق
+                </option>
+
+                <option value="month" selected>
+                    هذا الشهر
+                </option>
+
+                <option value="last-month">
+                    الشهر السابق
+                </option>
+
+                <option value="year">
+                    هذه السنة
+                </option>
+
+                <option value="custom">
+                    فترة مخصصة
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            id="customDateRange"
+            class="finance-custom-date-range"
+            hidden
+        >
+
+            <div>
+                <label for="financeStartDate">
+                    من
+                </label>
+
+                <input
+                    type="date"
+                    id="financeStartDate"
+                >
+            </div>
+
+            <div>
+                <label for="financeEndDate">
+                    إلى
+                </label>
+
+                <input
+                    type="date"
+                    id="financeEndDate"
+                >
+            </div>
+
+            <button
+                type="button"
+                id="applyDateRangeButton"
+                class="finance-primary-button"
+            >
+                تطبيق
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Financial Overview
+    ========================== -->
+    <section
+        id="financeOverviewSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>نظرة عامة</span>
+
+                <h2>
+                    المؤشرات المالية
+                </h2>
+            </div>
+
+            <small id="financePeriodLabel">
+                هذا الشهر
+            </small>
+
+        </div>
+
+
+        <div class="finance-kpi-grid">
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-sales"
+                data-target-section="sales"
+                id="totalSalesCard"
+            >
+                <span>إجمالي المبيعات</span>
+                <strong id="totalSales">0.00 $</strong>
+                <small>
+                    الطلبات المسلّمة
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-costs"
+                data-target-section="sales"
+                id="totalCostsCard"
+            >
+                <span>تكلفة الطلبات</span>
+                <strong id="totalCosts">0.00 $</strong>
+                <small>
+                    تكلفة البضاعة المباعة
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-gross"
+                data-target-section="analytics"
+                id="grossProfitCard"
+            >
+                <span>الربح الإجمالي</span>
+                <strong id="grossProfit">0.00 $</strong>
+                <small>
+                    المبيعات − التكاليف
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-expenses"
+                data-target-section="expenses"
+                id="totalExpensesCard"
+            >
+                <span>المصروفات</span>
+                <strong id="totalExpenses">0.00 $</strong>
+                <small>
+                    إجمالي المصروفات
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-net"
+                data-target-section="analytics"
+                id="netProfitCard"
+            >
+                <span>صافي الربح</span>
+                <strong id="netProfit">0.00 $</strong>
+                <small>
+                    بعد خصم المصروفات
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-inventory"
+                data-target-section="inventory"
+                id="inventoryValueCard"
+            >
+                <span>قيمة المخزون</span>
+                <strong id="inventoryValue">0.00 $</strong>
+                <small>
+                    القيمة الحالية للمخزون
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-capital"
+                data-target-section="capital"
+                id="capitalCard"
+            >
+                <span>رأس المال</span>
+                <strong id="capitalValue">0.00 $</strong>
+                <small>
+                    رأس المال الحالي
+                </small>
+            </button>
+
+
+            <button
+                type="button"
+                class="finance-kpi-card finance-kpi-cash"
+                data-target-section="cashflow"
+                id="cashBalanceCard"
+            >
+                <span>الرصيد النقدي</span>
+                <strong id="cashBalance">0.00 $</strong>
+                <small>
+                    التدفق النقدي الحالي
+                </small>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Quick Financial Summary
+    ========================== -->
+    <section class="finance-summary-strip">
+
+        <div>
+            <span>عدد الطلبات المسلّمة</span>
+            <strong id="deliveredOrdersCount">0</strong>
+        </div>
+
+        <div>
+            <span>متوسط قيمة الطلب</span>
+            <strong id="averageOrderValue">0.00 $</strong>
+        </div>
+
+        <div>
+            <span>هامش الربح</span>
+            <strong id="profitMargin">0%</strong>
+        </div>
+
+        <div>
+            <span>إجمالي المنتجات المباعة</span>
+            <strong id="soldItemsCount">0</strong>
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Sales
+    ========================== -->
+    <section
+        id="salesSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>المبيعات</span>
+
+                <h2>
+                    الطلبات المسلّمة
+                </h2>
+            </div>
+
+            <div class="finance-section-actions">
+
+                <button
+                    type="button"
+                    id="salesExportButton"
+                    class="finance-secondary-button"
+                >
+                    تصدير المبيعات
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="finance-table-tools">
+
+            <div class="finance-search-box">
+
+                <input
+                    type="search"
+                    id="financeOrderSearch"
+                    placeholder="ابحث برقم الطلب أو اسم العميل..."
+                >
+
+            </div>
+
+
+            <select id="financeOrderFilter">
+
+                <option value="all">
+                    جميع الطلبات
+                </option>
+
+                <option value="cost-missing">
+                    التكلفة غير مسجلة
+                </option>
+
+                <option value="cost-entered">
+                    التكلفة مسجلة
+                </option>
+
+                <option value="profitable">
+                    طلبات رابحة
+                </option>
+
+                <option value="loss">
+                    طلبات خاسرة
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="finance-table-wrapper">
+
+            <table class="finance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            رقم الطلب
+                        </th>
+
+                        <th>
+                            التاريخ
+                        </th>
+
+                        <th>
+                            العميل
+                        </th>
+
+                        <th>
+                            المبيعات
+                        </th>
+
+                        <th>
+                            التكلفة
+                        </th>
+
+                        <th>
+                            الربح
+                        </th>
+
+                        <th>
+                            الحالة
+                        </th>
+
+                        <th>
+                            الإجراءات
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="financeOrdersTableBody">
+
+                    <tr class="finance-empty-row">
+
+                        <td colspan="8">
+                            سيتم تحميل الطلبات المسلّمة هنا.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Expenses
+    ========================== -->
+    <section
+        id="expensesSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>المصروفات</span>
+
+                <h2>
+                    إدارة المصروفات
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                id="addExpenseButton"
+                class="finance-primary-button"
+            >
+                إضافة مصروف
+            </button>
+
+        </div>
+
+
+        <div class="finance-expense-overview">
+
+            <div class="finance-info-card">
+
+                <span>
+                    إجمالي المصروفات للفترة
+                </span>
+
+                <strong id="expensesPeriodTotal">
+                    0.00 $
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    عدد المصروفات
+                </span>
+
+                <strong id="expensesCount">
+                    0
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    متوسط المصروف
+                </span>
+
+                <strong id="averageExpense">
+                    0.00 $
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="finance-table-wrapper">
+
+            <table class="finance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            التاريخ
+                        </th>
+
+                        <th>
+                            التصنيف
+                        </th>
+
+                        <th>
+                            الوصف
+                        </th>
+
+                        <th>
+                            المبلغ
+                        </th>
+
+                        <th>
+                            الإجراءات
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="financeExpensesTableBody">
+
+                    <tr class="finance-empty-row">
+
+                        <td colspan="5">
+                            لم تتم إضافة مصروفات بعد.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Inventory
+    ========================== -->
+    <section
+        id="inventorySection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>المخزون</span>
+
+                <h2>
+                    القيمة والأداء
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="finance-inventory-cards">
+
+            <div class="finance-info-card">
+
+                <span>
+                    عدد المنتجات
+                </span>
+
+                <strong id="inventoryProductsCount">
+                    0
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    قيمة المخزون بالتكلفة
+                </span>
+
+                <strong id="inventoryCostValue">
+                    0.00 $
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    قيمة البيع المتوقعة
+                </span>
+
+                <strong id="inventoryRetailValue">
+                    0.00 $
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    الربح المتوقع
+                </span>
+
+                <strong id="inventoryExpectedProfit">
+                    0.00 $
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    منتجات منخفضة المخزون
+                </span>
+
+                <strong id="lowStockProductsCount">
+                    0
+                </strong>
+
+            </div>
+
+            <div class="finance-info-card">
+
+                <span>
+                    منتجات نافدة
+                </span>
+
+                <strong id="outOfStockProductsCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="finance-table-wrapper">
+
+            <table class="finance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            المنتج
+                        </th>
+
+                        <th>
+                            الكمية
+                        </th>
+
+                        <th>
+                            سعر البيع
+                        </th>
+
+                        <th>
+                            قيمة البيع
+                        </th>
+
+                        <th>
+                            الحالة
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="financeInventoryTableBody">
+
+                    <tr class="finance-empty-row">
+
+                        <td colspan="5">
+                            سيتم تحميل بيانات المخزون هنا.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Capital
+    ========================== -->
+    <section
+        id="capitalSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>رأس المال</span>
+
+                <h2>
+                    إدارة رأس المال
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                id="addCapitalMovementButton"
+                class="finance-primary-button"
+            >
+                إضافة حركة
+            </button>
+
+        </div>
+
+
+        <div class="finance-capital-grid">
+
+            <div class="finance-info-card">
+                <span>رأس المال الابتدائي</span>
+                <strong id="initialCapital">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>إضافات رأس المال</span>
+                <strong id="capitalAdditions">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>السحوبات</span>
+                <strong id="capitalWithdrawals">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>رأس المال الحالي</span>
+                <strong id="currentCapital">0.00 $</strong>
+            </div>
+
+        </div>
+
+
+        <div class="finance-table-wrapper">
+
+            <table class="finance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            التاريخ
+                        </th>
+
+                        <th>
+                            النوع
+                        </th>
+
+                        <th>
+                            المبلغ
+                        </th>
+
+                        <th>
+                            الوصف
+                        </th>
+
+                        <th>
+                            الإجراءات
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="capitalMovementsTableBody">
+
+                    <tr class="finance-empty-row">
+
+                        <td colspan="5">
+                            سيتم تسجيل حركات رأس المال هنا.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Cash Flow
+    ========================== -->
+    <section
+        id="cashflowSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>التدفق النقدي</span>
+
+                <h2>
+                    حركة الأموال
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="finance-cashflow-grid">
+
+            <div class="finance-info-card">
+                <span>إجمالي الداخل</span>
+                <strong id="cashInflow">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>إجمالي الخارج</span>
+                <strong id="cashOutflow">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>صافي التدفق</span>
+                <strong id="netCashflow">0.00 $</strong>
+            </div>
+
+            <div class="finance-info-card">
+                <span>الرصيد الحالي</span>
+                <strong id="currentCashBalance">0.00 $</strong>
+            </div>
+
+        </div>
+
+
+        <div class="finance-table-wrapper">
+
+            <table class="finance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            التاريخ
+                        </th>
+
+                        <th>
+                            البيان
+                        </th>
+
+                        <th>
+                            الداخل
+                        </th>
+
+                        <th>
+                            الخارج
+                        </th>
+
+                        <th>
+                            الرصيد
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="cashflowTableBody">
+
+                    <tr class="finance-empty-row">
+
+                        <td colspan="5">
+                            سيتم عرض حركة الأموال هنا.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Analytics
+    ========================== -->
+    <section
+        id="analyticsSection"
+        class="finance-section"
+    >
+
+        <div class="finance-section-heading">
+
+            <div>
+                <span>التحليلات</span>
+
+                <h2>
+                    التقارير والتحليل المالي
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="finance-chart-grid">
+
+            <div class="finance-chart-card">
+
+                <div class="finance-chart-header">
+
+                    <h3>
+                        المبيعات والأرباح
+                    </h3>
+
+                    <span>
+                        حسب الفترة
+                    </span>
+
+                </div>
+
+                <div
+                    id="salesProfitChart"
+                    class="finance-chart-placeholder"
+                >
+                    سيتم عرض الرسم البياني هنا.
+                </div>
+
+            </div>
+
+
+            <div class="finance-chart-card">
+
+                <div class="finance-chart-header">
+
+                    <h3>
+                        المصروفات
+                    </h3>
+
+                    <span>
+                        حسب التصنيف
+                    </span>
+
+                </div>
+
+                <div
+                    id="expensesChart"
+                    class="finance-chart-placeholder"
+                >
+                    سيتم عرض الرسم البياني هنا.
+                </div>
+
+            </div>
+
+
+            <div class="finance-chart-card">
+
+                <div class="finance-chart-header">
+
+                    <h3>
+                        التدفق النقدي
+                    </h3>
+
+                    <span>
+                        حركة الأموال
+                    </span>
+
+                </div>
+
+                <div
+                    id="cashflowChart"
+                    class="finance-chart-placeholder"
+                >
+                    سيتم عرض الرسم البياني هنا.
+                </div>
+
+            </div>
+
+
+            <div class="finance-chart-card">
+
+                <div class="finance-chart-header">
+
+                    <h3>
+                        أداء المنتجات
+                    </h3>
+
+                    <span>
+                        الأكثر مبيعًا
+                    </span>
+
+                </div>
+
+                <div
+                    id="productsPerformanceChart"
+                    class="finance-chart-placeholder"
+                >
+                    سيتم عرض الرسم البياني هنا.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="finance-analysis-cards">
+
+            <div class="finance-analysis-card">
+
+                <span>
+                    أفضل منتج مبيعًا
+                </span>
+
+                <strong id="bestSellingProduct">
+                    —
+                </strong>
+
+                <small id="bestSellingProductSales">
+                    لا توجد بيانات بعد
+                </small>
+
+            </div>
+
+
+            <div class="finance-analysis-card">
+
+                <span>
+                    أعلى يوم مبيعات
+                </span>
+
+                <strong id="bestSalesDay">
+                    —
+                </strong>
+
+                <small id="bestSalesDayValue">
+                    لا توجد بيانات بعد
+                </small>
+
+            </div>
+
+
+            <div class="finance-analysis-card">
+
+                <span>
+                    أعلى تصنيف مصروفات
+                </span>
+
+                <strong id="highestExpenseCategory">
+                    —
+                </strong>
+
+                <small id="highestExpenseCategoryValue">
+                    لا توجد بيانات بعد
+                </small>
+
+            </div>
+
+
+            <div class="finance-analysis-card">
+
+                <span>
+                    متوسط هامش الربح
+                </span>
+
+                <strong id="averageProfitMargin">
+                    0%
+                </strong>
+
+                <small>
+                    للفترة المحددة
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+    </div>
+<!-- =========================
+     Order Details Modal
+========================== -->
+<div
+    id="orderDetailsModal"
+    class="finance-modal"
+    hidden
+>
+
+    <div
+        class="finance-modal-backdrop"
+        data-close-modal
+    ></div>
+
+
+    <div
+        class="finance-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orderDetailsTitle"
+    >
+
+        <div class="finance-modal-header">
+
+            <div>
+
+                <span>
+                    تفاصيل العملية
+                </span>
+
+                <h2 id="orderDetailsTitle">
+                    تفاصيل الطلب
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="finance-modal-close"
+                id="closeOrderDetailsButton"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="finance-order-customer">
+
+            <div>
+                <span>العميل</span>
+                <strong id="modalCustomerName">—</strong>
+            </div>
+
+            <div>
+                <span>الهاتف</span>
+                <strong id="modalCustomerPhone">—</strong>
+            </div>
+
+            <div>
+                <span>العنوان</span>
+                <strong id="modalCustomerAddress">—</strong>
+            </div>
+
+            <div>
+                <span>رقم الطلب</span>
+                <strong id="modalOrderNumber">—</strong>
+            </div>
+
+            <div>
+                <span>التاريخ</span>
+                <strong id="modalOrderDate">—</strong>
+            </div>
+
+        </div>
+
+
+        <div class="finance-order-financial-summary">
+
+            <div>
+                <span>قيمة البيع</span>
+                <strong id="modalSaleTotal">0.00 $</strong>
+            </div>
+
+            <div>
+                <span>تكلفة الطلب</span>
+                <strong id="modalOrderCost">غير مسجلة</strong>
+            </div>
+
+            <div>
+                <span>الربح</span>
+                <strong id="modalOrderProfit">—</strong>
+            </div>
+
+            <div>
+                <span>هامش الربح</span>
+                <strong id="modalProfitMargin">—</strong>
+            </div>
+
+        </div>
+
+
+        <!-- Cost Entry -->
+        <div class="finance-cost-entry">
+
+            <div>
+
+                <span>
+                    المحاسبة
+                </span>
+
+                <h3>
+                    تكلفة الطلب
+                </h3>
+
+                <p>
+                    أدخل التكلفة الكاملة لهذا الطلب ليتم احتساب الربح بشكل صحيح.
+                </p>
+
+            </div>
+
+            <div class="finance-cost-input-row">
+
+                <input
+                    type="number"
+                    id="orderCostInput"
+                    min="0"
+                    step="0.01"
+                    placeholder="تكلفة الطلب بالدولار"
+                >
+
+                <button
+                    type="button"
+                    id="saveOrderCostButton"
+                    class="finance-primary-button"
+                >
+                    حفظ التكلفة
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Products -->
+        <div class="finance-order-products">
+
+            <div class="finance-subsection-heading">
+
+                <h3>
+                    المنتجات
+                </h3>
+
+                <span id="modalProductsCount">
+                    0 منتج
+                </span>
+
+            </div>
+
+
+            <div class="finance-table-wrapper">
+
+                <table class="finance-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                المنتج
+                            </th>
+
+                            <th>
+                                الكمية
+                            </th>
+
+                            <th>
+                                سعر البيع
+                            </th>
+
+                            <th>
+                                الإجمالي
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="modalOrderItemsBody">
+
+                        <tr class="finance-empty-row">
+
+                            <td colspan="4">
+                                لا توجد منتجات.
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="finance-modal-footer">
+
+            <button
+                type="button"
+                id="printInvoiceButton"
+                class="finance-primary-button"
+            >
+                طباعة الفاتورة
+            </button>
+
+            <button
+                type="button"
+                class="finance-secondary-button"
+                data-close-modal
+            >
+                إغلاق
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     Expense Modal
+========================== -->
+<div
+    id="expenseModal"
+    class="finance-modal"
+    hidden
+>
+
+    <div
+        class="finance-modal-backdrop"
+        data-close-expense-modal
+    ></div>
+
+
+    <div
+        class="finance-modal-content finance-small-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="expenseModalTitle"
+    >
+
+        <div class="finance-modal-header">
+
+            <div>
+
+                <span>
+                    المحاسبة
+                </span>
+
+                <h2 id="expenseModalTitle">
+                    إضافة مصروف
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="finance-modal-close"
+                id="closeExpenseModalButton"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="expenseForm">
+
+            <div class="finance-form-group">
+
+                <label for="expenseDate">
+                    التاريخ
+                </label>
+
+                <input
+                    type="date"
+                    id="expenseDate"
+                    required
+                >
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="expenseCategory">
+                    التصنيف
+                </label>
+
+                <select
+                    id="expenseCategory"
+                    required
+                >
+
+                    <option value="">
+                        اختر التصنيف
+                    </option>
+
+                    <option value="transport">
+                        النقل والمواصلات
+                    </option>
+
+                    <option value="shipping">
+                        الشحن والتوصيل
+                    </option>
+
+                    <option value="supplies">
+                        مستلزمات العمل
+                    </option>
+
+                    <option value="marketing">
+                        التسويق
+                    </option>
+
+                    <option value="fees">
+                        الرسوم والعمولات
+                    </option>
+
+                    <option value="other">
+                        أخرى
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="expenseAmount">
+                    المبلغ
+                </label>
+
+                <input
+                    type="number"
+                    id="expenseAmount"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                >
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="expenseDescription">
+                    الوصف
+                </label>
+
+                <textarea
+                    id="expenseDescription"
+                    rows="4"
+                    placeholder="اكتب تفاصيل المصروف..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="finance-modal-footer">
+
+                <button
+                    type="submit"
+                    class="finance-primary-button"
+                >
+                    حفظ المصروف
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelExpenseButton"
+                    class="finance-secondary-button"
+                >
+                    إلغاء
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     Finance Toast
+========================== -->
+<div
+    id="financeToast"
+    class="finance-toast"
+    role="status"
+    aria-live="polite"
+></div>
+
+
+<!-- =========================
+     Scripts
+========================== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase-client.js"></script>
+<script src="js/admin-finance.js"></script>
+
+</body>
+</html>
