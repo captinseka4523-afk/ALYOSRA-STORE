@@ -15,6 +15,10 @@ let financeProductCosts = {};
 const FINANCE_INVENTORY_PER_PAGE = 10;
 let financeInventoryCurrentPage = 1;
 let financeInventorySearchTerm = "";
+
+const FINANCE_EXPENSES_PER_PAGE = 10;
+let financeExpensesCurrentPage = 1;
+let editingExpenseId = null;
 let financeExpenses = [];
 let capitalMovements = [];
 let cashflowMovements = [];
@@ -232,6 +236,7 @@ async function initializeFinancePage() {
   setDefaultDateRange();
 
 setupFinanceInventoryPaginationContainer();
+setupFinanceExpensesPaginationContainer();
 
 await loadFinanceData();
 }
@@ -254,6 +259,8 @@ function initializeFinanceControls() {
 
                 currentPeriod =
                     this.value;
+                    financeExpensesCurrentPage =
+    1;
 
                 updateCustomDateVisibility();
 
@@ -327,7 +334,8 @@ function initializeFinanceControls() {
 
                 currentEndDate =
                     end;
-
+financeExpensesCurrentPage =
+    1;
 
                 await loadFinanceData();
 
@@ -1310,7 +1318,7 @@ async function loadDeliveredOrders() {
             .select("*")
             .eq(
                 "status",
-                "تم التسليم"
+                "delivered"
             )
             .order(
                 "id",
@@ -1470,15 +1478,41 @@ Expenses
 
 async function loadExpenses() {
 
-    /*
-       The expenses table has not yet been
-       added to the Supabase schema.
+    const { data, error } =
+        await supabaseClient
+            .from("expenses")
+            .select("*")
+            .gte(
+                "expense_date",
+                currentStartDate
+            )
+            .lte(
+                "expense_date",
+                currentEndDate
+            )
+            .order(
+                "expense_date",
+                {
+                    ascending: false
+                }
+            )
+            .order(
+                "id",
+                {
+                    ascending: false
+                }
+            );
 
-       Keep the state empty instead of inventing
-       financial data.
-    */
 
-    financeExpenses = [];
+    if (error) {
+        throw error;
+    }
+
+
+    financeExpenses =
+        Array.isArray(data)
+            ? data
+            : [];
 
 }
 
@@ -1488,6 +1522,10 @@ Financial Calculations
 ========================================================= */
 
 function calculateFinanceMetrics() {
+
+    // ==================================
+    // إجمالي المبيعات
+    // ==================================
 
     const sales =
         financeOrders.reduce(
@@ -1503,36 +1541,238 @@ function calculateFinanceMetrics() {
         );
 
 
-    const ordersWithCost =
-        financeOrders.filter(
-            order =>
-                Number.isFinite(
-                    Number(
-                        order.order_cost
+    // ==================================
+    // حساب تكلفة كل طلب تلقائيًا
+    // من order_items + product_costs
+    // ==================================
+
+    const orderCostMap =
+        new Map();
+
+
+    const incompleteOrderIds =
+        new Set();
+
+
+    financeOrderItems.forEach(
+        item => {
+
+            const orderId =
+                String(
+                    item.order_id
+                );
+
+
+            const productId =
+                item.product_id;
+
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            const purchaseCost =
+                financeProductCosts[
+                    String(
+                        productId
                     )
+                ];
+
+
+            // ----------------------------------
+            // إذا لم توجد تكلفة شراء للمنتج
+            // ----------------------------------
+
+            if (
+                !Number.isFinite(
+                    Number(
+                        purchaseCost
+                    )
+                ) ||
+                Number(
+                    purchaseCost
+                ) <= 0
+            ) {
+
+                incompleteOrderIds.add(
+                    orderId
+                );
+
+                return;
+
+            }
+
+
+            const itemCost =
+                quantity *
+                Number(
+                    purchaseCost
+                );
+
+
+            const currentOrderCost =
+                orderCostMap.get(
+                    orderId
+                ) || 0;
+
+
+            orderCostMap.set(
+                orderId,
+                currentOrderCost +
+                    itemCost
+            );
+
+        }
+    );
+
+
+    // ==================================
+    // تحديد تكلفة كل طلب
+    // الأولوية:
+    // 1. تكلفة يدوية
+    // 2. تكلفة تلقائية
+    // 3. غير مكتمل
+    // ==================================
+
+    financeOrders.forEach(
+        order => {
+
+            const orderId =
+                String(
+                    order.id
+                );
+
+
+            // ----------------------------------
+            // هل توجد تكلفة يدوية محفوظة؟
+            // ----------------------------------
+
+            const manualCost =
+                Number(
+                    order.order_cost
+                );
+
+
+            const hasManualCost =
+                order.order_cost !== null &&
+                order.order_cost !== undefined &&
+                order.order_cost !== "" &&
+                Number.isFinite(
+                    manualCost
+                ) &&
+                manualCost >= 0;
+
+
+            // ----------------------------------
+            // التكلفة اليدوية لها الأولوية
+            // ----------------------------------
+
+            if (hasManualCost) {
+
+                order.order_cost =
+                    manualCost;
+
+                order._costComplete =
+                    true;
+
+                order._costSource =
+                    "manual";
+
+                return;
+
+            }
+
+
+            // ----------------------------------
+            // إذا كان هناك منتج بلا تكلفة شراء
+            // ----------------------------------
+
+            if (
+                incompleteOrderIds.has(
+                    orderId
                 )
+            ) {
+
+                order.order_cost =
+                    null;
+
+                order._costComplete =
+                    false;
+
+                order._costSource =
+                    null;
+
+                return;
+
+            }
+
+
+            // ----------------------------------
+            // التكلفة التلقائية
+            // ----------------------------------
+
+            order.order_cost =
+                orderCostMap.get(
+                    orderId
+                ) || 0;
+
+
+            order._costComplete =
+                true;
+
+            order._costSource =
+                "automatic";
+
+        }
+    );
+
+
+    // ==================================
+    // هل جميع الطلبات لديها تكلفة؟
+    // ==================================
+
+    const allOrdersCostComplete =
+        financeOrders.every(
+            order =>
+                order._costComplete === true
         );
 
+
+    // ==================================
+    // إجمالي التكلفة
+    // ==================================
 
     const costs =
-        ordersWithCost.reduce(
-            (sum, order) => {
+        allOrdersCostComplete
+            ? financeOrders.reduce(
+                (sum, order) => {
 
-                return sum +
-                    Number(
-                        order.order_cost || 0
-                    );
+                    return sum +
+                        Number(
+                            order.order_cost || 0
+                        );
 
-            },
-            0
-        );
-
-
-    const grossProfit =
-        ordersWithCost.length > 0
-            ? sales - costs
+                },
+                0
+            )
             : 0;
 
+
+    // ==================================
+    // الربح الإجمالي
+    // ==================================
+
+    const grossProfit =
+        allOrdersCostComplete
+            ? sales - costs
+            : null;
+
+
+    // ==================================
+    // المصاريف
+    // ==================================
 
     const expenses =
         financeExpenses.reduce(
@@ -1548,15 +1788,27 @@ function calculateFinanceMetrics() {
         );
 
 
-    const netProfit =
-        ordersWithCost.length > 0
-            ? grossProfit - expenses
-            : 0;
+    // ==================================
+    // صافي الربح
+    // ==================================
 
+    const netProfit =
+        allOrdersCostComplete
+            ? grossProfit - expenses
+            : null;
+
+
+    // ==================================
+    // عدد الطلبات المسلّمة
+    // ==================================
 
     const deliveredCount =
         financeOrders.length;
 
+
+    // ==================================
+    // متوسط قيمة الطلب
+    // ==================================
 
     const averageOrderValue =
         deliveredCount
@@ -1564,15 +1816,23 @@ function calculateFinanceMetrics() {
             : 0;
 
 
+    // ==================================
+    // هامش الربح
+    // ==================================
+
     const profitMargin =
         sales > 0 &&
-        ordersWithCost.length > 0
+        allOrdersCostComplete
             ? (
                 grossProfit /
                 sales
             ) * 100
-            : 0;
+            : null;
 
+
+    // ==================================
+    // عدد القطع المباعة
+    // ==================================
 
     let soldItemsCount = 0;
 
@@ -1589,39 +1849,59 @@ function calculateFinanceMetrics() {
     );
 
 
+    // ==================================
+    // تحديث بطاقات المالية
+    // ==================================
+
     setText(
         "totalSales",
-        formatMoney(sales)
+        formatMoney(
+            sales
+        )
     );
 
 
     setText(
         "totalCosts",
-        formatMoney(costs)
+        allOrdersCostComplete
+            ? formatMoney(
+                costs
+            )
+            : "غير مكتمل"
     );
 
 
     setText(
         "grossProfit",
-        ordersWithCost.length > 0
-            ? formatMoney(grossProfit)
+        allOrdersCostComplete
+            ? formatMoney(
+                grossProfit
+            )
             : "غير مكتمل"
     );
 
 
     setText(
         "totalExpenses",
-        formatMoney(expenses)
+        formatMoney(
+            expenses
+        )
     );
 
 
     setText(
         "netProfit",
-        ordersWithCost.length > 0
-            ? formatMoney(netProfit)
+        allOrdersCostComplete
+            ? formatMoney(
+                netProfit
+            )
             : "غير مكتمل"
     );
 
+
+    // ==================================
+    // بيانات المخزون
+    // ==================================
 
     const inventoryStats =
         calculateInventoryStats();
@@ -1635,6 +1915,10 @@ function calculateFinanceMetrics() {
     );
 
 
+    // ==================================
+    // عدد الطلبات
+    // ==================================
+
     setText(
         "deliveredOrdersCount",
         formatNumber(
@@ -1642,6 +1926,10 @@ function calculateFinanceMetrics() {
         )
     );
 
+
+    // ==================================
+    // متوسط الطلب
+    // ==================================
 
     setText(
         "averageOrderValue",
@@ -1651,13 +1939,22 @@ function calculateFinanceMetrics() {
     );
 
 
+    // ==================================
+    // هامش الربح
+    // ==================================
+
     setText(
         "profitMargin",
-        ordersWithCost.length > 0
+        allOrdersCostComplete &&
+        profitMargin !== null
             ? `${profitMargin.toFixed(1)}%`
             : "غير مكتمل"
     );
 
+
+    // ==================================
+    // عدد القطع المباعة
+    // ==================================
 
     setText(
         "soldItemsCount",
@@ -2017,17 +2314,17 @@ function renderFinanceOrders() {
                         order.total || 0
                     );
 
+const cost =
+    Number(
+        order.order_cost
+    );
 
-                const cost =
-                    Number(
-                        order.order_cost
-                    );
 
-
-                const hasCost =
-                    Number.isFinite(
-                        cost
-                    );
+const hasCost =
+    order._costComplete === true &&
+    Number.isFinite(
+        cost
+    );
 
 
                 const profit =
@@ -2322,16 +2619,18 @@ function populateOrderDetailsModal() {
         `#${order.id}`
     );
 
-
-    /*
-       There is currently no dedicated order
-       creation-date column in the known schema.
-    */
-
-    setText(
-        "modalOrderDate",
-        "غير متوفر"
-    );
+setText(
+    "modalOrderDate",
+    order.created_at
+        ? new Date(order.created_at).toLocaleString(
+            "ar-SY",
+            {
+                dateStyle: "medium",
+                timeStyle: "short"
+            }
+        )
+        : "غير متوفر"
+);
 
 
     const total =
@@ -2747,49 +3046,133 @@ async function saveOrderCost() {
 Expenses
 ========================================================= */
 
-function openExpenseModal() {
+function openExpenseModal(expense = null) {
 
     const modal =
         getElement(
             "expenseModal"
         );
 
-
     if (!modal) {
         return;
     }
-
 
     const form =
         getElement(
             "expenseForm"
         );
 
-
-    if (form) {
-        form.reset();
-    }
-
+    const title =
+        getElement(
+            "expenseModalTitle"
+        );
 
     const dateInput =
         getElement(
             "expenseDate"
         );
 
+    const categoryInput =
+        getElement(
+            "expenseCategory"
+        );
 
-    if (dateInput) {
+    const amountInput =
+        getElement(
+            "expenseAmount"
+        );
 
-        dateInput.value =
-            formatDateForDatabase(
-                new Date()
-            );
+    const descriptionInput =
+        getElement(
+            "expenseDescription"
+        );
+
+    const saveButton =
+        form?.querySelector(
+            'button[type="submit"]'
+        );
+
+    if (!form) {
+        return;
+    }
+
+    // ==================================
+    // وضع الإضافة
+    // ==================================
+
+    if (!expense) {
+
+        editingExpenseId =
+            null;
+
+        form.reset();
+
+        if (title) {
+            title.textContent =
+                "إضافة مصروف";
+        }
+
+        if (saveButton) {
+            saveButton.textContent =
+                "حفظ المصروف";
+        }
+
+        if (dateInput) {
+            dateInput.value =
+                formatDateForDatabase(
+                    new Date()
+                );
+        }
 
     }
 
+    // ==================================
+    // وضع التعديل
+    // ==================================
+
+    else {
+
+        editingExpenseId =
+            expense.id;
+
+        if (title) {
+            title.textContent =
+                "تعديل المصروف";
+        }
+
+        if (saveButton) {
+            saveButton.textContent =
+                "حفظ التعديل";
+        }
+
+        if (dateInput) {
+            dateInput.value =
+                expense.expense_date ||
+                "";
+        }
+
+        if (categoryInput) {
+            categoryInput.value =
+                expense.category ||
+                "";
+        }
+
+        if (amountInput) {
+            amountInput.value =
+                expense.amount ??
+                "";
+        }
+
+        if (descriptionInput) {
+            descriptionInput.value =
+                expense.description ||
+                "";
+        }
+
+    }
 
     modal.hidden =
         false;
-
 
     requestAnimationFrame(
         () => {
@@ -2864,24 +3247,262 @@ function initializeFinanceForms() {
 
 async function saveExpense() {
 
-    /*
-       The expenses table has not yet been added.
+    const dateInput =
+        getElement(
+            "expenseDate"
+        );
 
-       Do not pretend to save financial data locally.
-    */
+    const categoryInput =
+        getElement(
+            "expenseCategory"
+        );
 
-    showFinanceToast(
-        "قسم المصروفات جاهز، لكن حفظ المصروفات سيُفعّل بعد إنشاء جدول المصروفات في Supabase.",
-        "warning"
-    );
+    const amountInput =
+        getElement(
+            "expenseAmount"
+        );
+
+    const descriptionInput =
+        getElement(
+            "expenseDescription"
+        );
+
+    if (
+        !dateInput ||
+        !categoryInput ||
+        !amountInput ||
+        !descriptionInput
+    ) {
+        showFinanceToast(
+            "تعذر العثور على حقول نموذج المصروف.",
+            "error"
+        );
+
+        return;
+    }
+
+    const expenseDate =
+        dateInput.value.trim();
+
+    const category =
+        categoryInput.value.trim();
+
+    const rawAmount =
+        amountInput.value.trim();
+
+    const description =
+        descriptionInput.value.trim();
+
+    if (!expenseDate) {
+        showFinanceToast(
+            "يرجى تحديد تاريخ المصروف.",
+            "warning"
+        );
+        return;
+    }
+
+    if (!category) {
+        showFinanceToast(
+            "يرجى اختيار تصنيف المصروف.",
+            "warning"
+        );
+        return;
+    }
+
+    const amount =
+        Number(rawAmount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        showFinanceToast(
+            "أدخل مبلغًا صحيحًا أكبر من صفر.",
+            "warning"
+        );
+        return;
+    }
+
+    const saveButton =
+        getElement(
+            "expenseForm"
+        )?.querySelector(
+            'button[type="submit"]'
+        );
+
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent =
+            editingExpenseId
+                ? "جاري التعديل..."
+                : "جاري الحفظ...";
+    }
+
+    try {
+
+        // ==================================
+        // تعديل مصروف موجود
+        // ==================================
+
+        if (editingExpenseId !== null) {
+
+            const { data, error } =
+                await supabaseClient
+                    .from("expenses")
+                    .update({
+                        expense_date:
+                            expenseDate,
+                        category:
+                            category,
+                        amount:
+                            amount,
+                        description:
+                            description || null
+                    })
+                    .eq(
+                        "id",
+                        editingExpenseId
+                    )
+                    .select()
+                    .single();
+
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+
+                const index =
+                    financeExpenses.findIndex(
+                        expense =>
+                            Number(expense.id) ===
+                            Number(editingExpenseId)
+                    );
+
+                if (index !== -1) {
+
+                    financeExpenses[index] =
+                        data;
+
+                }
+
+            }
+
+            showFinanceToast(
+                "تم تعديل المصروف بنجاح.",
+                "success"
+            );
+
+        }
+
+        // ==================================
+        // إضافة مصروف جديد
+        // ==================================
+
+        else {
+
+            const { data, error } =
+                await supabaseClient
+                    .from("expenses")
+                    .insert({
+                        expense_date:
+                            expenseDate,
+                        category:
+                            category,
+                        amount:
+                            amount,
+                        description:
+                            description || null
+                    })
+                    .select()
+                    .single();
+
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+
+                financeExpenses.unshift(
+                    data
+                );
+
+            }
+
+            showFinanceToast(
+                "تمت إضافة المصروف بنجاح.",
+                "success"
+            );
+
+        }
+
+        editingExpenseId =
+            null;
+
+        calculateFinanceMetrics();
+        renderFinanceExpenses();
+
+        const expenseForm =
+            getElement(
+                "expenseForm"
+            );
+
+        if (expenseForm) {
+            expenseForm.reset();
+        }
+
+        const expenseModal =
+            getElement(
+                "expenseModal"
+            );
+
+        if (expenseModal) {
+            expenseModal.classList.remove(
+                "show"
+            );
+
+            setTimeout(
+                () => {
+                    expenseModal.hidden =
+                        true;
+                },
+                180
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Save expense error:",
+            error
+        );
+
+        showFinanceToast(
+            editingExpenseId !== null
+                ? "تعذر تعديل المصروف. حاول مرة أخرى."
+                : "تعذر حفظ المصروف. حاول مرة أخرى.",
+            "error"
+        );
+
+    } finally {
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                "حفظ المصروف";
+
+        }
+
+    }
 
 }
-
 
 /* =========================================================
 Expenses Rendering
 ========================================================= */
-
 function renderFinanceExpenses() {
 
     const tbody =
@@ -2889,45 +3510,13 @@ function renderFinanceExpenses() {
             "financeExpensesTableBody"
         );
 
-
     if (!tbody) {
         return;
     }
 
-
-    if (!financeExpenses.length) {
-
-        tbody.innerHTML = `
-            <tr class="finance-empty-row">
-                <td colspan="5">
-                    لا توجد مصروفات مسجلة للفترة الحالية.
-                </td>
-            </tr>
-        `;
-
-
-        setText(
-            "expensesPeriodTotal",
-            formatMoney(0)
-        );
-
-
-        setText(
-            "expensesCount",
-            "0"
-        );
-
-
-        setText(
-            "averageExpense",
-            formatMoney(0)
-        );
-
-
-        return;
-
-    }
-
+    // ==================================
+    // الإحصائيات — جميع مصروفات الفترة
+    // ==================================
 
     const total =
         financeExpenses.reduce(
@@ -2940,17 +3529,16 @@ function renderFinanceExpenses() {
             0
         );
 
-
     const average =
-        total /
-        financeExpenses.length;
-
+        financeExpenses.length
+            ? total /
+                financeExpenses.length
+            : 0;
 
     setText(
         "expensesPeriodTotal",
         formatMoney(total)
     );
-
 
     setText(
         "expensesCount",
@@ -2959,15 +3547,88 @@ function renderFinanceExpenses() {
         )
     );
 
-
     setText(
         "averageExpense",
         formatMoney(average)
     );
 
+    // ==================================
+    // لا توجد مصروفات
+    // ==================================
+
+    if (!financeExpenses.length) {
+
+        tbody.innerHTML = `
+            <tr class="finance-empty-row">
+                <td colspan="5">
+                    لا توجد مصروفات مسجلة للفترة الحالية.
+                </td>
+            </tr>
+        `;
+
+        financeExpensesCurrentPage =
+            1;
+
+        renderFinanceExpensesPagination(
+            0
+        );
+
+        return;
+
+    }
+
+    // ==================================
+    // Pagination
+    // ==================================
+
+    const totalPages =
+        Math.ceil(
+            financeExpenses.length /
+            FINANCE_EXPENSES_PER_PAGE
+        );
+
+    if (
+        financeExpensesCurrentPage >
+        totalPages
+    ) {
+
+        financeExpensesCurrentPage =
+            totalPages;
+
+    }
+
+    if (
+        financeExpensesCurrentPage < 1
+    ) {
+
+        financeExpensesCurrentPage =
+            1;
+
+    }
+
+    const startIndex =
+        (
+            financeExpensesCurrentPage -
+            1
+        ) *
+        FINANCE_EXPENSES_PER_PAGE;
+
+    const endIndex =
+        startIndex +
+        FINANCE_EXPENSES_PER_PAGE;
+
+    const currentExpenses =
+        financeExpenses.slice(
+            startIndex,
+            endIndex
+        );
+
+    // ==================================
+    // عرض المصروفات الحالية
+    // ==================================
 
     tbody.innerHTML =
-        financeExpenses.map(
+        currentExpenses.map(
             expense => {
 
                 return `
@@ -2975,7 +3636,7 @@ function renderFinanceExpenses() {
 
                         <td>
                             ${escapeHTML(
-                                expense.date ||
+                                expense.expense_date ||
                                 "—"
                             )}
                         </td>
@@ -3001,7 +3662,27 @@ function renderFinanceExpenses() {
                         </td>
 
                         <td>
-                            —
+
+                            <div class="finance-expense-actions">
+
+                                <button
+                                    type="button"
+                                    class="finance-expense-edit-button"
+                                    data-expense-id="${expense.id}"
+                                >
+                                    تعديل
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="finance-expense-delete-button"
+                                    data-expense-id="${expense.id}"
+                                >
+                                    حذف
+                                </button>
+
+                            </div>
+
                         </td>
 
                     </tr>
@@ -3011,8 +3692,411 @@ function renderFinanceExpenses() {
         )
         .join("");
 
+    // ==================================
+    // Pagination
+    // ==================================
+
+    renderFinanceExpensesPagination(
+        financeExpenses.length
+    );
+
+    initializeFinanceExpenseEditButtons();
+
+    initializeFinanceExpenseDeleteButtons();
+
 }
 
+function renderFinanceExpensesPagination(
+    totalExpenses =
+        financeExpenses.length
+) {
+
+    const pagination =
+        getElement(
+            "financeExpensesPagination"
+        );
+
+
+    if (!pagination) {
+        return;
+    }
+
+
+    const totalPages =
+        Math.ceil(
+            totalExpenses /
+            FINANCE_EXPENSES_PER_PAGE
+        );
+
+
+    if (
+        totalExpenses <=
+        FINANCE_EXPENSES_PER_PAGE
+    ) {
+
+        pagination.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const currentPage =
+        financeExpensesCurrentPage;
+
+
+    const startItem =
+        (
+            currentPage -
+            1
+        ) *
+        FINANCE_EXPENSES_PER_PAGE +
+        1;
+
+
+    const endItem =
+        Math.min(
+            currentPage *
+                FINANCE_EXPENSES_PER_PAGE,
+            totalExpenses
+        );
+
+
+    let pagesHTML = "";
+
+
+    for (
+        let page = 1;
+        page <= totalPages;
+        page++
+    ) {
+
+        pagesHTML += `
+            <button
+                type="button"
+                class="finance-pagination-page ${
+                    page === currentPage
+                        ? "active"
+                        : ""
+                }"
+                data-expense-page="${page}"
+            >
+                ${page}
+            </button>
+        `;
+
+    }
+
+
+    pagination.innerHTML = `
+
+        <div class="finance-pagination-info">
+            عرض
+            ${formatNumber(startItem)}
+            -
+            ${formatNumber(endItem)}
+            من
+            ${formatNumber(totalExpenses)}
+            مصروفًا
+        </div>
+
+        <div class="finance-pagination-controls">
+
+            <button
+                type="button"
+                class="finance-pagination-arrow"
+                data-expense-page-action="previous"
+                ${
+                    currentPage === 1
+                        ? "disabled"
+                        : ""
+                }
+            >
+                السابق
+            </button>
+
+            <div class="finance-pagination-pages">
+                ${pagesHTML}
+            </div>
+
+            <button
+                type="button"
+                class="finance-pagination-arrow"
+                data-expense-page-action="next"
+                ${
+                    currentPage === totalPages
+                        ? "disabled"
+                        : ""
+                }
+            >
+                التالي
+            </button>
+
+        </div>
+
+    `;
+
+
+    pagination
+        .querySelectorAll(
+            "[data-expense-page]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const selectedPage =
+                            Number(
+                                this.dataset.expensePage
+                            );
+
+
+                        if (
+                            selectedPage ===
+                            financeExpensesCurrentPage
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        financeExpensesCurrentPage =
+                            selectedPage;
+
+
+                        renderFinanceExpenses();
+
+                    }
+                );
+
+            }
+        );
+
+
+    const previousButton =
+        pagination.querySelector(
+            '[data-expense-page-action="previous"]'
+        );
+
+
+    if (previousButton) {
+
+        previousButton.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    financeExpensesCurrentPage <=
+                    1
+                ) {
+
+                    return;
+
+                }
+
+
+                financeExpensesCurrentPage--;
+
+
+                renderFinanceExpenses();
+
+            }
+        );
+
+    }
+
+
+    const nextButton =
+        pagination.querySelector(
+            '[data-expense-page-action="next"]'
+        );
+
+
+    if (nextButton) {
+
+        nextButton.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    financeExpensesCurrentPage >=
+                    totalPages
+                ) {
+
+                    return;
+
+                }
+
+
+                financeExpensesCurrentPage++;
+
+
+                renderFinanceExpenses();
+
+            }
+        );
+
+    }
+
+}
+
+
+function initializeFinanceExpenseEditButtons() {
+
+    document
+        .querySelectorAll(
+            ".finance-expense-edit-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const expenseId =
+                            Number(
+                                this.dataset.expenseId
+                            );
+
+                        const expense =
+                            financeExpenses.find(
+                                item =>
+                                    Number(
+                                        item.id
+                                    ) ===
+                                    expenseId
+                            );
+
+                        if (!expense) {
+
+                            showFinanceToast(
+                                "تعذر العثور على المصروف.",
+                                "error"
+                            );
+
+                            return;
+                        }
+
+                        openExpenseModal(
+                            expense
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+function initializeFinanceExpenseDeleteButtons() {
+
+    document
+        .querySelectorAll(
+            ".finance-expense-delete-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const expenseId =
+                            Number(
+                                this.dataset.expenseId
+                            );
+
+                        deleteExpense(
+                            expenseId
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+async function deleteExpense(expenseId) {
+
+    const expense =
+        financeExpenses.find(
+            item =>
+                Number(item.id) ===
+                Number(expenseId)
+        );
+
+    if (!expense) {
+
+        showFinanceToast(
+            "تعذر العثور على المصروف.",
+            "error"
+        );
+
+        return;
+    }
+
+    const confirmed =
+        confirm(
+            "هل أنت متأكد من حذف هذا المصروف؟ لا يمكن التراجع عن هذه العملية."
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const { error } =
+            await supabaseClient
+                .from("expenses")
+                .delete()
+                .eq(
+                    "id",
+                    expenseId
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        financeExpenses =
+            financeExpenses.filter(
+                item =>
+                    Number(item.id) !==
+                    Number(expenseId)
+            );
+
+        calculateFinanceMetrics();
+
+        renderFinanceExpenses();
+
+        showFinanceToast(
+            "تم حذف المصروف بنجاح.",
+            "success"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Delete expense error:",
+            error
+        );
+
+        showFinanceToast(
+            "تعذر حذف المصروف. حاول مرة أخرى.",
+            "error"
+        );
+
+    }
+
+}
 
 /* =========================================================
 Inventory Rendering
@@ -3661,6 +4745,54 @@ function setupFinanceInventoryPaginationContainer() {
 
     pagination.className =
         "finance-inventory-pagination";
+
+    const tableContainer =
+        table.parentElement;
+
+    if (
+        tableContainer &&
+        tableContainer.parentElement
+    ) {
+
+        tableContainer.parentElement.insertBefore(
+            pagination,
+            tableContainer.nextSibling
+        );
+
+    }
+
+}
+
+function setupFinanceExpensesPaginationContainer() {
+
+    const tableBody =
+        document.getElementById(
+            "financeExpensesTableBody"
+        );
+
+    if (!tableBody) return;
+
+    const table =
+        tableBody.closest("table");
+
+    if (!table) return;
+
+    if (
+        document.getElementById(
+            "financeExpensesPagination"
+        )
+    ) {
+        return;
+    }
+
+    const pagination =
+        document.createElement("div");
+
+    pagination.id =
+        "financeExpensesPagination";
+
+    pagination.className =
+        "finance-expenses-pagination";
 
     const tableContainer =
         table.parentElement;

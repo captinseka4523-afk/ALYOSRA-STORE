@@ -1,3 +1,4 @@
+
 // ==========================================
 // Admin Order Details
 // ==========================================
@@ -117,6 +118,22 @@ async function loadOrderDetails(
 
 
         // ----------------------------------
+        // حساب تكلفة الطلب تلقائيًا
+        // ----------------------------------
+
+        const orderCostData =
+            await calculateOrderCost(
+                items || []
+            );
+
+
+        console.log(
+            "ORDER COST DATA:",
+            orderCostData
+        );
+
+
+        // ----------------------------------
         // تعبئة البيانات
         // ----------------------------------
 
@@ -165,10 +182,18 @@ async function loadOrderDetails(
 
         createStatusSelector(
             orderId,
-            order.status,
-            order.order_cost,
-            order.total
+            order.status
         );
+
+
+        // ----------------------------------
+        // إجمالي الطلب
+        // ----------------------------------
+
+        const orderTotal =
+            Number(
+                order.total || 0
+            );
 
 
         document.getElementById(
@@ -176,39 +201,18 @@ async function loadOrderDetails(
         ).textContent =
             "$" +
             formatPrice(
-                order.total
+                orderTotal
             );
 
 
-        const orderCostElement =
-            document.getElementById(
-                "orderCost"
-            );
+        // ----------------------------------
+        // تكلفة الطلب
+        // ----------------------------------
 
-
-        if (orderCostElement) {
-
-            if (
-                order.order_cost !== null &&
-                order.order_cost !== undefined &&
-                Number(order.order_cost) > 0
-            ) {
-
-                orderCostElement.textContent =
-                    "$" +
-                    formatPrice(
-                        order.order_cost
-                    );
-
-            }
-            else {
-
-                orderCostElement.textContent =
-                    "⚠️ التكلفة غير مسجلة";
-
-            }
-
-        }
+        renderOrderFinancialData(
+            orderTotal,
+            orderCostData
+        );
 
 
         // ----------------------------------
@@ -241,14 +245,393 @@ async function loadOrderDetails(
 
 
 // ==========================================
+// Calculate Order Cost
+// ==========================================
+
+async function calculateOrderCost(
+    items
+) {
+
+    if (!items.length) {
+
+        return {
+            cost: 0,
+            complete: true,
+            missingProducts: []
+        };
+
+    }
+
+
+    // ----------------------------------
+    // استخراج معرفات المنتجات
+    // ----------------------------------
+
+    const productIds =
+        [
+            ...new Set(
+                items
+                    .map(
+                        item =>
+                            item.product_id
+                    )
+                    .filter(
+                        productId =>
+                            productId !== null &&
+                            productId !== undefined
+                    )
+            )
+        ];
+
+
+    // ----------------------------------
+    // التحقق من وجود product_id
+    // ----------------------------------
+
+    const itemsWithoutProductId =
+        items.filter(
+            item =>
+                item.product_id === null ||
+                item.product_id === undefined
+        );
+
+
+    if (
+        !productIds.length
+    ) {
+
+        return {
+            cost: 0,
+            complete: false,
+            missingProducts:
+                itemsWithoutProductId.length
+                    ? itemsWithoutProductId
+                    : items
+        };
+
+    }
+
+
+    // ----------------------------------
+    // جلب تكاليف المنتجات
+    // ----------------------------------
+
+    const {
+        data: productCosts,
+        error: costError
+    } =
+        await supabaseClient
+            .from("product_costs")
+            .select(
+                "product_id, purchase_cost"
+            )
+            .in(
+                "product_id",
+                productIds
+            );
+
+
+    if (costError) {
+
+        console.error(
+            "Product costs error:",
+            costError
+        );
+
+        throw costError;
+
+    }
+
+
+    // ----------------------------------
+    // تحويل التكاليف إلى Map
+    // ----------------------------------
+
+    const costMap =
+        new Map();
+
+
+    (productCosts || []).forEach(
+        function(cost) {
+
+            costMap.set(
+                String(
+                    cost.product_id
+                ),
+                Number(
+                    cost.purchase_cost
+                )
+            );
+
+        }
+    );
+
+
+    // ----------------------------------
+    // حساب التكلفة
+    // ----------------------------------
+
+    let totalCost = 0;
+
+    const missingProducts = [];
+
+
+    items.forEach(
+        function(item) {
+
+            const productId =
+                item.product_id;
+
+
+            const purchaseCost =
+                costMap.get(
+                    String(
+                        productId
+                    )
+                );
+
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            if (
+                !Number.isFinite(
+                    purchaseCost
+                ) ||
+                purchaseCost <= 0
+            ) {
+
+                missingProducts.push(
+                    item
+                );
+
+                return;
+
+            }
+
+
+            totalCost +=
+                quantity *
+                purchaseCost;
+
+        }
+    );
+
+
+    return {
+
+        cost:
+            totalCost,
+
+        complete:
+            missingProducts.length === 0,
+
+        missingProducts
+
+    };
+
+}
+
+
+// ==========================================
+// Render Order Financial Data
+// ==========================================
+
+function renderOrderFinancialData(
+    orderTotal,
+    orderCostData
+) {
+
+    const orderCostElement =
+        document.getElementById(
+            "orderCost"
+        );
+
+
+    if (!orderCostElement) {
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // التكلفة غير مكتملة
+    // ----------------------------------
+
+    if (
+        !orderCostData.complete
+    ) {
+
+        orderCostElement.innerHTML =
+            `<span class="order-cost-error">
+                ⚠️ تكلفة بعض المنتجات غير مسجلة
+            </span>`;
+
+        renderOrderProfit(
+            null
+        );
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // عرض التكلفة
+    // ----------------------------------
+
+    orderCostElement.textContent =
+        "$" +
+        formatPrice(
+            orderCostData.cost
+        );
+
+
+    // ----------------------------------
+    // حساب الربح الإجمالي
+    // ----------------------------------
+
+    const grossProfit =
+        orderTotal -
+        orderCostData.cost;
+
+
+    renderOrderProfit(
+        grossProfit
+    );
+
+}
+
+
+// ==========================================
+// Render Order Profit
+// ==========================================
+
+function renderOrderProfit(
+    grossProfit
+) {
+
+    const totalCard =
+        document.querySelector(
+            ".order-total-card"
+        );
+
+
+    if (!totalCard) {
+
+        return;
+
+    }
+
+
+    let profitRow =
+        document.getElementById(
+            "orderProfitRow"
+        );
+
+
+    // ----------------------------------
+    // إنشاء صف الربح مرة واحدة
+    // ----------------------------------
+
+    if (!profitRow) {
+
+        profitRow =
+            document.createElement(
+                "div"
+            );
+
+
+        profitRow.id =
+            "orderProfitRow";
+
+
+        profitRow.className =
+            "order-total-row";
+
+
+        profitRow.innerHTML = `
+            <span>
+                الربح الإجمالي
+            </span>
+
+            <strong
+                id="orderProfit"
+            >
+                —
+            </strong>
+        `;
+
+
+        totalCard.appendChild(
+            profitRow
+        );
+
+    }
+
+
+    const profitElement =
+        document.getElementById(
+            "orderProfit"
+        );
+
+
+    if (!profitElement) {
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // التكلفة غير مكتملة
+    // ----------------------------------
+
+    if (
+        grossProfit === null ||
+        grossProfit === undefined
+    ) {
+
+        profitElement.innerHTML =
+            `<span class="order-cost-error">
+                ⚠️ غير مكتمل
+            </span>`;
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // عرض الربح / الخسارة
+    // ----------------------------------
+
+    profitElement.textContent =
+        "$" +
+        formatPrice(
+            grossProfit
+        );
+
+
+    profitElement.style.color =
+        grossProfit >= 0
+            ? "#198754"
+            : "#c62828";
+
+}
+
+
+// ==========================================
 // Create Status Selector
 // ==========================================
 
 function createStatusSelector(
     orderId,
-    currentStatus,
-    currentOrderCost,
-    orderTotal
+    currentStatus
 ) {
 
     const statusElement =
@@ -349,16 +732,6 @@ function createStatusSelector(
         currentStatus || "pending";
 
 
-    select.dataset.orderCost =
-        currentOrderCost ??
-        "";
-
-
-    select.dataset.orderTotal =
-        orderTotal ??
-        0;
-
-
     console.log(
         "Initial order status:",
         select.dataset.previousStatus
@@ -388,59 +761,14 @@ function createStatusSelector(
 
 
             // ----------------------------------
-            // عند تحويل الطلب إلى تم التسليم
-            // ----------------------------------
-
-            if (
-                newStatus ===
-                "delivered"
-            ) {
-
-                const orderCost =
-                    await requestOrderCost(
-                        select,
-                        select.dataset.orderCost,
-                        select.dataset.orderTotal
-                    );
-
-
-                // إلغاء إدخال التكلفة
-                if (
-                    orderCost ===
-                    null
-                ) {
-
-                    select.value =
-                        previousStatus;
-
-                    return;
-
-                }
-
-
-                await updateOrderStatus(
-                    orderId,
-                    newStatus,
-                    previousStatus,
-                    select,
-                    orderCost
-                );
-
-                return;
-
-            }
-
-
-            // ----------------------------------
-            // باقي الحالات
+            // تحديث الحالة مباشرة
             // ----------------------------------
 
             await updateOrderStatus(
                 orderId,
                 newStatus,
                 previousStatus,
-                select,
-                undefined
+                select
             );
 
         }
@@ -455,385 +783,6 @@ function createStatusSelector(
 
 
 // ==========================================
-// Request Order Cost
-// ==========================================
-
-function requestOrderCost(
-    select,
-    currentOrderCost,
-    orderTotal
-) {
-
-    return new Promise(
-        function(resolve) {
-
-            const overlay =
-                document.createElement(
-                    "div"
-                );
-
-
-            overlay.className =
-                "order-cost-overlay";
-
-
-            overlay.innerHTML = `
-
-                <div
-                    class="order-cost-modal"
-                    role="dialog"
-                    aria-modal="true"
-                >
-
-                    <div class="order-cost-header">
-
-                        <h3>
-                            تسجيل تكلفة الطلب
-                        </h3>
-
-                        <button
-                            type="button"
-                            class="order-cost-close"
-                            aria-label="إغلاق"
-                        >
-                            ×
-                        </button>
-
-                    </div>
-
-
-                    <div class="order-cost-body">
-
-                        <p>
-                            أدخل تكلفة هذا الطلب بالدولار.
-                        </p>
-
-                        <label
-                            for="orderCostInput"
-                        >
-                            تكلفة الطلب ($)
-                        </label>
-
-                        <input
-                            id="orderCostInput"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            inputmode="decimal"
-                            placeholder="مثال: 22.50"
-                        >
-
-                        <div
-                            class="order-cost-error"
-                            aria-live="polite"
-                        ></div>
-
-                    </div>
-
-
-                    <div class="order-cost-actions">
-
-                        <button
-                            type="button"
-                            class="admin-secondary-button"
-                            id="cancelOrderCost"
-                        >
-                            إلغاء
-                        </button>
-
-                        <button
-                            type="button"
-                            class="admin-primary-button"
-                            id="confirmOrderCost"
-                        >
-                            تأكيد التسليم
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            document.body.appendChild(
-                overlay
-            );
-
-
-            const input =
-                overlay.querySelector(
-                    "#orderCostInput"
-                );
-
-
-            const errorElement =
-                overlay.querySelector(
-                    ".order-cost-error"
-                );
-
-
-            const confirmButton =
-                overlay.querySelector(
-                    "#confirmOrderCost"
-                );
-
-
-            const cancelButton =
-                overlay.querySelector(
-                    "#cancelOrderCost"
-                );
-
-
-            const closeButton =
-                overlay.querySelector(
-                    ".order-cost-close"
-                );
-
-
-            if (
-                currentOrderCost !==
-                null &&
-                currentOrderCost !==
-                undefined &&
-                currentOrderCost !==
-                ""
-            ) {
-
-                input.value =
-                    currentOrderCost;
-
-            }
-
-
-            let lossWarningShown =
-                false;
-
-
-            function closeModal(
-                value
-            ) {
-
-                overlay.remove();
-
-                resolve(
-                    value
-                );
-
-            }
-
-
-            cancelButton.addEventListener(
-                "click",
-                function() {
-
-                    closeModal(
-                        null
-                    );
-
-                }
-            );
-
-
-            closeButton.addEventListener(
-                "click",
-                function() {
-
-                    closeModal(
-                        null
-                    );
-
-                }
-            );
-
-
-            overlay.addEventListener(
-                "click",
-                function(event) {
-
-                    if (
-                        event.target ===
-                        overlay
-                    ) {
-
-                        closeModal(
-                            null
-                        );
-
-                    }
-
-                }
-            );
-
-
-            confirmButton.addEventListener(
-                "click",
-                function() {
-
-                    const value =
-                        Number(
-                            input.value
-                        );
-
-
-                    if (
-                        !Number.isFinite(
-                            value
-                        ) ||
-                        value <= 0
-                    ) {
-
-                        errorElement.textContent =
-                            "أدخل تكلفة صحيحة أكبر من صفر.";
-
-                        errorElement.style.color =
-    "#c62828";
-
-errorElement.style.fontSize =
-    "14px";
-
-errorElement.style.lineHeight =
-    "1.7";
-
-errorElement.style.marginTop =
-    "12px";
-
-                        input.focus();
-
-                        return;
-
-                    }
-
-
-                    const total =
-                        Number(
-                            orderTotal || 0
-                        );
-
-
-                    // ----------------------------------
-                    // تحذير الخسارة
-                    // ----------------------------------
-
-                    if (
-                        value > total &&
-                        !lossWarningShown
-                    ) {
-
-                        const loss =
-                            value -
-                            total;
-
-
-                        errorElement.innerHTML = `
-                            ⚠️ تنبيه: تكلفة الطلب أعلى من إجمالي البيع.
-                            <br>
-                            سيُسجل هذا الطلب كخسارة قدرها
-                            <strong>
-                                $${formatPrice(loss)}
-                            </strong>.
-                            <br>
-                            هل تريد المتابعة؟
-                        `;
-
-
-                        errorElement.style.color =
-                            "#c62828";
-
-
-                        confirmButton.textContent =
-                            "متابعة وتأكيد التسليم";
-
-
-                        lossWarningShown =
-                            true;
-
-
-                        input.focus();
-
-                        return;
-
-                    }
-
-
-                    closeModal(
-                        value
-                    );
-
-                }
-            );
-
-
-            input.addEventListener(
-                "input",
-                function() {
-
-                    if (
-                        lossWarningShown
-                    ) {
-
-                        lossWarningShown =
-                            false;
-
-
-                        errorElement.textContent =
-                            "";
-
-
-                        confirmButton.textContent =
-                            "تأكيد التسليم";
-
-                    }
-
-                }
-            );
-
-
-            input.addEventListener(
-                "keydown",
-                function(event) {
-
-                    if (
-                        event.key ===
-                        "Enter"
-                    ) {
-
-                        confirmButton.click();
-
-                    }
-
-
-                    if (
-                        event.key ===
-                        "Escape"
-                    ) {
-
-                        closeModal(
-                            null
-                        );
-
-                    }
-
-                }
-            );
-
-
-            setTimeout(
-                function() {
-
-                    input.focus();
-
-                },
-                0
-            );
-
-        }
-    );
-
-}
-
-
-// ==========================================
 // Update Order Status
 // ==========================================
 
@@ -841,8 +790,7 @@ async function updateOrderStatus(
     orderId,
     newStatus,
     previousStatus,
-    select,
-    orderCost
+    select
 ) {
 
     select.disabled = true;
@@ -854,23 +802,6 @@ async function updateOrderStatus(
             newStatus
 
     };
-
-
-    // ----------------------------------
-    // حفظ تكلفة الطلب عند التسليم
-    // ----------------------------------
-
-    if (
-        newStatus ===
-        "delivered" &&
-        orderCost !==
-        undefined
-    ) {
-
-        updateData.order_cost =
-            orderCost;
-
-    }
 
 
     const {
@@ -914,25 +845,12 @@ async function updateOrderStatus(
         newStatus;
 
 
-    if (
-        newStatus ===
-        "delivered" &&
-        orderCost !==
-        undefined
-    ) {
-
-        select.dataset.orderCost =
-            orderCost;
-
-    }
-
-
     select.disabled =
         false;
 
 
     showStatusMessage(
-        "تم تحديث حالة الطلب وتسجيل التكلفة بنجاح",
+        "تم تحديث حالة الطلب بنجاح",
         "success"
     );
 

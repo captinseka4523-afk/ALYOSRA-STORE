@@ -1642,3 +1642,74 @@ Responsive — Very Small Phones
 .finance-search-trigger {
     direction: rtl;
 }
+/* =========================================
+   Expense Actions
+========================================= */
+
+.finance-expense-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.finance-expense-actions button {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.finance-expense-edit-button {
+    background: #f3f4f6;
+    border-color: #d1d5db !important;
+    color: #374151;
+}
+
+.finance-expense-edit-button:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af !important;
+}
+
+.finance-expense-delete-button {
+    background: #fef2f2;
+    border-color: #fecaca !important;
+    color: #dc2626;
+}
+
+.finance-expense-delete-button:hover {
+    background: #fee2e2;
+    border-color: #fca5a5 !important;
+}
+
+.finance-expense-actions button:active {
+    transform: translateY(1px);
+}
+
+.finance-expense-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 600px) {
+
+    .finance-expense-actions {
+        gap: 6px;
+    }
+
+    .finance-expense-actions button {
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+}
