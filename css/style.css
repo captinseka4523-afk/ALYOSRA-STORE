@@ -921,3 +921,8 @@ h1 {
 .floating-cart-button:active {
     transform: scale(0.95);
 }
+@media (max-width: 768px) {
+    .floating-cart-button {
+        bottom: 80px;
+    }
+}

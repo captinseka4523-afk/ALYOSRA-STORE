@@ -107,21 +107,54 @@
 
                     </div>
 
+<div class="form-group">
 
+    <label for="offerQuantity">
+        كمية العرض
+    </label>
 
-                    <div class="form-group">
+    <input
+        type="number"
+        id="offerQuantity"
+        min="0"
+        step="1"
+        required
+    >
 
-                        <label for="offerImage">
-                            رابط صورة العرض
-                        </label>
+</div>
 
-                        <input
-                            type="text"
-                            id="offerImage"
-                            placeholder="https://..."
-                        >
+                 <div class="form-group">
 
-                    </div>
+    <label for="offerImageFile">
+        صورة العرض
+    </label>
+
+    <input
+        id="offerImageFile"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+    >
+
+    <div
+        id="offerImagePreview"
+        class="admin-offer-image-preview"
+        hidden
+    >
+        <img
+            id="offerImagePreviewImage"
+            src=""
+            alt="معاينة صورة العرض"
+        >
+    </div>
+
+    <small
+        id="offerImageStatus"
+        class="admin-form-help"
+    >
+        اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.
+    </small>
+
+</div>
 
 
 
@@ -255,19 +288,54 @@
 
             </div>
 
-
             <div class="form-group">
+    <label for="editOfferQuantity">
+        كمية العرض
+    </label>
 
-                <label for="editOfferImage">
-                    رابط صورة العرض
-                </label>
+    <input
+        type="number"
+        id="editOfferQuantity"
+        min="0"
+        step="1"
+        required
+    >
+</div>
 
-                <input
-                    type="text"
-                    id="editOfferImage"
-                >
 
-            </div>
+
+        <div class="form-group">
+
+    <label for="editOfferImageFile">
+        صورة العرض
+    </label>
+
+    <input
+        id="editOfferImageFile"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+    >
+
+    <div
+        id="editOfferImagePreview"
+        class="admin-offer-image-preview"
+        hidden
+    >
+        <img
+            id="editOfferImagePreviewImage"
+            src=""
+            alt="معاينة صورة العرض"
+        >
+    </div>
+
+    <small
+        id="editOfferImageStatus"
+        class="admin-form-help"
+    >
+        إذا لم تختر صورة جديدة، ستبقى الصورة الحالية كما هي.
+    </small>
+
+</div>
 
 
             <div class="form-group">

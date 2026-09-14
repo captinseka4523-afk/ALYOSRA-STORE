@@ -36,8 +36,9 @@
 
 #offersContainer {
     display: grid;
+
     grid-template-columns:
-        repeat(auto-fit, minmax(280px, 1fr));
+        repeat(3, minmax(0, 1fr));
 
     gap: 28px;
 }
@@ -56,7 +57,7 @@
     overflow: hidden;
 
     background:
-        rgba(255, 255, 255, 0.88);
+      #d0daff;
 
     border:
         1px solid rgba(255, 255, 255, 0.65);
@@ -776,4 +777,129 @@
         font-size:
             15px;
     }
+}
+
+/* =========================================================
+   SPECIAL OFFER CONTINUOUS MARQUEE
+========================================================= */
+
+.offer-special-strip {
+    width: 100%;
+    height: 34px;
+
+    overflow: hidden;
+
+    position: relative;
+
+    background: #dc2626;
+
+    color: #ffffff;
+
+    white-space: nowrap;
+
+    direction: ltr;
+
+    box-sizing: border-box;
+}
+
+
+.offer-special-track {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    width: max-content;
+
+    direction: ltr;
+
+    animation:
+        offerMarquee 26s linear infinite;
+
+    will-change: transform;
+}
+
+
+.offer-special-group {
+    display: flex;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    direction: ltr;
+}
+
+
+.offer-special-group span {
+    display: inline-flex;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    padding: 0 18px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+
+.offer-special-group span::after {
+    content: "•";
+
+    margin-left: 18px;
+
+    opacity: 0.75;
+}
+
+
+@keyframes offerMarquee {
+
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .offer-special-strip {
+        height: 28px;
+    }
+
+
+    .offer-special-group span {
+        padding: 0 13px;
+
+        font-size: 9px;
+
+        letter-spacing: 0.7px;
+    }
+
+
+    .offer-special-group span::after {
+        margin-left: 13px;
+    }
+
 }

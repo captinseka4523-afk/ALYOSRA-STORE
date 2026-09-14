@@ -1086,3 +1086,69 @@
     }
 
 }
+/* معاينة صورة العرض */
+
+.admin-offer-image-preview {
+    width: 220px;
+    height: 220px;
+    margin-top: 16px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #e1e6ec;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.admin-offer-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 10px;
+}
+/* =========================================================
+   OFFER IMAGE FILE INPUT
+========================================================= */
+
+#offerImageFile,
+#editOfferImageFile {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#offerImageFile::file-selector-button,
+#editOfferImageFile::file-selector-button {
+    margin-left: 10px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+#offerImageFile::file-selector-button:hover,
+#editOfferImageFile::file-selector-button:hover {
+    background: #1d4ed8;
+}
+
+#offerImageFile::file-selector-button:active,
+#editOfferImageFile::file-selector-button:active {
+    transform: scale(0.97);
+}

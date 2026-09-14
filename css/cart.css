@@ -139,14 +139,20 @@
 ========================= */
 
 .offer-cart-item {
-    background:
-        linear-gradient(
-            145deg,
-            #eef2ff,
-            #dbe7ff
-        );
+    position: relative;
 
-    border: 1px solid #c7d2fe;
+    width: 100%;
+
+    max-width: 420px;
+
+    justify-self: center;
+
+    box-sizing: border-box;
+
+    background:
+        #d0daff;
+
+    border: 1px solid rgba(37, 99, 235, 0.18);
 
     border-radius: 25px;
 
@@ -179,36 +185,62 @@
 }
 
 
+/* شارة العرض */
+
+.offer-cart-item::before {
+    content: "عرض خاص";
+
+    position: absolute;
+
+    top: 14px;
+
+    right: 14px;
+
+    z-index: 2;
+
+    padding: 6px 11px;
+
+    border-radius: 16px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 11px;
+
+    font-weight: bold;
+}
+
+
 /* صورة العرض */
 
 .offer-cart-item > img {
     width: 100%;
 
-    height: 190px;
+    height: 220px;
 
-    object-fit: cover;
+    object-fit: contain;
 
     display: block;
 
     margin: 0;
 
-    background: #f8fafc;
+    border-radius: 0;
+
+    background: #f3f6fb;
 }
 
 
-/* إذا لم توجد صورة */
+/* في حال عدم وجود صورة */
 
-.offer-cart-item
-.cart-offer-placeholder {
+.offer-cart-item .cart-offer-placeholder {
     width: 100%;
 
-    height: 190px;
+    height: 220px;
 
-    display: flex;
+    margin: 0;
 
-    align-items: center;
-
-    justify-content: center;
+    border-radius: 0;
 
     background:
         linear-gradient(
@@ -216,6 +248,12 @@
             #dbeafe,
             #eef2ff
         );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 
     color: #2563eb;
 
@@ -225,10 +263,12 @@
 }
 
 
-/* محتوى العرض */
+/* معلومات العرض */
 
 .offer-cart-item .cart-info {
-    width: auto;
+    width: 100%;
+
+    box-sizing: border-box;
 
     padding: 20px 22px 22px;
 
@@ -236,14 +276,16 @@
 }
 
 
-.offer-cart-item .cart-info h3 {
-    font-size: 21px;
+/* اسم العرض */
 
+.offer-cart-item .cart-info h3 {
     margin: 0 0 8px;
 
-    color: #111827;
+    font-size: 21px;
 
     line-height: 1.5;
+
+    color: #111827;
 }
 
 
@@ -254,13 +296,13 @@
 
     color: #2563eb;
 
-    font-size: 18px;
+    font-size: 16px;
 
-    font-weight: 700;
+    font-weight: bold;
 }
 
 
-/* كمية العرض */
+/* أزرار الكمية في العرض */
 
 .offer-cart-item .quantity-box {
     justify-content: flex-start;
@@ -268,6 +310,21 @@
     margin: 18px 0;
 
     gap: 12px;
+}
+
+
+/* زر الحذف في العرض */
+
+.offer-cart-item .remove-btn {
+    display: block;
+
+    width: 100%;
+
+    padding: 11px 20px;
+
+    margin-top: 4px;
+
+    border-radius: 12px;
 }
 
 
@@ -356,21 +413,6 @@
     background: #dc2626;
 
     transform: translateY(-2px);
-}
-
-
-/* زر الحذف في العرض */
-
-.offer-cart-item .remove-btn {
-    display: block;
-
-    width: 100%;
-
-    padding: 11px 20px;
-
-    margin-top: 4px;
-
-    border-radius: 12px;
 }
 
 
@@ -548,18 +590,34 @@
     ===================== */
 
     .offer-cart-item {
+        max-width: none;
+
         border-radius: 18px;
+    }
+
+
+    .offer-cart-item::before {
+        top: 8px;
+
+        right: 8px;
+
+        padding: 4px 7px;
+
+        font-size: 9px;
     }
 
 
     .offer-cart-item > img {
         height: 120px;
+
+        border-radius: 0;
     }
 
 
-    .offer-cart-item
-    .cart-offer-placeholder {
+    .offer-cart-item .cart-offer-placeholder {
         height: 120px;
+
+        border-radius: 0;
 
         font-size: 16px;
     }
@@ -571,238 +629,9 @@
 
 
     .offer-cart-item .cart-info h3 {
-        font-size: 15px;
+        font-size: 14px;
 
         line-height: 1.4;
-
-        margin-bottom: 6px;
-    }
-
-
-    .offer-cart-item .cart-info p {
-        font-size: 13px;
-    }
-
-
-    .offer-cart-item .quantity-box {
-        justify-content: center;
-
-        margin: 10px 0;
-
-        gap: 7px;
-    }
-
-
-    .offer-cart-item .remove-btn {
-        padding: 7px;
-
-        font-size: 12px;
-    }
-
-
-    .cart-total {
-        font-size: 25px;
-    }
-
-
-    .checkout-btn {
-        width: 90%;
-
-        padding: 12px;
-
-        font-size: 17px;
-    }
-
-}
-
-/* =========================================================
-   OFFER CARD INSIDE CART
-========================================================= */
-
-.offer-cart-item {
-    position: relative;
-
-    background:
-        linear-gradient(
-            145deg,
-            #eef4ff,
-            #dce7ff
-        );
-
-    border: 1px solid rgba(37, 99, 235, 0.18);
-
-    overflow: hidden;
-
-    align-items: stretch;
-
-    text-align: right;
-}
-
-
-/* شارة العرض */
-
-.offer-cart-item::before {
-    content: "عرض خاص";
-
-    position: absolute;
-
-    top: 14px;
-    right: 14px;
-
-    z-index: 2;
-
-    padding: 6px 11px;
-
-    border-radius: 16px;
-
-    background: #2563eb;
-
-    color: white;
-
-    font-size: 11px;
-
-    font-weight: bold;
-}
-
-
-/* صورة العرض */
-
-.offer-cart-item > img {
-    width: 100%;
-
-    height: 180px;
-
-    object-fit: cover;
-
-    margin: 0 0 18px;
-
-    border-radius: 18px;
-
-    background: #f3f6fb;
-}
-
-
-/* في حال عدم وجود صورة */
-
-.cart-offer-placeholder {
-    width: 100%;
-
-    height: 180px;
-
-    margin-bottom: 18px;
-
-    border-radius: 18px;
-
-    background: #dbe5ff;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    color: #2563eb;
-
-    font-size: 20px;
-
-    font-weight: bold;
-}
-
-
-/* معلومات العرض */
-
-.offer-cart-item .cart-info {
-    width: 100%;
-
-    text-align: right;
-}
-
-
-/* اسم العرض */
-
-.offer-cart-item .cart-info h3 {
-    margin-bottom: 8px;
-
-    font-size: 21px;
-
-    line-height: 1.5;
-}
-
-
-/* سعر العرض */
-
-.offer-cart-item .cart-info p {
-    margin: 0;
-
-    color: #2563eb;
-
-    font-size: 16px;
-
-    font-weight: bold;
-}
-
-
-/* أزرار الكمية */
-
-.offer-cart-item .quantity-box {
-    justify-content: flex-start;
-
-    margin: 18px 0;
-}
-
-
-/* زر الحذف */
-
-.offer-cart-item .remove-btn {
-    display: block;
-
-    margin-right: 0;
-}
-
-
-/* =========================================================
-   MOBILE OFFER CART CARD
-========================================================= */
-
-@media (max-width: 700px) {
-
-    .offer-cart-item {
-        padding: 12px;
-    }
-
-
-    .offer-cart-item::before {
-        top: 8px;
-        right: 8px;
-
-        padding: 4px 7px;
-
-        font-size: 9px;
-    }
-
-
-    .offer-cart-item > img {
-        height: 105px;
-
-        margin-bottom: 10px;
-
-        border-radius: 13px;
-    }
-
-
-    .cart-offer-placeholder {
-        height: 105px;
-
-        margin-bottom: 10px;
-
-        border-radius: 13px;
-
-        font-size: 15px;
-    }
-
-
-    .offer-cart-item .cart-info h3 {
-        font-size: 14px;
 
         margin-bottom: 4px;
     }
@@ -824,6 +653,7 @@
 
     .offer-cart-item .quantity-btn {
         width: 30px;
+
         height: 30px;
 
         font-size: 17px;
@@ -836,13 +666,28 @@
         font-size: 12px;
     }
 
+
+    .cart-total {
+        font-size: 25px;
+    }
+
+
+    .checkout-btn {
+        width: 90%;
+
+        padding: 12px;
+
+        font-size: 17px;
+    }
+
 }
+
+
 /* =========================
    CART TOAST
 ========================= */
 
 .cart-toast {
-
     position: fixed;
 
     top: 90px;
@@ -885,21 +730,18 @@
 
 
 .cart-toast.show {
-
     opacity: 1;
 
     visibility: visible;
 
     transform:
         translate(-50%, 0);
-
 }
 
 
 @media (max-width: 700px) {
 
     .cart-toast {
-
         top: 75px;
 
         width: 90%;
@@ -911,7 +753,6 @@
         white-space: normal;
 
         font-size: 14px;
-
     }
 
 }

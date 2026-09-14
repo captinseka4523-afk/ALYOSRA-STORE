@@ -1,6 +1,9 @@
 const offerForm =
     document.getElementById("offerForm");
 
+    const offerQuantity =
+    document.getElementById("offerQuantity");
+
 const productsList =
     document.getElementById("productsList");
 
@@ -25,8 +28,32 @@ const editOfferDescription =
 const editOfferPrice =
     document.getElementById("editOfferPrice");
 
-const editOfferImage =
-    document.getElementById("editOfferImage");
+    const editOfferQuantity =
+    document.getElementById("editOfferQuantity");
+
+const offerImageFile =
+    document.getElementById("offerImageFile");
+
+const offerImagePreview =
+    document.getElementById("offerImagePreview");
+
+const offerImagePreviewImage =
+    document.getElementById("offerImagePreviewImage");
+
+const offerImageStatus =
+    document.getElementById("offerImageStatus");
+
+const editOfferImageFile =
+    document.getElementById("editOfferImageFile");
+
+const editOfferImagePreview =
+    document.getElementById("editOfferImagePreview");
+
+const editOfferImagePreviewImage =
+    document.getElementById("editOfferImagePreviewImage");
+
+const editOfferImageStatus =
+    document.getElementById("editOfferImageStatus");
 
 const editOfferProductsList =
     document.getElementById("editOfferProductsList");
@@ -45,6 +72,304 @@ let products = [];
 
 let offers = [];
 
+// ==========================================
+// تجهيز ورفع صور العروض
+// ==========================================
+
+async function prepareOfferImage(file) {
+
+    if (!file) {
+        return null;
+    }
+
+
+    if (!file.type.startsWith("image/")) {
+        throw new Error(
+            "الملف المحدد ليس صورة."
+        );
+    }
+
+
+    const image =
+        await createImageBitmap(file);
+
+
+    const canvasSize = 1600;
+
+    const maxContentSize = 1560;
+
+
+    let contentWidth =
+        image.width;
+
+    let contentHeight =
+        image.height;
+
+
+    if (
+        contentWidth > maxContentSize ||
+        contentHeight > maxContentSize
+    ) {
+
+        const scale =
+            Math.min(
+                maxContentSize / contentWidth,
+                maxContentSize / contentHeight
+            );
+
+
+        contentWidth =
+            Math.round(
+                contentWidth * scale
+            );
+
+
+        contentHeight =
+            Math.round(
+                contentHeight * scale
+            );
+
+    }
+
+
+    const canvas =
+        document.createElement("canvas");
+
+
+    canvas.width =
+        canvasSize;
+
+    canvas.height =
+        canvasSize;
+
+
+    const context =
+        canvas.getContext("2d");
+
+
+    if (!context) {
+
+        image.close();
+
+        throw new Error(
+            "تعذر تجهيز الصورة."
+        );
+
+    }
+
+
+    context.fillStyle =
+        "#ffffff";
+
+
+    context.fillRect(
+        0,
+        0,
+        canvasSize,
+        canvasSize
+    );
+
+
+    const x =
+        (canvasSize - contentWidth) / 2;
+
+
+    const y =
+        (canvasSize - contentHeight) / 2;
+
+
+    context.drawImage(
+        image,
+        x,
+        y,
+        contentWidth,
+        contentHeight
+    );
+
+
+    image.close();
+
+
+    const blob =
+        await new Promise(
+            (resolve, reject) => {
+
+                canvas.toBlob(
+                    result => {
+
+                        if (result) {
+
+                            resolve(result);
+
+                        } else {
+
+                            reject(
+                                new Error(
+                                    "تعذر ضغط الصورة."
+                                )
+                            );
+
+                        }
+
+                    },
+                    "image/webp",
+                    0.82
+                );
+
+            }
+        );
+
+
+    return blob;
+}
+
+
+async function uploadOfferImage(file) {
+
+    if (!file) {
+        return null;
+    }
+
+
+    const optimizedImage =
+        await prepareOfferImage(file);
+
+
+    if (!optimizedImage) {
+        throw new Error(
+            "تعذر تجهيز الصورة."
+        );
+    }
+
+
+    const maxFileSize =
+        3 * 1024 * 1024;
+
+
+    if (
+        optimizedImage.size >
+        maxFileSize
+    ) {
+
+        throw new Error(
+            "حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت."
+        );
+
+    }
+
+
+    const filePath =
+        `${crypto.randomUUID()}.webp`;
+
+
+    const {
+        error: uploadError
+    } =
+        await supabaseClient.storage
+            .from("product-images")
+            .upload(
+                filePath,
+                optimizedImage,
+                {
+                    contentType:
+                        "image/webp",
+
+                    cacheControl:
+                        "31536000",
+
+                    upsert:
+                        false
+                }
+            );
+
+
+    if (uploadError) {
+        throw uploadError;
+    }
+
+
+    const {
+        data: publicUrlData
+    } =
+        supabaseClient.storage
+            .from("product-images")
+            .getPublicUrl(
+                filePath
+            );
+
+
+    if (
+        !publicUrlData?.publicUrl
+    ) {
+
+        await supabaseClient.storage
+            .from("product-images")
+            .remove([
+                filePath
+            ]);
+
+
+        throw new Error(
+            "تعذر الحصول على رابط الصورة."
+        );
+
+    }
+
+
+    return {
+        path:
+            filePath,
+
+        url:
+            publicUrlData.publicUrl
+    };
+
+}
+
+
+function getOfferImagePath(
+    imageUrl
+) {
+
+    if (!imageUrl) {
+        return null;
+    }
+
+
+    try {
+
+        const url =
+            new URL(imageUrl);
+
+
+        const marker =
+            "/storage/v1/object/public/product-images/";
+
+
+        const index =
+            url.pathname.indexOf(
+                marker
+            );
+
+
+        if (index === -1) {
+            return null;
+        }
+
+
+        return decodeURIComponent(
+            url.pathname.slice(
+                index + marker.length
+            )
+        );
+
+    } catch {
+
+        return null;
+
+    }
+
+}
 
 // ==========================================
 // رسالة داخل لوحة العروض
@@ -104,6 +429,270 @@ function showAdminOfferMessage(
 
 }
 
+// ==========================================
+// معاينة صورة العرض
+// ==========================================
+
+if (offerImageFile) {
+
+    offerImageFile.addEventListener(
+        "change",
+        async function () {
+
+            const file =
+                this.files?.[0];
+
+
+            if (!file) {
+
+                if (offerImagePreview) {
+                    offerImagePreview.hidden = true;
+                }
+
+                if (offerImagePreviewImage) {
+                    offerImagePreviewImage.src = "";
+                }
+
+                if (offerImageStatus) {
+                    offerImageStatus.textContent =
+                        "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.";
+                }
+
+                return;
+            }
+
+
+            if (!file.type.startsWith("image/")) {
+
+                showAdminOfferMessage(
+                    "يرجى اختيار ملف صورة صالح.",
+                    "error"
+                );
+
+                this.value = "";
+
+                if (offerImagePreview) {
+                    offerImagePreview.hidden = true;
+                }
+
+                if (offerImagePreviewImage) {
+                    offerImagePreviewImage.src = "";
+                }
+
+                return;
+            }
+
+
+            try {
+
+                if (offerImageStatus) {
+                    offerImageStatus.textContent =
+                        "جاري تجهيز معاينة الصورة...";
+                }
+
+
+                const optimizedImage =
+                    await prepareOfferImage(file);
+
+
+                if (!optimizedImage) {
+                    throw new Error(
+                        "تعذر تجهيز الصورة."
+                    );
+                }
+
+
+                const previewUrl =
+                    URL.createObjectURL(
+                        optimizedImage
+                    );
+
+
+                if (offerImagePreviewImage) {
+
+                    if (
+                        offerImagePreviewImage.dataset.previewUrl
+                    ) {
+
+                        URL.revokeObjectURL(
+                            offerImagePreviewImage.dataset.previewUrl
+                        );
+
+                    }
+
+
+                    offerImagePreviewImage.src =
+                        previewUrl;
+
+
+                    offerImagePreviewImage.dataset.previewUrl =
+                        previewUrl;
+
+                }
+
+
+                if (offerImagePreview) {
+                    offerImagePreview.hidden = false;
+                }
+
+
+                if (offerImageStatus) {
+                    offerImageStatus.textContent =
+                        `تم تجهيز الصورة: ${file.name}`;
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Offer image preview error:",
+                    error
+                );
+
+
+                this.value = "";
+
+
+                if (offerImagePreview) {
+                    offerImagePreview.hidden = true;
+                }
+
+
+                if (offerImagePreviewImage) {
+
+                    offerImagePreviewImage.src = "";
+
+
+                    if (
+                        offerImagePreviewImage.dataset.previewUrl
+                    ) {
+
+                        URL.revokeObjectURL(
+                            offerImagePreviewImage.dataset.previewUrl
+                        );
+
+
+                        delete offerImagePreviewImage.dataset.previewUrl;
+
+                    }
+
+                }
+
+
+                if (offerImageStatus) {
+                    offerImageStatus.textContent =
+                        "تعذر تجهيز الصورة للمعاينة.";
+                }
+
+
+                showAdminOfferMessage(
+                    error.message ||
+                    "تعذر تجهيز الصورة.",
+                    "error"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+if (editOfferImageFile) {
+
+    editOfferImageFile.addEventListener(
+        "change",
+        async function () {
+
+            const file =
+                this.files?.[0];
+
+            if (!file) {
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+
+                showEditMessage(
+                    "يرجى اختيار ملف صورة صالح.",
+                    "error"
+                );
+
+                this.value = "";
+
+                return;
+            }
+
+            try {
+
+                if (editOfferImageStatus) {
+                    editOfferImageStatus.textContent =
+                        "جاري تجهيز معاينة الصورة...";
+                }
+
+                const optimizedImage =
+                    await prepareOfferImage(file);
+
+                if (!optimizedImage) {
+                    throw new Error(
+                        "تعذر تجهيز الصورة."
+                    );
+                }
+
+                const previewUrl =
+                    URL.createObjectURL(
+                        optimizedImage
+                    );
+
+                if (editOfferImagePreviewImage) {
+
+                    if (
+                        editOfferImagePreviewImage.dataset.previewUrl
+                    ) {
+                        URL.revokeObjectURL(
+                            editOfferImagePreviewImage.dataset.previewUrl
+                        );
+                    }
+
+                    editOfferImagePreviewImage.src =
+                        previewUrl;
+
+                    editOfferImagePreviewImage.dataset.previewUrl =
+                        previewUrl;
+                }
+
+                if (editOfferImagePreview) {
+                    editOfferImagePreview.hidden = false;
+                }
+
+                if (editOfferImageStatus) {
+                    editOfferImageStatus.textContent =
+                        `تم تجهيز الصورة: ${file.name}`;
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Edit offer image preview error:",
+                    error
+                );
+
+                this.value = "";
+
+                if (editOfferImageStatus) {
+                    editOfferImageStatus.textContent =
+                        "تعذر تجهيز الصورة للمعاينة.";
+                }
+
+                showEditMessage(
+                    error.message ||
+                    "تعذر تجهيز الصورة.",
+                    "error"
+                );
+            }
+        }
+    );
+}
 
 // ==========================================
 // تحميل المنتجات
@@ -305,6 +894,7 @@ async function loadOffers() {
                 name,
                 description,
                 price,
+                quantity,
                 image,
                 active,
                 created_at,
@@ -585,9 +1175,55 @@ async function openOfferEditModal(
     editOfferPrice.value =
         offer.price ?? "";
 
+editOfferQuantity.value =
+    offer.quantity ?? 0;
 
-    editOfferImage.value =
+const quantity =
+    Number(
+        offerQuantity?.value
+    );
+    if (
+    !Number.isInteger(quantity) ||
+    quantity < 0
+) {
+    showAdminOfferMessage(
+        "يرجى إدخال كمية صحيحة للعرض.",
+        "error"
+    );
+
+    return;
+}
+
+  if (editOfferImageFile) {
+    editOfferImageFile.value = "";
+}
+
+if (editOfferImagePreviewImage) {
+    if (
+        editOfferImagePreviewImage.dataset.previewUrl
+    ) {
+        URL.revokeObjectURL(
+            editOfferImagePreviewImage.dataset.previewUrl
+        );
+
+        delete editOfferImagePreviewImage.dataset.previewUrl;
+    }
+
+    editOfferImagePreviewImage.src =
         offer.image || "";
+}
+
+if (editOfferImagePreview) {
+    editOfferImagePreview.hidden =
+        !offer.image;
+}
+
+if (editOfferImageStatus) {
+    editOfferImageStatus.textContent =
+        offer.image
+            ? "الصورة الحالية للعرض. اختر صورة جديدة لاستبدالها."
+            : "لا توجد صورة حالية. يمكنك اختيار صورة من جهازك.";
+}
 
 
     renderEditProducts(
@@ -822,10 +1458,49 @@ if (offerEditForm) {
                 Number(
                     editOfferPrice.value
                 );
+                
 
+   const quantity =
+    Number(
+        editOfferQuantity.value
+    );
 
-            const image =
-                editOfferImage.value.trim();
+if (
+    !Number.isInteger(quantity) ||
+    quantity < 0
+) {
+    showAdminOfferMessage(
+        "يرجى إدخال كمية صحيحة للعرض.",
+        "error"
+    );
+
+    return;
+}             
+
+ const currentOffer =
+    offers.find(
+        item =>
+            String(item.id) ===
+            String(offerId)
+    );
+
+if (!currentOffer) {
+
+    showEditMessage(
+        "تعذر العثور على العرض الحالي.",
+        "error"
+    );
+
+    return;
+}
+
+const selectedImageFile =
+    editOfferImageFile?.files?.[0] || null;
+
+let uploadedOfferImage = null;
+
+const image =
+    currentOffer.image || "";
 
 
             const selectedProducts = [];
@@ -919,6 +1594,17 @@ if (offerEditForm) {
                     "جاري حفظ التعديلات..."
                 );
 
+                if (selectedImageFile) {
+
+    uploadedOfferImage =
+        await uploadOfferImage(
+            selectedImageFile
+        );
+}
+
+const finalImage =
+    uploadedOfferImage?.url ||
+    image;
 
                 const {
                     data,
@@ -938,8 +1624,11 @@ if (offerEditForm) {
                         p_price:
                             price,
 
+                            p_quantity:
+                            quantity,
+
                         p_image:
-                            image,
+                            finalImage,
 
                         p_items:
                             selectedProducts
@@ -958,6 +1647,25 @@ if (offerEditForm) {
                     );
                 }
 
+                const oldImagePath =
+    getOfferImagePath(
+        currentOffer.image
+    );
+
+if (oldImagePath && uploadedOfferImage?.path) {
+    const { error: oldImageDeleteError } =
+        await supabaseClient
+            .storage
+            .from("product-images")
+            .remove([oldImagePath]);
+
+    if (oldImageDeleteError) {
+        console.error(
+            "Old offer image delete error:",
+            oldImageDeleteError
+        );
+    }
+}
 
                 closeOfferEditModal();
 
@@ -971,6 +1679,16 @@ if (offerEditForm) {
 
 
             } catch (error) {
+
+       if (uploadedOfferImage?.path) {
+
+    await supabaseClient
+        .storage
+        .from("product-images")
+        .remove([
+            uploadedOfferImage.path
+        ]);
+}         
 
                 console.error(
                     "خطأ في تعديل العرض:",
@@ -1195,6 +1913,18 @@ async function deleteOffer(
     try {
 
         const {
+    data: offerToDelete,
+    error: offerFetchError
+} = await supabaseClient
+    .from("offers")
+    .select("image")
+    .eq("id", offerId)
+    .single();
+
+if (offerFetchError) {
+    throw offerFetchError;
+}
+        const {
             error:
                 itemsError
         } = await supabaseClient
@@ -1233,6 +1963,29 @@ async function deleteOffer(
             throw offerError;
         }
 
+const oldImagePath =
+    getOfferImagePath(
+        offerToDelete?.image
+    );
+
+if (oldImagePath) {
+
+    const {
+        error: imageDeleteError
+    } = await supabaseClient
+        .storage
+        .from("product-images")
+        .remove([
+            oldImagePath
+        ]);
+
+    if (imageDeleteError) {
+        console.error(
+            "Offer image delete error:",
+            imageDeleteError
+        );
+    }
+}
 
         showAdminOfferMessage(
             "تم حذف العرض."
@@ -1242,7 +1995,11 @@ async function deleteOffer(
         await loadOffers();
 
 
-    } catch (error) {
+    }
+    
+    
+    
+    catch (error) {
 
         console.error(
             "خطأ في حذف العرض:",
@@ -1257,6 +2014,7 @@ async function deleteOffer(
 
     }
 
+    
 }
 
 
@@ -1429,13 +2187,27 @@ if (offerForm) {
                 );
 
 
-            const image =
-                document
-                    .getElementById(
-                        "offerImage"
-                    )
-                    .value
-                    .trim();
+const quantity =
+    Number(
+        offerQuantity.value
+    );
+
+if (
+    !Number.isInteger(quantity) ||
+    quantity < 0
+) {
+    showAdminOfferMessage(
+        "يرجى إدخال كمية صحيحة للعرض.",
+        "error"
+    );
+
+    return;
+}
+
+          const selectedImageFile =
+    offerImageFile?.files?.[0] || null;
+
+let uploadedOfferImage = null;
 
 
             const selectedProducts = [];
@@ -1509,6 +2281,14 @@ if (offerForm) {
 
             }
 
+if (selectedImageFile) {
+
+    uploadedOfferImage =
+        await uploadOfferImage(
+            selectedImageFile
+        );
+
+}
 
             try {
 
@@ -1525,7 +2305,9 @@ if (offerForm) {
                         name,
                         description,
                         price,
-                        image
+                        quantity,
+                      image:
+    uploadedOfferImage?.url || null
 
                     })
 
@@ -1590,6 +2372,28 @@ if (offerForm) {
 
                 offerForm.reset();
 
+                if (offerImagePreview) {
+    offerImagePreview.hidden = true;
+}
+
+if (offerImagePreviewImage) {
+
+    if (offerImagePreviewImage.dataset.previewUrl) {
+        URL.revokeObjectURL(
+            offerImagePreviewImage.dataset.previewUrl
+        );
+
+        delete offerImagePreviewImage.dataset.previewUrl;
+    }
+
+    offerImagePreviewImage.src = "";
+}
+
+if (offerImageStatus) {
+    offerImageStatus.textContent =
+        "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.";
+}
+
 
                 document
                     .querySelectorAll(
@@ -1612,6 +2416,15 @@ if (offerForm) {
 
 
             } catch (error) {
+if (uploadedOfferImage?.path) {
+
+    await supabaseClient.storage
+        .from("product-images")
+        .remove([
+            uploadedOfferImage.path
+        ]);
+
+}
 
                 console.error(
                     "خطأ في إنشاء العرض:",
