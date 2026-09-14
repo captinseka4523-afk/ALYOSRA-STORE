@@ -879,3 +879,45 @@ h1 {
         z-index: 1900;
     }
 }
+/* زر السلة العائم */
+
+.floating-cart-button {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+
+    width: 56px;
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #1f2937;
+    color: #ffffff;
+
+    border-radius: 50%;
+
+    text-decoration: none;
+
+    font-size: 24px;
+    line-height: 1;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.18);
+
+    z-index: 1000;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.floating-cart-button:hover {
+    background: #111827;
+    transform: translateY(-2px);
+}
+
+.floating-cart-button:active {
+    transform: scale(0.95);
+}

@@ -229,20 +229,14 @@
 
 
 .order-item img {
-
     flex-shrink: 0;
-
     width: 82px !important;
-
     height: 82px !important;
-
     object-fit: contain;
-
     border-radius: 14px;
-
     background: #ffffff;
-
-    padding: 7px;
+    padding: 0;
+    display: block;
 }
 
 

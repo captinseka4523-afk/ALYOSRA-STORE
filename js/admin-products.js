@@ -586,7 +586,34 @@ function openAddProductModal() {
     if (purchaseCost) {
         purchaseCost.value = "";
     }
+const imageFileInput =
+    document.getElementById("productImageFile");
 
+const imagePreview =
+    document.getElementById("productImagePreview");
+
+const imagePreviewImage =
+    document.getElementById("productImagePreviewImage");
+
+const imageStatus =
+    document.getElementById("productImageStatus");
+
+if (imageFileInput) {
+    imageFileInput.value = "";
+}
+
+if (imagePreview) {
+    imagePreview.hidden = true;
+}
+
+if (imagePreviewImage) {
+    imagePreviewImage.src = "";
+}
+
+if (imageStatus) {
+    imageStatus.textContent =
+        "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
+}
 
     if (title) {
         title.textContent =
@@ -665,10 +692,7 @@ function openEditProductModal(
         product.target || "";
 
 
-    document.getElementById(
-        "productImage"
-    ).value =
-        product.main_image || "";
+
 
 
     document.getElementById(
@@ -739,234 +763,509 @@ function closeProductModalWindow() {
 // Save Product
 // ==========================================
 
-async function saveProduct(
-    event
-) {
+async function prepareProductImage(file) {
+    if (!file) {
+        return null;
+    }
 
+    if (!file.type.startsWith("image/")) {
+        throw new Error("الملف المحدد ليس صورة.");
+    }
+
+    const image = await createImageBitmap(file);
+
+    // الحجم النهائي الموحد للصورة
+    const canvasSize = 1600;
+
+    // المساحة الآمنة داخل الإطار
+    // نترك هامشًا بسيطًا حتى لا تلتصق الأداة بالحواف.
+    const maxContentSize = 1560;
+
+    let contentWidth = image.width;
+    let contentHeight = image.height;
+
+    // تصغير الصورة مع الحفاظ على النسبة الأصلية
+    if (
+        contentWidth > maxContentSize ||
+        contentHeight > maxContentSize
+    ) {
+        const scale = Math.min(
+            maxContentSize / contentWidth,
+            maxContentSize / contentHeight
+        );
+
+        contentWidth =
+            Math.round(contentWidth * scale);
+
+        contentHeight =
+            Math.round(contentHeight * scale);
+    }
+
+    // إنشاء إطار مربع موحد
+    const canvas = document.createElement("canvas");
+
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        image.close();
+        throw new Error("تعذر تجهيز الصورة.");
+    }
+
+    // خلفية بيضاء
+    context.fillStyle = "#ffffff";
+    context.fillRect(
+        0,
+        0,
+        canvasSize,
+        canvasSize
+    );
+
+    // وضع الصورة في المنتصف
+    const x =
+        (canvasSize - contentWidth) / 2;
+
+    const y =
+        (canvasSize - contentHeight) / 2;
+
+    context.drawImage(
+        image,
+        x,
+        y,
+        contentWidth,
+        contentHeight
+    );
+
+    image.close();
+
+    // تحويل الصورة إلى WebP وضغطها
+    const blob = await new Promise(
+        (resolve, reject) => {
+            canvas.toBlob(
+                (result) => {
+                    if (result) {
+                        resolve(result);
+                    } else {
+                        reject(
+                            new Error(
+                                "تعذر ضغط الصورة."
+                            )
+                        );
+                    }
+                },
+                "image/webp",
+                0.82
+            );
+        }
+    );
+
+    return blob;
+}
+
+document
+    .getElementById("productImageFile")
+    ?.addEventListener("change", async function () {
+        const file = this.files?.[0];
+
+        const previewContainer =
+            document.getElementById("productImagePreview");
+
+        const previewImage =
+            document.getElementById("productImagePreviewImage");
+
+        const status =
+            document.getElementById("productImageStatus");
+
+        if (!file) {
+            if (previewContainer) {
+                previewContainer.hidden = true;
+            }
+
+            if (previewImage) {
+                previewImage.src = "";
+            }
+
+            if (status) {
+                status.textContent =
+                    "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
+            }
+
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            showAdminProductToast(
+                "يرجى اختيار ملف صورة صالح.",
+                "error"
+            );
+
+            this.value = "";
+
+            if (previewContainer) {
+                previewContainer.hidden = true;
+            }
+
+            if (previewImage) {
+                previewImage.src = "";
+            }
+
+            return;
+        }
+
+        try {
+            if (status) {
+                status.textContent =
+                    "جاري تجهيز معاينة الصورة...";
+            }
+
+            const optimizedImage =
+                await prepareProductImage(file);
+
+            if (!optimizedImage) {
+                throw new Error(
+                    "تعذر تجهيز الصورة."
+                );
+            }
+
+            const previewUrl =
+                URL.createObjectURL(
+                    optimizedImage
+                );
+
+            if (previewImage) {
+                if (previewImage.dataset.previewUrl) {
+                    URL.revokeObjectURL(
+                        previewImage.dataset.previewUrl
+                    );
+                }
+
+                previewImage.src = previewUrl;
+
+                previewImage.dataset.previewUrl =
+                    previewUrl;
+            }
+
+            if (previewContainer) {
+                previewContainer.hidden = false;
+            }
+
+            if (status) {
+                status.textContent =
+                    `تم تجهيز الصورة: ${file.name}`;
+            }
+
+        } catch (error) {
+            console.error(
+                "Product image preview error:",
+                error
+            );
+
+            this.value = "";
+
+            if (previewContainer) {
+                previewContainer.hidden = true;
+            }
+
+            if (previewImage) {
+                previewImage.src = "";
+
+                if (previewImage.dataset.previewUrl) {
+                    URL.revokeObjectURL(
+                        previewImage.dataset.previewUrl
+                    );
+
+                    delete previewImage.dataset.previewUrl;
+                }
+            }
+
+            if (status) {
+                status.textContent =
+                    "تعذر تجهيز الصورة للمعاينة.";
+            }
+
+            showAdminProductToast(
+                error.message ||
+                "تعذر تجهيز الصورة.",
+                "error"
+            );
+        }
+    });
+
+async function uploadProductImage(file) {
+    if (!file) {
+        return null;
+    }
+
+    const optimizedImage = await prepareProductImage(file);
+
+    if (!optimizedImage) {
+        throw new Error("تعذر تجهيز الصورة.");
+    }
+
+    const maxFileSize = 3 * 1024 * 1024;
+
+    if (optimizedImage.size > maxFileSize) {
+        throw new Error(
+            "حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت."
+        );
+    }
+
+    const filePath = `${crypto.randomUUID()}.webp`;
+
+    const { error: uploadError } = await supabaseClient.storage
+        .from("product-images")
+        .upload(filePath, optimizedImage, {
+            contentType: "image/webp",
+            cacheControl: "31536000",
+            upsert: false
+        });
+
+    if (uploadError) {
+        throw uploadError;
+    }
+
+    const { data: publicUrlData } = supabaseClient.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+    if (!publicUrlData?.publicUrl) {
+        await supabaseClient.storage
+            .from("product-images")
+            .remove([filePath]);
+
+        throw new Error("تعذر الحصول على رابط الصورة.");
+    }
+
+    return {
+        path: filePath,
+        url: publicUrlData.publicUrl
+    };
+}
+
+function getProductImagePath(imageUrl) {
+    if (!imageUrl) {
+        return null;
+    }
+
+    try {
+        const url = new URL(imageUrl);
+
+        const marker =
+            "/storage/v1/object/public/product-images/";
+
+        const index =
+            url.pathname.indexOf(marker);
+
+        if (index === -1) {
+            return null;
+        }
+
+        return decodeURIComponent(
+            url.pathname.slice(
+                index + marker.length
+            )
+        );
+    } catch {
+        return null;
+    }
+}
+
+async function saveProduct(event) {
     event.preventDefault();
-
 
     clearFormMessage();
 
-
     const id =
-        document.getElementById(
-            "productId"
-        ).value.trim();
-
+        document.getElementById("productId").value.trim();
 
     const name =
-        document.getElementById(
-            "productName"
-        ).value.trim();
-
+        document.getElementById("productName").value.trim();
 
     const code =
-        document.getElementById(
-            "productCode"
-        ).value.trim();
-
+        document.getElementById("productCode").value.trim();
 
     const price =
         Number(
-            document.getElementById(
-                "productPrice"
-            ).value
+            document.getElementById("productPrice").value
         );
-
 
     const quantity =
         Number(
-            document.getElementById(
-                "productQuantity"
-            ).value
+            document.getElementById("productQuantity").value
         );
-
 
     const purchaseCost =
         Number(
-            document.getElementById(
-                "productPurchaseCost"
-            ).value
+            document.getElementById("productPurchaseCost").value
         );
 
-
     const categoryId =
-        document.getElementById(
-            "productCategory"
-        ).value;
-
+        document.getElementById("productCategory").value;
 
     const target =
-        document.getElementById(
-            "productTarget"
-        ).value.trim();
+        document.getElementById("productTarget").value.trim();
 
-
-    const image =
-        document.getElementById(
-            "productImage"
-        ).value.trim();
-
+    const imageFile =
+        document.getElementById("productImageFile")
+            ?.files?.[0] || null;
 
     const description =
-        document.getElementById(
-            "productDescription"
-        ).value.trim();
-
+        document.getElementById("productDescription").value.trim();
 
     // ======================================
     // Validation
     // ======================================
 
     if (!name) {
-
         showFormMessage(
             "يرجى إدخال اسم المنتج.",
             "error"
         );
-
         return;
-
     }
 
-
     if (!code) {
-
         showFormMessage(
             "يرجى إدخال Product Code.",
             "error"
         );
-
         return;
-
     }
-
 
     if (
         !Number.isFinite(price) ||
         price < 0
     ) {
-
         showFormMessage(
             "يرجى إدخال سعر صحيح.",
             "error"
         );
-
         return;
-
     }
-
 
     if (
         !Number.isInteger(quantity) ||
         quantity < 0
     ) {
-
         showFormMessage(
             "يرجى إدخال كمية صحيحة.",
             "error"
         );
-
         return;
-
     }
-
 
     if (
         !Number.isFinite(purchaseCost) ||
         purchaseCost <= 0
     ) {
-
         showFormMessage(
             "يرجى إدخال تكلفة شراء صحيحة أكبر من صفر.",
             "error"
         );
-
         return;
-
     }
 
-
     if (!categoryId) {
-
         showFormMessage(
             "يرجى اختيار التصنيف.",
             "error"
         );
-
         return;
-
     }
-
 
     const saveButton =
-        document.getElementById(
-            "saveProductButton"
-        );
-
+        document.getElementById("saveProductButton");
 
     if (saveButton) {
-
         saveButton.disabled = true;
-
-        saveButton.textContent =
-            "جاري الحفظ...";
-
+        saveButton.textContent = "جاري الحفظ...";
     }
 
+    let uploadedImagePath = null;
 
     try {
+        // ==================================
+        // Existing Product Data
+        // ==================================
+
+        const oldProduct = id
+            ? adminProducts.find(
+                item =>
+                    String(item.id) ===
+                    String(id)
+            )
+            : null;
+
+        const oldProductData = oldProduct
+            ? {
+                name: oldProduct.name,
+                description: oldProduct.description,
+                price: oldProduct.price,
+                quantity: oldProduct.quantity,
+                main_image: oldProduct.main_image,
+                target: oldProduct.target,
+                product_code: oldProduct.product_code,
+                category_id: oldProduct.category_id
+            }
+            : null;
+
+        const oldPurchaseCost =
+            id
+                ? adminProductCosts[String(id)]
+                : null;
+
+        const oldImageUrl =
+            oldProduct?.main_image || null;
+
+        // ==================================
+        // Upload New Image
+        // ==================================
+
+        let imageUrl = oldImageUrl;
+
+        if (imageFile) {
+            const uploadedImage =
+                await uploadProductImage(imageFile);
+
+            imageUrl = uploadedImage.url;
+            uploadedImagePath = uploadedImage.path;
+        }
+
+        // ==================================
+        // Product Data
+        // ==================================
 
         const productData = {
-
-            name: name,
-
-            description:
-                description || null,
-
-            price: price,
-
-            quantity: quantity,
-
-            main_image:
-                image || null,
-
-            target:
-                target || null,
-
-            product_code:
-                code,
-
-            category_id:
-                Number(categoryId)
-
+            name,
+            description: description || null,
+            price,
+            quantity,
+            main_image: imageUrl,
+            target: target || null,
+            product_code: code,
+            category_id: Number(categoryId)
         };
-
 
         // ==================================
         // Add Product
         // ==================================
 
         if (!id) {
-
             const {
                 data: newProduct,
                 error: productError
             } =
                 await supabaseClient
                     .from("products")
-                    .insert(
-                        productData
-                    )
+                    .insert(productData)
                     .select()
                     .single();
-
 
             if (productError) {
                 throw productError;
             }
-
 
             const {
                 error: costError
@@ -981,17 +1280,12 @@ async function saveProduct(
                             purchaseCost
                     });
 
-
             if (costError) {
-
                 console.error(
                     "Product cost save error:",
                     costError
                 );
 
-
-                // محاولة حذف المنتج الذي أُنشئ
-                // حتى لا يبقى منتج بلا تكلفة
                 await supabaseClient
                     .from("products")
                     .delete()
@@ -1000,81 +1294,26 @@ async function saveProduct(
                         newProduct.id
                     );
 
-
                 throw costError;
-
             }
-
         }
-
 
         // ==================================
         // Update Product
         // ==================================
 
         else {
-
-            const oldProduct =
-                adminProducts.find(
-                    item =>
-                        String(item.id) ===
-                        String(id)
-                );
-
-
-            const oldProductData = oldProduct
-                ? {
-                    name:
-                        oldProduct.name,
-
-                    description:
-                        oldProduct.description,
-
-                    price:
-                        oldProduct.price,
-
-                    quantity:
-                        oldProduct.quantity,
-
-                    main_image:
-                        oldProduct.main_image,
-
-                    target:
-                        oldProduct.target,
-
-                    product_code:
-                        oldProduct.product_code,
-
-                    category_id:
-                        oldProduct.category_id
-                }
-                : null;
-
-
-            const oldPurchaseCost =
-                adminProductCosts[
-                    String(id)
-                ];
-
-
             const {
                 error: productError
             } =
                 await supabaseClient
                     .from("products")
-                    .update(
-                        productData
-                    )
-                    .eq(
-                        "id",
-                        id
-                    );
-
+                    .update(productData)
+                    .eq("id", id);
 
             if (productError) {
                 throw productError;
             }
-
 
             const {
                 error: costError
@@ -1095,37 +1334,26 @@ async function saveProduct(
                         }
                     );
 
-
             if (costError) {
-
                 console.error(
                     "Product cost update error:",
                     costError
                 );
 
-
-                // محاولة إعادة المنتج إلى حالته السابقة
                 if (oldProductData) {
-
                     await supabaseClient
                         .from("products")
-                        .update(
-                            oldProductData
-                        )
+                        .update(oldProductData)
                         .eq(
                             "id",
                             id
                         );
-
                 }
 
-
-                // محاولة إعادة تكلفة الشراء السابقة
                 if (
                     oldPurchaseCost !== undefined &&
                     oldPurchaseCost !== null
                 ) {
-
                     await supabaseClient
                         .from("product_costs")
                         .upsert(
@@ -1141,22 +1369,45 @@ async function saveProduct(
                                     "product_id"
                             }
                         );
-
                 }
 
-
                 throw costError;
-
             }
-
         }
 
+        // ==================================
+        // Delete Old Image After Successful Save
+        // ==================================
+
+        if (
+            imageFile &&
+            oldImageUrl &&
+            uploadedImagePath
+        ) {
+            try {
+                const oldImagePath =
+                    getProductImagePath(
+                        oldImageUrl
+                    );
+
+                if (oldImagePath) {
+                    await supabaseClient.storage
+                        .from("product-images")
+                        .remove([
+                            oldImagePath
+                        ]);
+                }
+            } catch (imageDeleteError) {
+                console.warn(
+                    "Old product image could not be deleted:",
+                    imageDeleteError
+                );
+            }
+        }
 
         closeProductModalWindow();
 
-
         await loadAdminProducts();
-
 
         showAdminProductToast(
             id
@@ -1165,62 +1416,59 @@ async function saveProduct(
             "success"
         );
 
-
     } catch (error) {
-
         console.error(
             "Save product error:",
             error
         );
 
+        // ==================================
+        // Cleanup Newly Uploaded Image
+        // ==================================
 
-        if (
-            error.code === "23505"
-        ) {
+        if (uploadedImagePath) {
+            try {
+                await supabaseClient.storage
+                    .from("product-images")
+                    .remove([
+                        uploadedImagePath
+                    ]);
+            } catch (cleanupError) {
+                console.warn(
+                    "Uploaded image cleanup failed:",
+                    cleanupError
+                );
+            }
+        }
 
+        if (error.code === "23505") {
             showFormMessage(
                 "Product Code مستخدم مسبقًا. يجب اختيار كود مختلف.",
                 "error"
             );
-
         }
 
-        else if (
-            error.code === "42501"
-        ) {
-
+        else if (error.code === "42501") {
             showFormMessage(
                 "ليس لديك صلاحية لتنفيذ هذه العملية.",
                 "error"
             );
-
         }
 
         else {
-
             showFormMessage(
+                error.message ||
                 "حدث خطأ أثناء حفظ المنتج وتكلفة الشراء.",
                 "error"
             );
-
         }
 
-    }
-
-    finally {
-
+    } finally {
         if (saveButton) {
-
-            saveButton.disabled =
-                false;
-
-            saveButton.textContent =
-                "حفظ المنتج";
-
+            saveButton.disabled = false;
+            saveButton.textContent = "حفظ المنتج";
         }
-
     }
-
 }
 
 
@@ -1256,7 +1504,28 @@ async function deleteProduct(
     }
 
 
-    try {
+   try {
+
+        const {
+            data: productToDelete,
+            error: productFetchError
+        } =
+            await supabaseClient
+                .from("products")
+                .select(
+                    "main_image"
+                )
+                .eq(
+                    "id",
+                    id
+                )
+                .single();
+
+
+        if (productFetchError) {
+            throw productFetchError;
+        }
+
 
         const {
             error
@@ -1270,12 +1539,42 @@ async function deleteProduct(
                 );
 
 
-        if (error) {
-            throw error;
-        }
+    if (error) {
+    throw error;
+}
 
 
-        await loadAdminProducts();
+// حذف صورة المنتج القديمة من Storage
+const oldImagePath =
+    getProductImagePath(
+        productToDelete?.main_image
+    );
+
+    
+if (oldImagePath) {
+
+    const {
+        error: imageDeleteError
+    } =
+        await supabaseClient.storage
+            .from("product-images")
+            .remove([
+                oldImagePath
+            ]);
+
+
+    if (imageDeleteError) {
+
+        console.error(
+            "Product image delete error:",
+            imageDeleteError
+        );
+
+    }
+}
+
+
+await loadAdminProducts();
 
 
         showAdminProductToast(

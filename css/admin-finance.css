@@ -1713,3 +1713,55 @@ Responsive — Very Small Phones
     }
 
 }
+/* =========================
+   Capital Movement Actions
+========================= */
+
+.finance-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.finance-action-button {
+    border: 1px solid #d9dee7;
+    background: #ffffff;
+    color: #374151;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.finance-action-button:hover {
+    background: #f5f7fa;
+    border-color: #c7ced8;
+}
+
+.finance-action-button:active {
+    transform: translateY(1px);
+}
+
+.finance-action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.finance-danger-button {
+    border-color: #f0caca;
+    color: #c0392b;
+}
+
+.finance-danger-button:hover {
+    background: #fff4f3;
+    border-color: #e5a9a3;
+}

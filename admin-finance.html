@@ -915,11 +915,17 @@
 
                 </tbody>
 
-            </table>
+</table>
 
-        </div>
+</div>
 
-    </section>
+
+<div
+    id="capitalMovementsPagination"
+    class="finance-pagination"
+></div>
+
+</section>
 
 
     <!-- =========================
@@ -1616,6 +1622,160 @@
 
 </div>
 
+<!-- =========================
+     Capital Movement Modal
+========================== -->
+
+<div
+    id="capitalMovementModal"
+    class="finance-modal"
+    hidden
+>
+
+    <div
+        class="finance-modal-backdrop"
+        data-close-capital-modal
+    ></div>
+
+
+    <div
+        class="finance-modal-content finance-small-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="capitalMovementModalTitle"
+    >
+
+        <div class="finance-modal-header">
+
+            <div>
+
+                <span>
+                    المحاسبة
+                </span>
+
+                <h2 id="capitalMovementModalTitle">
+                    إضافة حركة رأس مال
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="finance-modal-close"
+                id="closeCapitalMovementModalButton"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="capitalMovementForm">
+
+            <div class="finance-form-group">
+
+                <label for="capitalMovementDate">
+                    التاريخ
+                </label>
+
+                <input
+                    type="date"
+                    id="capitalMovementDate"
+                    required
+                >
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="capitalMovementType">
+                    نوع الحركة
+                </label>
+
+                <select
+                    id="capitalMovementType"
+                    required
+                >
+
+                    <option value="">
+                        اختر نوع الحركة
+                    </option>
+
+                    <option value="investment">
+                        إضافة رأس مال
+                    </option>
+
+                    <option value="withdrawal">
+                        سحب رأس مال
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="capitalMovementAmount">
+                    المبلغ
+                </label>
+
+                <input
+                    type="number"
+                    id="capitalMovementAmount"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                >
+
+            </div>
+
+
+            <div class="finance-form-group">
+
+                <label for="capitalMovementDescription">
+                    الوصف
+                </label>
+
+                <textarea
+                    id="capitalMovementDescription"
+                    rows="4"
+                    placeholder="اكتب تفاصيل حركة رأس المال..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="finance-modal-footer">
+
+                <button
+                    type="submit"
+                    class="finance-primary-button"
+                    id="saveCapitalMovementButton"
+                >
+                    حفظ الحركة
+                </button>
+
+
+                <button
+                    type="button"
+                    id="cancelCapitalMovementButton"
+                    class="finance-secondary-button"
+                >
+                    إلغاء
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 <!-- =========================
      Finance Toast

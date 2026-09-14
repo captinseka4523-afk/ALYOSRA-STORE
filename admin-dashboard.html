@@ -687,19 +687,23 @@
 
 
 
-                <div class="admin-form-group admin-form-full">
+               <div class="admin-form-group admin-form-full">
+  <label for="productImageFile">صورة المنتج</label>
 
-                    <label for="productImage">
-                        رابط الصورة
-                    </label>
+  <input
+    id="productImageFile"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+  >
 
-                    <input
-                        id="productImage"
-                        type="text"
-                        placeholder="images/product1.png"
-                    >
+  <div id="productImagePreview" class="admin-product-image-preview" hidden>
+    <img id="productImagePreviewImage" src="" alt="معاينة صورة المنتج">
+  </div>
 
-                </div>
+  <small id="productImageStatus" class="admin-form-help">
+    اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.
+  </small>
+</div>
 
 
 

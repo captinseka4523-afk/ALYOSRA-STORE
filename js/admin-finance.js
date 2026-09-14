@@ -19,6 +19,10 @@ let financeInventorySearchTerm = "";
 const FINANCE_EXPENSES_PER_PAGE = 10;
 let financeExpensesCurrentPage = 1;
 let editingExpenseId = null;
+let editingCapitalMovementId = null;
+let financeCapitalMovements = [];
+const FINANCE_CAPITAL_MOVEMENTS_PER_PAGE = 10;
+let financeCapitalMovementsCurrentPage = 1;
 let financeExpenses = [];
 let capitalMovements = [];
 let cashflowMovements = [];
@@ -775,27 +779,45 @@ function initializeFinanceActions() {
     }
 
 
-    const addCapitalButton =
-        getElement(
-            "addCapitalMovementButton"
-        );
+  const addCapitalButton =
+    getElement(
+        "addCapitalMovementButton"
+    );
 
 
-    if (addCapitalButton) {
+if (addCapitalButton) {
 
-        addCapitalButton.addEventListener(
-            "click",
-            function () {
+    addCapitalButton.addEventListener(
+        "click",
+        function () {
 
-                showFinanceToast(
-                    "نظام حركات رأس المال سيُفعّل بعد ربط جدول الحركات المالي في قاعدة البيانات.",
-                    "warning"
-                );
+            openCapitalMovementModal();
 
-            }
-        );
+        }
+    );
 
-    }
+}
+
+const capitalMovementForm =
+    getElement(
+        "capitalMovementForm"
+    );
+
+
+if (capitalMovementForm) {
+
+    capitalMovementForm.addEventListener(
+        "submit",
+        function (event) {
+
+            event.preventDefault();
+
+            saveCapitalMovement();
+
+        }
+    );
+
+}
 
 }
 
@@ -854,6 +876,38 @@ function initializeFinanceModals() {
     }
 
 
+    const closeCapitalButton =
+        getElement(
+            "closeCapitalMovementModalButton"
+        );
+
+
+    if (closeCapitalButton) {
+
+        closeCapitalButton.addEventListener(
+            "click",
+            closeCapitalMovementModal
+        );
+
+    }
+
+
+    const cancelCapitalButton =
+        getElement(
+            "cancelCapitalMovementButton"
+        );
+
+
+    if (cancelCapitalButton) {
+
+        cancelCapitalButton.addEventListener(
+            "click",
+            closeCapitalMovementModal
+        );
+
+    }
+
+
     document.querySelectorAll(
         "[data-close-modal]"
     ).forEach(element => {
@@ -873,6 +927,18 @@ function initializeFinanceModals() {
         element.addEventListener(
             "click",
             closeExpenseModal
+        );
+
+    });
+
+
+    document.querySelectorAll(
+        "[data-close-capital-modal]"
+    ).forEach(element => {
+
+        element.addEventListener(
+            "click",
+            closeCapitalMovementModal
         );
 
     });
@@ -926,6 +992,8 @@ function initializeFinanceModals() {
 
             closeExpenseModal();
 
+            closeCapitalMovementModal();
+
         }
     );
 
@@ -941,17 +1009,19 @@ async function loadFinanceData() {
     updateDateRange();
 
 
-    await Promise.all([
+await Promise.all([
 
-        loadDeliveredOrders(),
+    loadDeliveredOrders(),
 
-        loadProducts(),
+    loadProducts(),
 
-        loadProductCosts(),
+    loadProductCosts(),
 
-        loadExpenses()
+    loadExpenses(),
 
-    ]);
+    loadCapitalMovements()
+
+]);
 
 
     const orderIds =
@@ -1510,6 +1580,38 @@ async function loadExpenses() {
 
 
     financeExpenses =
+        Array.isArray(data)
+            ? data
+            : [];
+
+}
+
+async function loadCapitalMovements() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("capital_movements")
+        .select("*")
+        .order(
+            "movement_date",
+            {
+                ascending: false
+            }
+        )
+        .order(
+            "id",
+            {
+                ascending: false
+            }
+        );
+
+    if (error) {
+        throw error;
+    }
+
+    financeCapitalMovements =
         Array.isArray(data)
             ? data
             : [];
@@ -3216,6 +3318,435 @@ function closeExpenseModal() {
     );
 
 }
+function openCapitalMovementModal(movement = null) {
+
+    const modal =
+        getElement(
+            "capitalMovementModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+
+    const form =
+        getElement(
+            "capitalMovementForm"
+        );
+
+    const title =
+        getElement(
+            "capitalMovementModalTitle"
+        );
+
+    const dateInput =
+        getElement(
+            "capitalMovementDate"
+        );
+
+    const typeInput =
+        getElement(
+            "capitalMovementType"
+        );
+
+    const amountInput =
+        getElement(
+            "capitalMovementAmount"
+        );
+
+    const descriptionInput =
+        getElement(
+            "capitalMovementDescription"
+        );
+
+    const saveButton =
+        form?.querySelector(
+            'button[type="submit"]'
+        );
+
+
+    if (!form) {
+        return;
+    }
+
+
+    // ==================================
+    // وضع الإضافة
+    // ==================================
+
+    if (!movement) {
+
+        editingCapitalMovementId =
+            null;
+
+        form.reset();
+
+
+        if (title) {
+
+            title.textContent =
+                "إضافة حركة رأس مال";
+
+        }
+
+
+        if (saveButton) {
+
+            saveButton.textContent =
+                "حفظ الحركة";
+
+        }
+
+
+        if (dateInput) {
+
+            dateInput.value =
+                formatDateForDatabase(
+                    new Date()
+                );
+
+        }
+
+    }
+
+
+    // ==================================
+    // وضع التعديل
+    // ==================================
+
+    else {
+
+        editingCapitalMovementId =
+            movement.id;
+
+
+        if (title) {
+
+            title.textContent =
+                "تعديل حركة رأس المال";
+
+        }
+
+
+        if (saveButton) {
+
+            saveButton.textContent =
+                "حفظ التعديل";
+
+        }
+
+
+        if (dateInput) {
+
+            dateInput.value =
+                movement.movement_date ||
+                "";
+
+        }
+
+
+        if (typeInput) {
+
+            typeInput.value =
+                movement.movement_type ||
+                "";
+
+        }
+
+
+        if (amountInput) {
+
+            amountInput.value =
+                movement.amount ??
+                "";
+
+        }
+
+
+        if (descriptionInput) {
+
+            descriptionInput.value =
+                movement.description ||
+                "";
+
+        }
+
+    }
+
+
+    modal.hidden =
+        false;
+
+
+    requestAnimationFrame(
+        () => {
+
+            modal.classList.add(
+                "show"
+            );
+
+        }
+    );
+
+}
+
+
+function closeCapitalMovementModal() {
+
+    const modal =
+        getElement(
+            "capitalMovementModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "show"
+    );
+
+
+    setTimeout(
+        () => {
+
+            modal.hidden =
+                true;
+
+        },
+        180
+    );
+
+}
+
+async function saveCapitalMovement() {
+
+    const form =
+        getElement(
+            "capitalMovementForm"
+        );
+
+    const dateInput =
+        getElement(
+            "capitalMovementDate"
+        );
+
+    const typeInput =
+        getElement(
+            "capitalMovementType"
+        );
+
+    const amountInput =
+        getElement(
+            "capitalMovementAmount"
+        );
+
+    const descriptionInput =
+        getElement(
+            "capitalMovementDescription"
+        );
+
+
+    if (!form) {
+        return;
+    }
+
+
+    const movementDate =
+        dateInput?.value ||
+        "";
+
+    const movementType =
+        typeInput?.value ||
+        "";
+
+    const amount =
+        Number(
+            amountInput?.value || 0
+        );
+
+    const description =
+        descriptionInput?.value.trim() ||
+        null;
+
+
+    if (!movementDate) {
+
+        showFinanceToast(
+            "يرجى تحديد التاريخ.",
+            "warning"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        movementType !==
+            "investment" &&
+        movementType !==
+            "withdrawal"
+    ) {
+
+        showFinanceToast(
+            "يرجى اختيار نوع الحركة.",
+            "warning"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        showFinanceToast(
+            "يرجى إدخال مبلغ صحيح أكبر من صفر.",
+            "warning"
+        );
+
+        return;
+
+    }
+
+
+    const submitButton =
+        form.querySelector(
+            'button[type="submit"]'
+        );
+
+
+    if (submitButton) {
+
+        submitButton.disabled =
+            true;
+
+    }
+
+
+    try {
+
+        const movementData = {
+
+            amount:
+                amount,
+
+            movement_type:
+                movementType,
+
+            description:
+                description,
+
+            movement_date:
+                movementDate
+
+        };
+
+
+        let error = null;
+
+
+        if (
+            editingCapitalMovementId
+        ) {
+
+            const result =
+                await supabaseClient
+                    .from(
+                        "capital_movements"
+                    )
+                    .update(
+                        movementData
+                    )
+                    .eq(
+                        "id",
+                        editingCapitalMovementId
+                    );
+
+
+            error =
+                result.error;
+
+        }
+
+
+        else {
+
+            const result =
+                await supabaseClient
+                    .from(
+                        "capital_movements"
+                    )
+                    .insert(
+                        movementData
+                    );
+
+
+            error =
+                result.error;
+
+        }
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        await loadCapitalMovements();
+financeCapitalMovementsCurrentPage = 1;
+
+        financeCapitalMovements =
+            Array.isArray(
+                financeCapitalMovements
+            )
+                ? financeCapitalMovements
+                : [];
+
+
+        renderCapitalSummary();
+
+
+        closeCapitalMovementModal();
+
+
+        showFinanceToast(
+            editingCapitalMovementId
+                ? "تم تعديل حركة رأس المال بنجاح."
+                : "تمت إضافة حركة رأس المال بنجاح.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        showFinanceToast(
+            "تعذر حفظ حركة رأس المال.",
+            "error"
+        );
+
+    } finally {
+
+        if (submitButton) {
+
+            submitButton.disabled =
+                false;
+
+        }
+
+    }
+
+}
 
 
 function initializeFinanceForms() {
@@ -4817,79 +5348,65 @@ Capital
 
 function renderCapitalSummary() {
 
+    const movements =
+        Array.isArray(
+            financeCapitalMovements
+        )
+            ? financeCapitalMovements
+            : [];
+
+    /*
+       First investment = initial capital.
+       All later investments = additions.
+       Withdrawals = all withdrawal movements.
+    */
+
+    const investments =
+        movements
+            .filter(
+                movement =>
+                    movement.movement_type ===
+                    "investment"
+            );
+
     const initialCapital =
-        capitalMovements.reduce(
-            (sum, movement) => {
-
-                if (
-                    movement.type ===
-                    "initial"
-                ) {
-
-                    return sum +
-                        Number(
-                            movement.amount ||
-                            0
-                        );
-
-                }
-
-                return sum;
-
-            },
-            0
-        );
-
+        investments.length
+            ? Number(
+                investments[
+                    investments.length - 1
+                ].amount || 0
+            )
+            : 0;
 
     const additions =
-        capitalMovements.reduce(
-            (sum, movement) => {
-
-                if (
-                    movement.type ===
-                    "addition"
-                ) {
-
-                    return sum +
-                        Number(
-                            movement.amount ||
-                            0
-                        );
-
-                }
-
-                return sum;
-
-            },
-            0
-        );
-
+        investments
+            .slice(0, -1)
+            .reduce(
+                (sum, movement) =>
+                    sum +
+                    Number(
+                        movement.amount || 0
+                    ),
+                0
+            );
 
     const withdrawals =
-        capitalMovements.reduce(
-            (sum, movement) => {
-
-                if (
-                    movement.type ===
+        movements
+            .filter(
+                movement =>
+                    movement.movement_type ===
                     "withdrawal"
-                ) {
+            )
+            .reduce(
+                (sum, movement) =>
+                    sum +
+                    Number(
+                        movement.amount || 0
+                    ),
+                0
+            );
 
-                    return sum +
-                        Number(
-                            movement.amount ||
-                            0
-                        );
-
-                }
-
-                return sum;
-
-            },
-            0
-        );
-
-
-    const current =
+    const currentCapital =
         initialCapital +
         additions -
         withdrawals;
@@ -4898,39 +5415,38 @@ function renderCapitalSummary() {
     setText(
         "initialCapital",
         initialCapital
-            ? formatMoney(
-                initialCapital
-            )
+            ? formatMoney(initialCapital)
             : "غير مسجل"
     );
-
 
     setText(
         "capitalAdditions",
         additions
-            ? formatMoney(
-                additions
-            )
+            ? formatMoney(additions)
             : "0.00 $"
     );
-
 
     setText(
         "capitalWithdrawals",
         withdrawals
-            ? formatMoney(
-                withdrawals
-            )
+            ? formatMoney(withdrawals)
             : "0.00 $"
     );
 
-
     setText(
         "currentCapital",
-        current
-            ? formatMoney(
-                current
-            )
+        currentCapital
+            ? formatMoney(currentCapital)
+            : "غير مسجل"
+    );
+
+    /*
+       Main finance indicator
+    */
+    setText(
+        "capitalValue",
+        currentCapital
+            ? formatMoney(currentCapital)
             : "غير مسجل"
     );
 
@@ -4940,76 +5456,446 @@ function renderCapitalSummary() {
             "capitalMovementsTableBody"
         );
 
-
     if (!tbody) {
         return;
     }
 
 
-    if (
-        !capitalMovements.length
-    ) {
+    if (!movements.length) {
 
         tbody.innerHTML = `
             <tr class="finance-empty-row">
                 <td colspan="5">
-                    لم يتم ربط حركات رأس المال بقاعدة البيانات بعد.
+                    لم يتم تسجيل حركات رأس المال بعد.
                 </td>
             </tr>
         `;
 
+        renderCapitalMovementsPagination(0);
+
         return;
+    }
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                movements.length /
+               FINANCE_CAPITAL_MOVEMENTS_PER_PAGE
+            )
+        );
+
+    if (
+        financeCapitalMovementsCurrentPage >
+        totalPages
+    ) {
+        financeCapitalMovementsCurrentPage =
+            totalPages;
+    }
+
+
+    const startIndex =
+        (
+            financeCapitalMovementsCurrentPage -
+            1
+        ) * 10;
+
+    const pageMovements =
+        movements.slice(
+            startIndex,
+            startIndex + FINANCE_CAPITAL_MOVEMENTS_PER_PAGE
+        );
+
+
+    tbody.innerHTML =
+        pageMovements
+            .map(
+                movement => {
+
+                    const movementType =
+                        movement.movement_type ===
+                        "investment"
+                            ? "إضافة رأس مال"
+                            : movement.movement_type ===
+                              "withdrawal"
+                                ? "سحب رأس مال"
+                                : "غير معروف";
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${escapeHTML(
+                                    movement.movement_date ||
+                                    "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHTML(
+                                    movementType
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatMoney(
+                                    movement.amount
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHTML(
+                                    movement.description ||
+                                    "—"
+                                )}
+                            </td>
+
+                            <td>
+
+                                <div class="finance-table-actions">
+
+                                    <button
+                                        type="button"
+                                        class="finance-action-button"
+                                        data-edit-capital-movement="${movement.id}"
+                                    >
+                                        تعديل
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="finance-action-button finance-danger-button"
+                                        data-delete-capital-movement="${movement.id}"
+                                    >
+                                        حذف
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    renderCapitalMovementsPagination(
+        movements.length
+    );
+
+    initializeCapitalMovementEditButtons();
+    initializeCapitalMovementDeleteButtons();
+
+}
+
+function renderCapitalMovementsPagination(
+    totalMovements
+) {
+
+    const container =
+        getElement(
+            "capitalMovementsPagination"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const totalPages =
+        Math.ceil(
+            totalMovements /
+            FINANCE_CAPITAL_MOVEMENTS_PER_PAGE
+        );
+
+    if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
+    }
+
+
+    let html = "";
+
+
+    html += `
+        <button
+            type="button"
+            class="finance-pagination-button"
+            data-capital-page="prev"
+            ${financeCapitalMovementsCurrentPage === 1 ? "disabled" : ""}
+        >
+            السابق
+        </button>
+    `;
+
+
+    for (
+        let page = 1;
+        page <= totalPages;
+        page++
+    ) {
+
+        html += `
+            <button
+                type="button"
+                class="finance-pagination-button ${
+                    page ===
+                    financeCapitalMovementsCurrentPage
+                        ? "active"
+                        : ""
+                }"
+                data-capital-page="${page}"
+            >
+                ${page}
+            </button>
+        `;
 
     }
 
 
-    tbody.innerHTML =
-        capitalMovements.map(
-            movement => {
+    html += `
+        <button
+            type="button"
+            class="finance-pagination-button"
+            data-capital-page="next"
+            ${
+                financeCapitalMovementsCurrentPage ===
+                totalPages
+                    ? "disabled"
+                    : ""
+            }
+        >
+            التالي
+        </button>
+    `;
 
-                return `
-                    <tr>
 
-                        <td>
-                            ${escapeHTML(
-                                movement.date ||
-                                "—"
-                            )}
-                        </td>
+    container.innerHTML = html;
 
-                        <td>
-                            ${escapeHTML(
-                                movement.type ||
-                                "—"
-                            )}
-                        </td>
 
-                        <td>
-                            ${formatMoney(
-                                movement.amount
-                            )}
-                        </td>
+    container
+        .querySelectorAll(
+            "[data-capital-page]"
+        )
+        .forEach(
+            button => {
 
-                        <td>
-                            ${escapeHTML(
-                                movement.description ||
-                                "—"
-                            )}
-                        </td>
+                button.addEventListener(
+                    "click",
+                    function () {
 
-                        <td>
-                            —
-                        </td>
+                        const value =
+                            this.dataset
+                                .capitalPage;
 
-                    </tr>
-                `;
+                        if (
+                            value ===
+                            "prev"
+                        ) {
+
+                            if (
+                                financeCapitalMovementsCurrentPage >
+                                1
+                            ) {
+                                financeCapitalMovementsCurrentPage--;
+                            }
+
+                        } else if (
+                            value ===
+                            "next"
+                        ) {
+
+                            if (
+                                financeCapitalMovementsCurrentPage <
+                                totalPages
+                            ) {
+                                financeCapitalMovementsCurrentPage++;
+                            }
+
+                        } else {
+
+                            financeCapitalMovementsCurrentPage =
+                                Number(value);
+
+                        }
+
+
+                        renderCapitalSummary();
+
+                    }
+                );
 
             }
-        )
-        .join("");
+        );
 
 }
 
+function initializeCapitalMovementEditButtons() {
+
+    document
+        .querySelectorAll(
+            "[data-edit-capital-movement]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const movementId =
+                            Number(
+                                this.dataset
+                                    .editCapitalMovement
+                            );
+
+                        const movement =
+                            financeCapitalMovements
+                                .find(
+                                    item =>
+                                        Number(
+                                            item.id
+                                        ) ===
+                                        movementId
+                                );
+
+                        if (!movement) {
+                            return;
+                        }
+
+                        openCapitalMovementModal(
+                            movement
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+async function initializeCapitalMovementDeleteButtons() {
+
+    document
+        .querySelectorAll(
+            "[data-delete-capital-movement]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async function () {
+
+                        const movementId =
+                            Number(
+                                this.dataset
+                                    .deleteCapitalMovement
+                            );
+
+                        if (
+                            !Number.isFinite(
+                                movementId
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        const confirmed =
+                            confirm(
+                                "هل أنت متأكد من حذف حركة رأس المال هذه؟"
+                            );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+
+                        this.disabled = true;
+
+
+                        try {
+
+                            const {
+                                error
+                            } =
+                                await supabaseClient
+                                    .from(
+                                        "capital_movements"
+                                    )
+                                    .delete()
+                                    .eq(
+                                        "id",
+                                        movementId
+                                    );
+
+
+                            if (error) {
+                                throw error;
+                            }
+
+
+                            await loadCapitalMovements();
+
+
+                            const totalPages =
+                                Math.max(
+                                    1,
+                                    Math.ceil(
+                                        financeCapitalMovements.length /
+                                        FINANCE_CAPITAL_MOVEMENTS_PER_PAGE
+                                    )
+                                );
+
+
+                            if (
+                                financeCapitalMovementsCurrentPage >
+                                totalPages
+                            ) {
+                                financeCapitalMovementsCurrentPage =
+                                    totalPages;
+                            }
+
+
+                            renderCapitalSummary();
+
+
+                            showFinanceToast(
+                                "تم حذف حركة رأس المال بنجاح.",
+                                "success"
+                            );
+
+
+                        } catch (error) {
+
+                            console.error(
+                                error
+                            );
+
+                            showFinanceToast(
+                                "تعذر حذف حركة رأس المال.",
+                                "error"
+                            );
+
+
+                            this.disabled =
+                                false;
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+}
 
 /* =========================================================
 Cash Flow
