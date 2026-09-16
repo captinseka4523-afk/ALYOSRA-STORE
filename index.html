@@ -5,31 +5,43 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="متجر اليُسرى | AL YOSRA STORE"
+    >
 
     <title>AL YOSRA STORE | متجر اليُسرى</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
 </head>
 
 
-<body>
+<body class="home-body">
 
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
 <nav class="navbar">
 
     <button
         class="menu-toggle"
         id="menuToggle"
-        aria-label="فتح القائمة"
         type="button"
+        aria-label="فتح القائمة"
     >
         ☰
     </button>
-
-
-    
 
 
     <div class="nav-logo">
@@ -38,15 +50,16 @@
             متجر اليُسرى
         </span>
 
-        
-
     </div>
 
 
     <ul class="nav-links">
 
         <li>
-            <a class="active" href="index.html">
+            <a
+                class="active"
+                href="index.html"
+            >
                 الرئيسية
             </a>
         </li>
@@ -78,7 +91,12 @@
     </ul>
 
 
-    <a href="cart.html" class="cart-icon">
+    <a
+        href="cart.html"
+        class="cart-icon"
+        aria-label="السلة"
+        title="السلة"
+    >
 
         <svg
             class="cart-svg"
@@ -89,15 +107,24 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            aria-hidden="true"
         >
 
             <path d="M6 6h15l-2 8H8L6 6Z"></path>
 
             <path d="M6 6L5 3H2"></path>
 
-            <circle cx="9" cy="20" r="1.5"></circle>
+            <circle
+                cx="9"
+                cy="20"
+                r="1.5"
+            ></circle>
 
-            <circle cx="18" cy="20" r="1.5"></circle>
+            <circle
+                cx="18"
+                cy="20"
+                r="1.5"
+            ></circle>
 
         </svg>
 
@@ -110,14 +137,20 @@
 </nav>
 
 
-<!--
-    هذا الشريط مستقل تمامًا عن الـNavbar العلوي.
-    يظهر على الهاتف فقط.
--->
 
-<nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+<!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== -->
 
-    <a class="active" href="index.html">
+<nav
+    class="mobile-bottom-nav"
+    aria-label="التنقل الرئيسي"
+>
+
+    <a
+        class="active"
+        href="index.html"
+    >
         الرئيسية
     </a>
 
@@ -139,14 +172,29 @@
 
 </nav>
 
-<div class="side-menu-overlay" id="sideMenuOverlay"></div>
 
 
-<aside class="side-menu" id="sideMenu">
+<!-- =====================================================
+     SIDE MENU
+===================================================== -->
+
+<div
+    class="side-menu-overlay"
+    id="sideMenuOverlay"
+></div>
+
+
+<aside
+    class="side-menu"
+    id="sideMenu"
+    aria-hidden="true"
+>
 
     <div class="side-menu-header">
 
-        <span>القائمة</span>
+        <span>
+            القائمة
+        </span>
 
         <button
             class="side-menu-close"
@@ -163,69 +211,487 @@
     <ul class="side-menu-links">
 
         <li>
-            <a href="index.html">الرئيسية</a>
+            <a href="index.html">
+                الرئيسية
+            </a>
         </li>
 
         <li>
-            <a href="products.html">المنتجات</a>
+            <a href="products.html">
+                المنتجات
+            </a>
         </li>
 
         <li>
-            <a href="cart.html">السلة</a>
+            <a href="offers.html">
+                العروض
+            </a>
         </li>
 
         <li>
-            <a href="contact.html">تواصل معنا</a>
+            <a href="cart.html">
+                السلة
+            </a>
         </li>
 
-    <li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
 
     </ul>
 
 </aside>
 
-<main class="container">
 
 
-    <img 
-    src="images/LOGO.png"
-    alt="AL YOSRA LOGO"
-    class="main-logo">
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="home-page">
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="hero" id="hero" aria-labelledby="heroTitle">
+    <div class="hero-panel">
+
+        <div class="hero-visual">
+            <img
+                src="images/hero-smile-transparent.png"
+                alt="ابتسامة جميلة"
+                class="hero-image"
+            >
+        </div>
+
+        <div class="hero-content">
+
+            <div class="hero-brand">
+                <img src="images/LOGO.png" alt="شعار متجر اليُسرى">
+                <div class="hero-brand-name">
+                  
+                    <span class="hero-brand-en">AL YOSRA STORE</span>
+                </div>
+            </div>
+
+            <div class="hero-message" id="heroTitle">
+                <h1>ابتسامتك أولويتنا</h1>
+                <p> your smile is our priority.</p>
+            </div>
+
+            <a href="products.html" class="hero-button">
+                <span>ابدأ التسوق الآن</span>
+                <span class="hero-button-arrow" aria-hidden="true">←</span>
+            </a>
+
+        </div>
+
+    </div>
+</section>
 
 
 
-    <h1>
-        AL YOSRA STORE
-    </h1>
+<!-- =====================================================
+     ABOUT
+===================================================== -->
+
+<section
+    class="about-section reveal-section"
+    id="about"
+>
+
+    <div class="section-container">
+
+
+        <div class="section-heading">
+
+        
+
+            <div>
+
+                <span class="section-eyebrow">
+                    ABOUT AL YOSRA
+                </span>
+
+                <h2>
+                    من نحن؟
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="about-content">
+
+
+            <div class="about-visual reveal-child">
+
+                <div class="about-circle">
+
+                    <span class="about-circle-text">
+                        AL YOSRA
+                    </span>
+
+                    <div class="about-smile"></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="about-copy reveal-child">
+
+                <!--
+                    =========================================
+                    ضع نص "من نحن؟" الرسمي هنا
+                    =========================================
+                -->
+
+                <p class="placeholder-copy">
+                    [اكتب نص «من نحن؟» هنا]
+                </p>
+
+
+                <div class="copy-line"></div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
 
 
 
-    <p id="message">
-        متجر اليُسرى الإلكتروني
-    </p>
+<!-- =====================================================
+     VISION
+===================================================== -->
+
+<section
+    class="vision-section reveal-section"
+    id="vision"
+>
+
+    <div
+        class="vision-decoration"
+        aria-hidden="true"
+    ></div>
+
+
+    <div class="section-container">
+
+
+        <div class="vision-top">
+
+            <span class="section-eyebrow">
+                OUR VISION
+            </span>
+
+        
+
+        </div>
+
+
+        <div class="vision-content">
+
+
+            <div class="vision-title reveal-child">
+
+                <span>
+                    رؤيتنا
+                </span>
+
+            </div>
+
+
+            <div class="vision-copy reveal-child">
+
+                <!--
+                    =========================================
+                    ضع نص "رؤيتنا" الرسمي هنا
+                    =========================================
+                -->
+
+                <p class="placeholder-copy">
+                    [اكتب نص «رؤيتنا» هنا]
+                </p>
+
+
+                <div class="vision-line"></div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="vision-footer">
+
+            <span>
+                AL YOSRA STORE
+            </span>
+
+           
+
+        </div>
+
+    </div>
+
+</section>
 
 
 
+<!-- =====================================================
+     MISSION & VALUES
+===================================================== -->
 
-    <a href="products.html" class="shop-button">
+<section
+    class="mission-section reveal-section"
+    id="mission"
+>
 
-        إبدأ التسوق الآن
+    <div class="section-container">
 
-    </a>
 
+        <div class="section-heading">
+
+         
+
+            <div>
+
+                <span class="section-eyebrow">
+                    OUR MISSION
+                </span>
+
+                <h2>
+
+                    رسالتنا
+
+                    <strong>
+                        وقيمنا
+                    </strong>
+
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="mission-copy reveal-child">
+
+            <!--
+                =========================================
+                ضع نص "رسالتنا" الرسمي هنا
+                =========================================
+            -->
+
+            <p class="placeholder-copy">
+                [اكتب نص «رسالتنا» هنا]
+            </p>
+
+        </div>
+
+
+        <div class="values-grid">
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    01
+                </span>
+
+                <h3>
+                    [القيمة الأولى]
+                </h3>
+
+                <p>
+                    [اكتب شرح القيمة الأولى هنا]
+                </p>
+
+            </article>
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    02
+                </span>
+
+                <h3>
+                    [القيمة الثانية]
+                </h3>
+
+                <p>
+                    [اكتب شرح القيمة الثانية هنا]
+                </p>
+
+            </article>
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    03
+                </span>
+
+                <h3>
+                    [القيمة الثالثة]
+                </h3>
+
+                <p>
+                    [اكتب شرح القيمة الثالثة هنا]
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     IMPORTANT LINKS / FOOTER
+===================================================== -->
+
+<footer class="home-footer">
+
+    <div class="footer-container">
+
+
+        <div class="footer-brand">
+
+            <img
+                src="images/LOGO.png"
+                alt="AL YOSRA STORE"
+            >
+
+            <div>
+
+                <h2>
+                    متجر اليُسرى
+                </h2>
+
+                <span>
+                    AL YOSRA STORE
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-links-group">
+
+            <h3>
+                روابط مهمة
+            </h3>
+
+            <!--
+                سيتم استبدال # بالصفحات الحقيقية
+                عند إنشائها.
+            -->
+
+            <a href="#">
+                سياسة الخصوصية
+            </a>
+
+            <a href="#">
+                سياسة الاستبدال والاسترجاع
+            </a>
+
+            <a href="#">
+                سياسة الشحن والتوصيل
+            </a>
+
+            <a href="#">
+                الشروط والأحكام
+            </a>
+
+        </div>
+
+
+        <div class="footer-links-group">
+
+            <h3>
+                المتجر
+            </h3>
+
+            <a href="products.html">
+                المنتجات
+            </a>
+
+            <a href="offers.html">
+                العروض
+            </a>
+
+            <a href="cart.html">
+                السلة
+            </a>
+
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 AL YOSRA STORE
+        </span>
+
+        <span>
+            جميع الحقوق محفوظة
+        </span>
+
+    </div>
+
+</footer>
 
 
 </main>
 
 
 
+<!-- =====================================================
+     CART COUNT
+===================================================== -->
+
 <script src="js/cart-count.js"></script>
 
+
+
+<!-- =====================================================
+     SIDE MENU + PAGE REVEALS
+===================================================== -->
+
 <script>
+
+(function () {
+
+    "use strict";
+
+
+    /* =================================================
+       SIDE MENU
+    ================================================= */
 
     const menuToggle =
         document.getElementById("menuToggle");
@@ -236,44 +702,219 @@
     const sideMenuClose =
         document.getElementById("sideMenuClose");
 
-            const sideMenuOverlay =
-    document.getElementById("sideMenuOverlay");
+    const sideMenuOverlay =
+        document.getElementById("sideMenuOverlay");
 
 
-  menuToggle.addEventListener(
-    "click",
-    () => {
+    function openSideMenu() {
+
+        if (!sideMenu || !sideMenuOverlay) {
+            return;
+        }
 
         sideMenu.classList.add("open");
+
         sideMenuOverlay.classList.add("open");
 
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "menu-open"
+        );
+
     }
-);
 
 
-sideMenuClose.addEventListener(
-    "click",
-    () => {
+    function closeSideMenu() {
+
+        if (!sideMenu || !sideMenuOverlay) {
+            return;
+        }
 
         sideMenu.classList.remove("open");
+
         sideMenuOverlay.classList.remove("open");
 
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.classList.remove(
+            "menu-open"
+        );
+
     }
-);
 
-sideMenuOverlay.addEventListener(
-    "click",
-    () => {
 
-        sideMenu.classList.remove("open");
-        sideMenuOverlay.classList.remove("open");
+    if (menuToggle) {
+
+        menuToggle.addEventListener(
+            "click",
+            openSideMenu
+        );
 
     }
-);
 
 
+    if (sideMenuClose) {
+
+        sideMenuClose.addEventListener(
+            "click",
+            closeSideMenu
+        );
+
+    }
+
+
+    if (sideMenuOverlay) {
+
+        sideMenuOverlay.addEventListener(
+            "click",
+            closeSideMenu
+        );
+
+    }
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                closeSideMenu();
+
+            }
+
+        }
+    );
+
+
+
+    /* =================================================
+       REVEAL SECTIONS
+    ================================================= */
+
+    const sections =
+        document.querySelectorAll(
+            ".reveal-section"
+        );
+
+
+    if (
+        "IntersectionObserver"
+        in window
+    ) {
+
+        const observer =
+            new IntersectionObserver(
+                function (entries) {
+
+                    entries.forEach(
+                        function (entry) {
+
+                            if (
+                                entry.isIntersecting
+                            ) {
+
+                                entry.target.classList.add(
+                                    "is-visible"
+                                );
+
+                                observer.unobserve(
+                                    entry.target
+                                );
+
+                            }
+
+                        }
+                    );
+
+                },
+                {
+                    threshold: 0.12,
+                    rootMargin:
+                        "0px 0px -8% 0px"
+                }
+            );
+
+
+        sections.forEach(
+            function (section) {
+
+                observer.observe(
+                    section
+                );
+
+            }
+        );
+
+    } else {
+
+        sections.forEach(
+            function (section) {
+
+                section.classList.add(
+                    "is-visible"
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /* =================================================
+       SAFETY FALLBACK
+       يمنع بقاء محتوى الأقسام مخفيًا إذا تعذر
+       تشغيل IntersectionObserver.
+    ================================================= */
+
+    window.setTimeout(
+        function () {
+
+            sections.forEach(
+                function (section) {
+
+                    if (
+                        !section.classList.contains(
+                            "is-visible"
+                        )
+                    ) {
+
+                        const rect =
+                            section.getBoundingClientRect();
+
+                        if (
+                            rect.top <
+                            window.innerHeight
+                        ) {
+
+                            section.classList.add(
+                                "is-visible"
+                            );
+
+                        }
+
+                    }
+
+                }
+            );
+
+        },
+        1800
+    );
+
+
+})();
 
 </script>
+
 
 </body>
 
