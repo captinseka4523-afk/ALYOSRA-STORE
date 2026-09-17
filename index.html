@@ -306,10 +306,7 @@
 
     <div class="section-container">
 
-
         <div class="section-heading">
-
-        
 
             <div>
 
@@ -328,39 +325,75 @@
 
         <div class="about-content">
 
-
-            <div class="about-visual reveal-child">
-
-                <div class="about-circle">
-
-                    <span class="about-circle-text">
-                        AL YOSRA
-                    </span>
-
-                    <div class="about-smile"></div>
-
-                </div>
-
-            </div>
-
+            <!-- =========================================
+                 ABOUT COPY
+            ========================================== -->
 
             <div class="about-copy reveal-child">
 
-                <!--
-                    =========================================
-                    ضع نص "من نحن؟" الرسمي هنا
-                    =========================================
-                -->
-
                 <p class="placeholder-copy">
-                    [اكتب نص «من نحن؟» هنا]
+                [we are a team of passionate individuals dedicated to providing the best products and services to our customers. Our mission is to ensure that every customer has a positive experience with us, and we strive to exceed expectations in every interaction.]
                 </p>
-
 
                 <div class="copy-line"></div>
 
             </div>
 
+
+            <!-- =========================================
+                 ABOUT STATS
+            ========================================== -->
+
+            <div class="about-stats">
+
+                <div class="about-stats reveal-child">
+
+    <div class="about-stats-glow about-stats-glow-one"></div>
+    <div class="about-stats-glow about-stats-glow-two"></div>
+
+    <div class="about-stats-inner">
+
+        <div
+            class="about-stat"
+            data-stat-target="1000"
+            data-stat-suffix="+"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                عميل يثق بنا
+            </div>
+        </div>
+
+
+        <div
+            class="about-stat"
+            data-stat-target="200"
+            data-stat-suffix="+"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                أكثر من 200 منتج
+            </div>
+        </div>
+
+
+        <div
+            class="about-stat"
+            data-stat-target="100"
+            data-stat-suffix="%"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                اهتمام بالجودة
+            </div>
+        </div>
+
+    </div>
+
+</div>
 
         </div>
 
@@ -661,6 +694,10 @@
             جميع الحقوق محفوظة
         </span>
 
+        <span>
+              powered by <a href=https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg==>Mohamad Balwi</a>
+        </span>
+
     </div>
 
 </footer>
@@ -852,6 +889,177 @@
 
             }
         );
+
+        /* =================================================
+   ABOUT STAT COUNTERS
+================================================= */
+
+const aboutSection =
+    document.querySelector(
+        "#about"
+    );
+
+
+if (aboutSection) {
+
+    const stats =
+        aboutSection.querySelectorAll(
+            ".about-stat"
+        );
+
+
+    function animateStat(stat, delay) {
+
+        window.setTimeout(
+            function () {
+
+                stat.classList.add(
+                    "is-stat-visible"
+                );
+
+
+                const number =
+                    stat.querySelector(
+                        ".about-stat-number"
+                    );
+
+
+                const target =
+                    Number(
+                        stat.dataset.statTarget
+                    );
+
+
+                const suffix =
+                    stat.dataset.statSuffix || "";
+
+
+                if (
+                    !number ||
+                    !Number.isFinite(target)
+                ) {
+                    return;
+                }
+
+
+                const duration = 1400;
+
+                const startTime =
+                    performance.now();
+
+
+                function updateCounter(
+                    currentTime
+                ) {
+
+                    const elapsed =
+                        currentTime -
+                        startTime;
+
+
+                    const progress =
+                        Math.min(
+                            elapsed / duration,
+                            1
+                        );
+
+
+                    const eased =
+                        1 -
+                        Math.pow(
+                            1 - progress,
+                            3
+                        );
+
+
+                    const currentValue =
+                        Math.round(
+                            target * eased
+                        );
+
+
+                    number.textContent =
+                        currentValue.toLocaleString(
+                            "en-US"
+                        ) + suffix;
+
+
+                    if (
+                        progress < 1
+                    ) {
+
+                        requestAnimationFrame(
+                            updateCounter
+                        );
+
+                    } else {
+
+                        number.textContent =
+                            target.toLocaleString(
+                                "en-US"
+                            ) + suffix;
+
+                    }
+
+                }
+
+
+                requestAnimationFrame(
+                    updateCounter
+                );
+
+            },
+            delay
+        );
+
+    }
+
+
+    const aboutObserver =
+        new IntersectionObserver(
+            function (entries) {
+
+                entries.forEach(
+                    function (entry) {
+
+                        if (
+                            !entry.isIntersecting
+                        ) {
+                            return;
+                        }
+
+
+                        stats.forEach(
+                            function (stat, index) {
+
+                                animateStat(
+                                    stat,
+                                    index * 450
+                                );
+
+                            }
+                        );
+
+
+                        aboutObserver.unobserve(
+                            entry.target
+                        );
+
+                    }
+                );
+
+            },
+            {
+                threshold: 0.18
+            }
+        );
+
+
+    aboutObserver.observe(
+        aboutSection
+    );
+
+}
 
     } else {
 

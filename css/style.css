@@ -985,15 +985,14 @@ img {
 
     padding:
         130px 0;
-background: #e2e8f0;
+background: #dcd8e7;
 
 
         
 position: relative;
-border-top: 30px solid #d2d3d3;
+border-top: 40px solid #cacbcb;
 
 }
-
 
 
 .section-heading h2 {
@@ -1035,119 +1034,267 @@ border-top: 30px solid #d2d3d3;
 }
 
 
-.about-visual {
-    position:
-        relative;
-
-    min-height:
-        400px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-}
 
 
-.about-circle {
-    position:
-        relative;
 
-    width:
-        min(390px,80vw);
+/* =====================================================
+   ABOUT — VERTICAL STATS PANEL
+===================================================== */
 
-    aspect-ratio:
-        1;
+.about-stats {
+    position: relative;
+    width: 100%;
+    min-height: 0;
 
-    display:
-        flex;
+    overflow: hidden;
 
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        50%;
+    border-radius: 30px;
 
     background:
-        radial-gradient(
-            circle,
-            #f8fbff,
-            #e8f2ff
+        linear-gradient(
+            135deg,
+            #071426 0%,
+            #0b1d38 48%,
+            #102b52 100%
         );
 
-    border:
-        1px solid
-        var(--yosra-blue-soft);
+    border: 1px solid rgba(255,255,255,.10);
 
     box-shadow:
-        0 30px 70px
-        rgba(37,99,235,.10);
+        0 30px 80px rgba(15,23,42,.18),
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+    isolation: isolate;
 }
 
 
-.about-circle::before {
-    content:
-        "";
+/* MOVING LIGHT */
 
-    position:
-        absolute;
+.about-stats-glow {
+    position: absolute;
 
-    inset:
-        18px;
+    width: 380px;
+    height: 380px;
 
-    border:
-        1px solid
-        #bfdbfe;
+    border-radius: 50%;
 
-    border-radius:
-        50%;
+    filter: blur(65px);
+
+    opacity: .30;
+
+    pointer-events: none;
+
+    z-index: -1;
+}
+
+.about-stats-glow-one {
+    top: -210px;
+    left: -100px;
+
+    background: rgba(37,99,235,.70);
+
+    animation:
+        aboutGlowOne 9s ease-in-out infinite alternate;
+}
+
+.about-stats-glow-two {
+    right: -120px;
+    bottom: -220px;
+
+    background: rgba(236,72,153,.45);
+
+    animation:
+        aboutGlowTwo 11s ease-in-out infinite alternate;
 }
 
 
-.about-circle-text {
-    position:
-        absolute;
+/* STATS INNER */
 
-    top:
-        24%;
+.about-stats-inner {
+    position: relative;
+
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    direction: rtl;
+}
+
+
+/* INDIVIDUAL STAT */
+
+.about-stat {
+    position: relative;
+
+    width: 100%;
+    min-height: 230px;
+
+    padding: 45px 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    box-sizing: border-box;
+
+    opacity: 0;
+
+    transform: translateY(28px);
+
+    transition:
+        opacity .85s ease,
+        transform .85s cubic-bezier(.16,1,.3,1);
+}
+
+.about-stat.is-stat-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* SEPARATORS */
+
+.about-stat:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    left: 12%;
+    right: 12%;
+    bottom: 0;
+
+    width: auto;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            rgba(255,255,255,.18),
+            transparent
+        );
+}
+
+
+/* NUMBER */
+
+.about-stat-number {
+    direction: ltr;
+
+    display: block;
+
+    white-space: nowrap;
+
+    color: #ffffff;
+
+    font-size: clamp(64px, 7vw, 92px);
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: -3px;
+
+    font-variant-numeric: tabular-nums;
+
+    text-shadow:
+        0 8px 30px rgba(0,0,0,.22);
+}
+
+
+/* LABEL */
+
+.about-stat-label {
+    margin-top: 24px;
 
     color:
-        var(--yosra-blue);
+        rgba(255,255,255,.72);
 
-    font-size:
-        10px;
+    font-size: 16px;
 
-    font-weight:
-        900;
+    font-weight: 700;
 
-    letter-spacing:
-        4px;
+    line-height: 1.7;
 
-    direction:
-        ltr;
+    white-space: normal;
+}
+
+.about-stat-label::before {
+    content: "";
+
+    display: block;
+
+    width: 28px;
+    height: 1px;
+
+    margin:
+        0 auto 14px;
+
+    background:
+        rgba(96,165,250,.60);
 }
 
 
-.about-smile {
-    width:
-        54%;
+/* =====================================================
+   TABLET
+===================================================== */
 
-    height:
-        26%;
+@media (max-width: 900px) {
 
-    border-bottom:
-        5px solid
-        var(--yosra-blue);
+    .about-stats {
+        margin-top: 65px;
+        border-radius: 26px;
+    }
 
-    border-radius:
-        0 0 100% 100%;
+    .about-stat {
+        min-height: 210px;
+        padding: 40px 25px;
+    }
+
+    .about-stat-number {
+        font-size: clamp(58px, 10vw, 78px);
+    }
+
+    .about-stat-label {
+        font-size: 15px;
+    }
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .about-stats {
+        margin-top: 55px;
+        border-radius: 24px;
+    }
+
+    .about-stat {
+        min-height: 190px;
+        padding: 32px 20px;
+    }
+
+    .about-stat-number {
+        font-size: 68px;
+        letter-spacing: -2px;
+    }
+
+    .about-stat-label {
+        font-size: 14px;
+        margin-top: 20px;
+    }
+
+    .about-stat:not(:last-child)::after {
+        left: 15%;
+        right: 15%;
+    }
 }
 
 
@@ -1703,6 +1850,10 @@ border-top: 30px solid #d2d3d3;
 ========================================================= */
 
 @media (max-width:900px) {
+
+.home-footer {
+    padding: 100px ;
+}
 
     .navbar {
         height:
@@ -2676,3 +2827,4 @@ border-top: 30px solid #d2d3d3;
     }
 
 }
+
