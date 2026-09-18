@@ -1101,9 +1101,3 @@ PHONE
 
 
 
-/* TEMP TEST — force products page visibility */
-.products-page .reveal-section,
-.products-page .reveal-child {
-    opacity: 1 !important;
-    transform: none !important;
-}
