@@ -1837,9 +1837,15 @@ border-top: 40px solid #cacbcb;
 
 @media (max-width:900px) {
 
-.home-footer {
-    padding: 100px ;
-}
+    .home-footer {
+        padding:
+            100px;
+    }
+
+
+    /* =====================================================
+       MOBILE / TABLET NAVBAR
+    ===================================================== */
 
     .navbar {
         height:
@@ -1856,15 +1862,43 @@ border-top: 40px solid #cacbcb;
     }
 
 
+    /* =====================================================
+       LOGO
+    ===================================================== */
+
     .nav-logo {
         position:
-            static;
+            absolute;
+
+        left:
+            100px;
+
+        right:
+            100px;
+
+        width:
+            auto;
 
         max-width:
-            calc(100% - 150px);
+            none;
+
+        margin:
+            0;
+
+        display:
+            flex;
+
+        align-items:
+            center;
 
         justify-content:
             center;
+
+        text-align:
+            center;
+
+        white-space:
+            nowrap;
     }
 
 
@@ -1873,6 +1907,53 @@ border-top: 40px solid #cacbcb;
             20px;
     }
 
+
+    /* =====================================================
+       SEARCH
+    ===================================================== */
+
+    .search-toggle {
+        position:
+            absolute;
+
+        right:
+            58px;
+
+        width:
+            38px;
+
+        height:
+            38px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        padding:
+            0;
+
+        border-radius:
+            10px;
+    }
+
+
+    .search-svg {
+        width:
+            20px;
+
+        height:
+            20px;
+    }
+
+
+    /* =====================================================
+       MENU
+    ===================================================== */
 
     .menu-toggle {
         right:
@@ -1888,6 +1969,10 @@ border-top: 40px solid #cacbcb;
             22px;
     }
 
+
+    /* =====================================================
+       CART
+    ===================================================== */
 
     .cart-icon {
         left:
@@ -1924,6 +2009,11 @@ border-top: 40px solid #cacbcb;
             11px;
     }
 
+
+    /* =====================================================
+       MOBILE BOTTOM NAV
+       لا تغيير في التصميم
+    ===================================================== */
 
     .mobile-bottom-nav {
         position:
@@ -2180,6 +2270,92 @@ border-top: 40px solid #cacbcb;
 
 @media (max-width:600px) {
 
+    /* =====================================================
+       SMALL PHONE NAVBAR
+    ===================================================== */
+
+    .navbar {
+        padding:
+            0 10px;
+    }
+
+
+    .nav-logo {
+        left:
+            92px;
+
+        right:
+            92px;
+    }
+
+
+    .search-toggle {
+        right:
+            54px;
+
+        width:
+            36px;
+
+        height:
+            36px;
+    }
+
+
+    .search-svg {
+        width:
+            19px;
+
+        height:
+            19px;
+    }
+
+
+    .menu-toggle {
+        right:
+            10px;
+
+        width:
+            36px;
+
+        height:
+            36px;
+    }
+
+
+    .cart-icon {
+        left:
+            10px;
+
+        padding:
+            5px 7px;
+    }
+
+
+    .cart-svg {
+        width:
+            27px;
+
+        height:
+            27px;
+    }
+
+
+    #cartCount {
+        width:
+            20px;
+
+        height:
+            20px;
+
+        font-size:
+            10px;
+    }
+
+
+    /* =====================================================
+       EXISTING SMALL PHONE RULES
+    ===================================================== */
+
     .section-heading h2 {
         font-size:
             56px;
@@ -2249,6 +2425,41 @@ border-top: 40px solid #cacbcb;
 @media
     (max-width:900px)
     and (orientation:landscape) {
+
+    /* =====================================================
+       LANDSCAPE NAVBAR
+    ===================================================== */
+
+    .nav-logo {
+        left:
+            105px;
+
+        right:
+            105px;
+    }
+
+
+    .search-toggle {
+        right:
+            58px;
+    }
+
+
+    .menu-toggle {
+        right:
+            15px;
+    }
+
+
+    .cart-icon {
+        left:
+            15px;
+    }
+
+
+    /* =====================================================
+       EXISTING LANDSCAPE RULES
+    ===================================================== */
 
     .about-section,
     .vision-section,
