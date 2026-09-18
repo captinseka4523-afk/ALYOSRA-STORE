@@ -626,5 +626,101 @@ title="السلة"
 
 
 </script>
+
+<script>
+(function () {
+
+    "use strict";
+
+    const productId =
+        sessionStorage.getItem(
+            "productsReturnProductId"
+        );
+
+    if (!productId) return;
+
+    /*
+       نبحث عن المنتج بعد أن ينتهي
+       products.js من بناء البطاقات.
+    */
+
+    const findAndRestore = () => {
+
+        const productCard =
+            document.querySelector(
+                '.product-card[data-id="' +
+                productId +
+                '"]'
+            );
+
+        if (!productCard) return false;
+
+        productCard.scrollIntoView({
+            behavior: "instant",
+            block: "center"
+        });
+
+        sessionStorage.removeItem(
+            "productsReturnProductId"
+        );
+
+        return true;
+    };
+
+
+    /*
+       المحاولة الأولى
+    */
+
+    if (findAndRestore()) return;
+
+
+    /*
+       مراقبة productsContainer حتى
+       تظهر المنتجات التي أنشأها products.js
+    */
+
+    const productsContainer =
+        document.getElementById(
+            "productsContainer"
+        );
+
+    if (!productsContainer) return;
+
+
+    const observer =
+        new MutationObserver(() => {
+
+            if (findAndRestore()) {
+                observer.disconnect();
+            }
+
+        });
+
+
+    observer.observe(
+        productsContainer,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+
+    /*
+       حماية في حال حدث شيء غير متوقع
+    */
+
+    setTimeout(() => {
+
+        observer.disconnect();
+
+        findAndRestore();
+
+    }, 5000);
+
+})();
+</script>
+
 </body>
 </html>
