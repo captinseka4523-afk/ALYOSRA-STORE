@@ -1,34 +1,32 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
 
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>AL YOSRA STORE | المنتجات</title>
 
-<link rel="stylesheet" href="css/style.css">
+<link
+    rel="stylesheet"
+    href="css/style.css"
+>
 
-<link rel="stylesheet" href="css/products.css">
+<link
+    rel="stylesheet"
+    href="css/products.css"
+>
 
-</head>
-
-
-<body>
-
-
-<nav class="navbar">
-
-    <button
-        class="menu-toggle"
-        id="menuToggle"
-        aria-label="فتح القائمة"
-        type="button"
-    >
-        ☰
-    </button>
+</head><body><!-- =====================================================
+     NAVBAR
+===================================================== --><nav class="navbar"><button
+    class="menu-toggle"
+    id="menuToggle"
+    aria-label="فتح القائمة"
+    type="button"
+>
+    ☰
+</button>
 
 
 <button
@@ -38,246 +36,425 @@
     aria-label="البحث"
     aria-expanded="false"
 >
-        <svg
-            class="search-svg"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+
+    <svg
+        class="search-svg"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+    >
+
+        <circle
+            cx="11"
+            cy="11"
+            r="7"
+        ></circle>
+
+        <path
+            d="m20 20-4-4"
+        ></path>
+
+    </svg>
+
+</button>
+
+
+<div class="nav-logo">
+
+    <span class="nav-logo-ar">
+        متجر اليُسرى
+    </span>
+
+</div>
+
+
+<ul class="nav-links">
+
+    <li>
+        <a href="index.html">
+            الرئيسية
+        </a>
+    </li>
+
+    <li>
+        <a
+            class="active"
+            href="products.html"
         >
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-4-4"></path>
-        </svg>
-    </button>
+            المنتجات
+        </a>
+    </li>
+
+    <li>
+        <a href="offers.html">
+            العروض
+        </a>
+    </li>
+
+    <li>
+        <a href="cart.html">
+            السلة
+        </a>
+    </li>
+
+    <li>
+        <a href="contact.html">
+            تواصل معنا
+        </a>
+    </li>
+
+</ul>
 
 
-    <div class="nav-logo">
+<a
+    href="cart.html"
+    class="cart-icon"
+    aria-label="السلة"
+    title="السلة"
+>
 
-        <span class="nav-logo-ar">
-            متجر اليُسرى
-        </span>
+    <svg
+        class="cart-svg"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+    >
 
-    
+        <path
+            d="M6 6h15l-2 8H8L6 6Z"
+        ></path>
 
-    </div>
+        <path
+            d="M6 6L5 3H2"
+        ></path>
 
+        <circle
+            cx="9"
+            cy="20"
+            r="1.5"
+        ></circle>
 
-    <ul class="nav-links">
+        <circle
+            cx="18"
+            cy="20"
+            r="1.5"
+        ></circle>
 
-        <li>
-            <a href="index.html">
-                الرئيسية
-            </a>
-        </li>
+    </svg>
 
-        <li>
-            <a class="active" href="products.html">
-                المنتجات
-            </a>
-        </li>
+    <span id="cartCount">
+        0
+    </span>
 
-        <li>
-            <a href="offers.html">
-                العروض
-            </a>
-        </li>
+</a>
 
-        <li>
-            <a href="cart.html">
-                السلة
-            </a>
-        </li>
-
-        <li>
-            <a href="contact.html">
-                تواصل معنا
-            </a>
-        </li>
-
-    </ul>
-
-
-    <a href="cart.html" class="cart-icon">
-
-        <svg
-            class="cart-svg"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        >
-
-            <path d="M6 6h15l-2 8H8L6 6Z"></path>
-
-            <path d="M6 6L5 3H2"></path>
-
-            <circle cx="9" cy="20" r="1.5"></circle>
-
-            <circle cx="18" cy="20" r="1.5"></circle>
-
-        </svg>
-
-        <span id="cartCount">
-            0
-        </span>
-
-    </a>
-
-</nav>
-
-<div
+</nav><!-- =====================================================
+     SEARCH POPOVER
+===================================================== --><div
     id="productSearchPopover"
     class="search-popover"
     aria-hidden="true"
+><div class="search-popover-field">
+
+    <svg
+        class="search-popover-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+    >
+
+        <circle
+            cx="11"
+            cy="11"
+            r="7"
+        ></circle>
+
+        <path
+            d="m20 20-4-4"
+        ></path>
+
+    </svg>
+
+
+    <input
+        id="productSearchInput"
+        type="search"
+        placeholder="ابحث عن منتج..."
+        autocomplete="off"
+        dir="rtl"
+    >
+
+</div>
+
+</div><!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== --><nav
+    class="mobile-bottom-nav"
+    aria-label="التنقل الرئيسي"
+><a href="index.html">
+    <span>الرئيسية</span>
+</a>
+
+<a
+    class="active"
+    href="products.html"
 >
-    <div class="search-popover-field">
+    <span>المنتجات</span>
+</a>
 
-        <svg
-            class="search-popover-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-        >
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-4-4"></path>
-        </svg>
+<a href="offers.html">
+    <span>العروض</span>
+</a>
 
-        <input
-            id="productSearchInput"
-            type="search"
-            placeholder="ابحث عن منتج..."
-            autocomplete="off"
-            dir="rtl"
-        >
+<a href="cart.html">
+    <span>السلة</span>
+</a>
 
-    </div>
-</div>
+<a href="contact.html">
+    <span>تواصل معنا</span>
+</a>
 
-<nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+</nav><!-- =====================================================
+     SIDE MENU
+===================================================== --><div
+    class="side-menu-overlay"
+    id="sideMenuOverlay"
+></div><aside
+    class="side-menu"
+    id="sideMenu"
+><div class="side-menu-header">
 
-    <a href="index.html">
-        <span>الرئيسية</span>
-    </a>
+    <span>
+        القائمة
+    </span>
 
-    <a class="active" href="products.html">
-        <span>المنتجات</span>
-    </a>
-
-    <a href="offers.html">
-        <span>العروض</span>
-    </a>
-
-    <a href="cart.html">
-        <span>السلة</span>
-    </a>
-
-    <a href="contact.html">
-        <span>تواصل معنا</span>
-    </a>
-
-</nav>
-
-<div class="side-menu-overlay" id="sideMenuOverlay"></div>
-
-
-<aside class="side-menu" id="sideMenu">
-
-    <div class="side-menu-header">
-
-        <span>القائمة</span>
-
-        <button
-            class="side-menu-close"
-            id="sideMenuClose"
-            type="button"
-            aria-label="إغلاق القائمة"
-        >
-            ×
-        </button>
-
-    </div>
-
-
-    <ul class="side-menu-links">
-
-        <li>
-            <a href="index.html">الرئيسية</a>
-        </li>
-
-        <li>
-            <a class="active" href="products.html">المنتجات</a>
-        </li>
-
-        <li>
-            <a href="cart.html">السلة</a>
-        </li>
-
-        <li>
-            <a href="contact.html">تواصل معنا</a>
-        </li>
-
-     <li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
-
-    </ul>
-
-</aside>
-
-
-<main class="products-page">
-
-
-<div class="products-box">
-
-
-<h1>
-منتجاتنا
-</h1>
-
-
-<p>
-اختر الأدوات التي تحتاجها من متجر اليُسرى.
-</p>
-
-
-
-<div class="products-container" id="productsContainer">
-
-
-
-<!-- المنتجات ستظهر هنا لاحقًا -->
-
-
+    <button
+        class="side-menu-close"
+        id="sideMenuClose"
+        type="button"
+        aria-label="إغلاق القائمة"
+    >
+        ×
+    </button>
 
 </div>
 
 
-                                                                                                              
+<ul class="side-menu-links">
 
-</main>
+    <li>
+        <a href="index.html">
+            الرئيسية
+        </a>
+    </li>
+
+    <li>
+        <a
+            class="active"
+            href="products.html"
+        >
+            المنتجات
+        </a>
+    </li>
+
+    <li>
+        <a href="cart.html">
+            السلة
+        </a>
+    </li>
+
+    <li>
+        <a href="contact.html">
+            تواصل معنا
+        </a>
+    </li>
+
+    <li>
+        <a href="offers.html">
+            العروض
+        </a>
+    </li>
+
+</ul>
+
+</aside><!-- =====================================================
+     MAIN
+===================================================== --><main class="products-page"><!-- =================================================
+     PRODUCTS HERO
+================================================== -->
+
+<section
+    class="products-hero reveal-section"
+>
+
+    <div class="products-hero-glow"></div>
 
 
+    <div class="products-hero-inner">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-client.js"></script>
-<script src="js/products.js"></script>
-<script src="js/cart-count.js"></script>
 
-<script>
+        <!-- ROW ONE -->
+
+        <div class="products-feature products-feature-one">
+
+
+            <div class="products-feature-copy reveal-child">
+
+                <span class="products-eyebrow">
+                    DENTAL TOOLS
+                </span>
+
+                <h1>
+                    أدوات
+                    <br>
+                    تصنع الفرق.
+                </h1>
+
+                <p>
+                    مجموعة مختارة من أدوات طب الأسنان
+                    للطلاب والأطباء، بجودة موثوقة
+                    واختيارات تلائم احتياجات الميدان.
+                </p>
+
+            </div>
+
+
+            <div class="products-feature-image reveal-child">
+
+                <img
+                    src="images/products-tools-hero.png"
+                    alt="أدوات طب الأسنان"
+                    loading="eager"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ROW TWO -->
+
+        <div class="products-feature products-feature-two">
+
+
+            <div class="products-feature-image reveal-child">
+
+                <img
+                    src="images/products-chair-hero.png"
+                    alt="كرسي عيادة طب الأسنان"
+                    loading="lazy"
+                >
+
+            </div>
+
+
+            <div class="products-feature-copy reveal-child">
+
+                <span class="products-eyebrow">
+                    FOR STUDENTS &amp; DENTISTS
+                </span>
+
+                <h2>
+                    من الدراسة
+                    <br>
+                    إلى العيادة.
+                </h2>
+
+                <p>
+                    من الأدوات الأساسية إلى مستلزمات
+                    العيادات، نسعى إلى أن تجد ما تحتاجه
+                    في مكان واحد، بسهولة وثقة.
+                </p>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- =================================================
+     PRODUCTS SECTION
+================================================== -->
+
+<section
+    class="products-showcase reveal-section"
+    id="products"
+>
+
+    <div class="products-showcase-inner">
+
+
+        <div class="products-section-heading reveal-child">
+
+            <div>
+
+                <span class="products-eyebrow">
+                    AL YOSRA COLLECTION
+                </span>
+
+                <h2>
+                    منتجاتنا
+                </h2>
+
+            </div>
+
+
+            <p>
+                اختر ما تحتاجه من مجموعتنا
+                المختارة بعناية.
+            </p>
+
+        </div>
+
+
+        <div
+            class="products-container"
+            id="productsContainer"
+        >
+
+            <!-- المنتجات ستظهر هنا من Supabase -->
+
+        </div>
+
+
+    </div>
+
+</section>
+
+</main><!-- =====================================================
+     FLOATING CART
+===================================================== --><a
+href="cart.html"
+class="floating-cart-button"
+aria-label="السلة"
+title="السلة"
+
+«»
+
+🛒
+
+</a><!-- =====================================================
+     SCRIPTS
+===================================================== --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-client.js"></script><script src="js/products.js"></script><script src="js/cart-count.js"></script><script src="js/navbar.js"></script><script>
 
     const menuToggle =
         document.getElementById("menuToggle");
@@ -292,49 +469,61 @@
         document.getElementById("sideMenuOverlay");
 
 
-    menuToggle.addEventListener(
-        "click",
-        () => {
+    if (
+        menuToggle &&
+        sideMenu &&
+        sideMenuOverlay
+    ) {
 
-            sideMenu.classList.add("open");
-            sideMenuOverlay.classList.add("open");
+        menuToggle.addEventListener(
+            "click",
+            () => {
 
-        }
-    );
+                sideMenu.classList.add("open");
 
+                sideMenuOverlay.classList.add("open");
 
-    sideMenuClose.addEventListener(
-        "click",
-        () => {
+            }
+        );
 
-            sideMenu.classList.remove("open");
-            sideMenuOverlay.classList.remove("open");
-
-        }
-    );
+    }
 
 
-    sideMenuOverlay.addEventListener(
-        "click",
-        () => {
+    if (
+        sideMenuClose &&
+        sideMenu &&
+        sideMenuOverlay
+    ) {
 
-            sideMenu.classList.remove("open");
-            sideMenuOverlay.classList.remove("open");
+        sideMenuClose.addEventListener(
+            "click",
+            () => {
 
-        }
-    );
+                sideMenu.classList.remove("open");
+
+                sideMenuOverlay.classList.remove("open");
+
+            }
+        );
+
+    }
+
+
+    if (sideMenuOverlay) {
+
+        sideMenuOverlay.addEventListener(
+            "click",
+            () => {
+
+                sideMenu.classList.remove("open");
+
+                sideMenuOverlay.classList.remove("open");
+
+            }
+        );
+
+    }
 
 </script>
-
-<a
-    href="cart.html"
-    class="floating-cart-button"
-    aria-label="السلة"
-    title="السلة"
->
-    🛒
-</a>
-
 </body>
-
 </html>
