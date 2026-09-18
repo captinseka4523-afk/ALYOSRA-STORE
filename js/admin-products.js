@@ -566,6 +566,7 @@ function openAddProductModal() {
 
     if (!modal) return;
 
+    resetProductImageState();
 
     if (form) {
         form.reset();
@@ -586,34 +587,8 @@ function openAddProductModal() {
     if (purchaseCost) {
         purchaseCost.value = "";
     }
-const imageFileInput =
-    document.getElementById("productImageFile");
+resetProductImageState();
 
-const imagePreview =
-    document.getElementById("productImagePreview");
-
-const imagePreviewImage =
-    document.getElementById("productImagePreviewImage");
-
-const imageStatus =
-    document.getElementById("productImageStatus");
-
-if (imageFileInput) {
-    imageFileInput.value = "";
-}
-
-if (imagePreview) {
-    imagePreview.hidden = true;
-}
-
-if (imagePreviewImage) {
-    imagePreviewImage.src = "";
-}
-
-if (imageStatus) {
-    imageStatus.textContent =
-        "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
-}
 
     if (title) {
         title.textContent =
@@ -632,6 +607,85 @@ if (imageStatus) {
 // ==========================================
 // Edit Product Modal
 // ==========================================
+
+function setProductImagePreview(
+    imageUrl,
+    statusText = ""
+) {
+
+    const previewContainer =
+        document.getElementById(
+            "productImagePreview"
+        );
+
+    const previewImage =
+        document.getElementById(
+            "productImagePreviewImage"
+        );
+
+    const status =
+        document.getElementById(
+            "productImageStatus"
+        );
+
+
+    if (!previewContainer || !previewImage) {
+        return;
+    }
+
+
+    /*
+     * إلغاء Object URL السابق
+     * إذا كانت المعاينة صورة محلية.
+     */
+    if (
+        previewImage.dataset.previewUrl
+    ) {
+
+        URL.revokeObjectURL(
+            previewImage.dataset.previewUrl
+        );
+
+        delete previewImage.dataset.previewUrl;
+    }
+
+
+    if (!imageUrl) {
+
+        previewImage.removeAttribute(
+            "src"
+        );
+
+        previewContainer.hidden =
+            true;
+
+        if (status && statusText) {
+
+            status.textContent =
+                statusText;
+
+        }
+
+        return;
+    }
+
+
+    previewImage.src =
+        imageUrl;
+
+
+    previewContainer.hidden =
+        false;
+
+
+    if (status && statusText) {
+
+        status.textContent =
+            statusText;
+
+    }
+
+}
 
 function openEditProductModal(
     id
@@ -700,6 +754,22 @@ function openEditProductModal(
     ).value =
         product.description || "";
 
+        const imageFileInput =
+    document.getElementById(
+        "productImageFile"
+    );
+
+if (imageFileInput) {
+    imageFileInput.value = "";
+}
+
+
+setProductImagePreview(
+    product.main_image || null,
+    product.main_image
+        ? "الصورة الحالية للمنتج. اختر صورة جديدة لاستبدالها."
+        : "لا توجد صورة حالية لهذا المنتج."
+);
 
     const purchaseCost =
         document.getElementById(
@@ -741,6 +811,77 @@ function openEditProductModal(
 // Close Modal
 // ==========================================
 
+function resetProductImageState() {
+
+    const imageFileInput =
+        document.getElementById(
+            "productImageFile"
+        );
+
+    const previewContainer =
+        document.getElementById(
+            "productImagePreview"
+        );
+
+    const previewImage =
+        document.getElementById(
+            "productImagePreviewImage"
+        );
+
+    const status =
+        document.getElementById(
+            "productImageStatus"
+        );
+
+
+    if (imageFileInput) {
+
+        imageFileInput.value =
+            "";
+
+    }
+
+
+    if (
+        previewImage &&
+        previewImage.dataset.previewUrl
+    ) {
+
+        URL.revokeObjectURL(
+            previewImage.dataset.previewUrl
+        );
+
+        delete previewImage.dataset.previewUrl;
+
+    }
+
+
+    if (previewImage) {
+
+        previewImage.removeAttribute(
+            "src"
+        );
+
+    }
+
+
+    if (previewContainer) {
+
+        previewContainer.hidden =
+            true;
+
+    }
+
+
+    if (status) {
+
+        status.textContent =
+            "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
+
+    }
+
+}
+
 function closeProductModalWindow() {
 
     const modal =
@@ -750,8 +891,14 @@ function closeProductModalWindow() {
 
 
     if (modal) {
-        modal.hidden = true;
+
+        modal.hidden =
+            true;
+
     }
+
+
+    resetProductImageState();
 
 
     clearFormMessage();
@@ -763,107 +910,131 @@ function closeProductModalWindow() {
 // Save Product
 // ==========================================
 
+
 async function prepareProductImage(file) {
+
     if (!file) {
         return null;
     }
 
+
     if (!file.type.startsWith("image/")) {
-        throw new Error("الملف المحدد ليس صورة.");
-    }
-
-    const image = await createImageBitmap(file);
-
-    // الحجم النهائي الموحد للصورة
-    const canvasSize = 1600;
-
-    // المساحة الآمنة داخل الإطار
-    // نترك هامشًا بسيطًا حتى لا تلتصق الأداة بالحواف.
-    const maxContentSize = 1560;
-
-    let contentWidth = image.width;
-    let contentHeight = image.height;
-
-    // تصغير الصورة مع الحفاظ على النسبة الأصلية
-    if (
-        contentWidth > maxContentSize ||
-        contentHeight > maxContentSize
-    ) {
-        const scale = Math.min(
-            maxContentSize / contentWidth,
-            maxContentSize / contentHeight
+        throw new Error(
+            "الملف المحدد ليس صورة."
         );
-
-        contentWidth =
-            Math.round(contentWidth * scale);
-
-        contentHeight =
-            Math.round(contentHeight * scale);
     }
 
-    // إنشاء إطار مربع موحد
-    const canvas = document.createElement("canvas");
 
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
+    const image =
+        await createImageBitmap(file);
 
-    const context = canvas.getContext("2d");
 
-    if (!context) {
-        image.close();
-        throw new Error("تعذر تجهيز الصورة.");
-    }
+    try {
 
-    // خلفية بيضاء
-    context.fillStyle = "#ffffff";
-    context.fillRect(
-        0,
-        0,
-        canvasSize,
-        canvasSize
-    );
+        /*
+         * نستخدم أبعاد الصورة الأصلية
+         * دون قص أو اكتشاف للمحتوى.
+         */
+        const width =
+            image.width;
 
-    // وضع الصورة في المنتصف
-    const x =
-        (canvasSize - contentWidth) / 2;
+        const height =
+            image.height;
 
-    const y =
-        (canvasSize - contentHeight) / 2;
 
-    context.drawImage(
-        image,
-        x,
-        y,
-        contentWidth,
-        contentHeight
-    );
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
 
-    image.close();
 
-    // تحويل الصورة إلى WebP وضغطها
-    const blob = await new Promise(
-        (resolve, reject) => {
-            canvas.toBlob(
-                (result) => {
-                    if (result) {
-                        resolve(result);
-                    } else {
-                        reject(
-                            new Error(
-                                "تعذر ضغط الصورة."
-                            )
-                        );
-                    }
-                },
-                "image/webp",
-                0.82
+        canvas.width =
+            width;
+
+        canvas.height =
+            height;
+
+
+        const context =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        if (!context) {
+            throw new Error(
+                "تعذر تجهيز الصورة."
             );
         }
-    );
 
-    return blob;
+
+        /*
+         * رسم الصورة كما هي تمامًا.
+         *
+         * لا توجد:
+         * - خلفية بيضاء
+         * - قص
+         * - تكبير
+         * - تصغير
+         * - تغيير نسبة
+         */
+        context.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        /*
+         * تحويل فقط إلى WebP
+         * مع الحفاظ على الأبعاد والشفافية.
+         */
+        const blob =
+            await new Promise(
+                (resolve, reject) => {
+
+                    canvas.toBlob(
+                        result => {
+
+                            if (result) {
+
+                                resolve(
+                                    result
+                                );
+
+                            } else {
+
+                                reject(
+                                    new Error(
+                                        "تعذر تحويل الصورة إلى WebP."
+                                    )
+                                );
+
+                            }
+
+                        },
+
+                        "image/webp",
+
+                        0.82
+                    );
+
+                }
+            );
+
+
+        return blob;
+
+
+    } finally {
+
+        image.close();
+
+    }
+
 }
-
 document
     .getElementById("productImageFile")
     ?.addEventListener("change", async function () {
