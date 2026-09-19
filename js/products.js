@@ -53,6 +53,38 @@ let productsSentinel = null;
 let lastLoadedProductId = 0;
 
 
+/*
+ * الدفعات التي تمت مزامنتها خلال
+ * جلسة الصفحة الحالية.
+ *
+ * مثال:
+ * 0 = المنتجات 1 - 20
+ * 1 = المنتجات 21 - 40
+ * 2 = المنتجات 41 - 60
+ */
+const syncedProductBatches =
+    new Set();
+
+
+/*
+ * الدفعات التي تتم مزامنتها حاليًا.
+ *
+ * تمنع إرسال طلبين متزامنين لنفس الدفعة
+ * إذا حدثت عدة إشارات من IntersectionObserver.
+ */
+const syncingProductBatches =
+    new Set();
+
+
+/*
+ * مراقب الدفعات.
+ *
+ * يستخدم لمراقبة وصول المستخدم إلى
+ * دفعة جديدة من المنتجات الموجودة في الكاش.
+ */
+let productBatchSyncObserver = null;
+
+
 /* =========================================================
    أدوات الكاش
 ========================================================= */
@@ -85,7 +117,31 @@ function readProductsCache() {
         }
 
 
-        return parsed;
+        /*
+         * التحقق من أن البيانات الموجودة
+         * في الكاش عبارة عن منتجات صالحة.
+         */
+        const validProducts =
+            parsed.products.filter(
+                product =>
+                    product &&
+                    product.id !== undefined &&
+                    product.id !== null
+            );
+
+
+        if (
+            validProducts.length === 0
+        ) {
+
+            return null;
+        }
+
+
+        return {
+            ...parsed,
+            products: validProducts
+        };
 
     } catch (error) {
 
@@ -124,16 +180,22 @@ function saveProductsCache() {
             JSON.stringify(cacheData)
         );
 
+
+        return true;
+
     } catch (error) {
 
         /*
-         * امتلاء localStorage لا يجب
-         * أن يكسر المتجر.
+         * امتلاء localStorage أو فشل الحفظ
+         * لا يجب أن يكسر المتجر.
          */
         console.warn(
             "تعذر حفظ كاش المنتجات:",
             error
         );
+
+
+        return false;
     }
 }
 
@@ -199,6 +261,71 @@ function normalizeProduct(product) {
 
 
 /* =========================================================
+   أدوات مشتركة لجلب المنتجات
+========================================================= */
+
+function getProductsSelectFields() {
+
+    return `
+        id,
+        name,
+        description,
+        price,
+        quantity,
+        main_image,
+        created_at,
+        updated_at,
+        target,
+        category_id,
+        product_code
+    `;
+}
+
+
+/*
+ * جلب منتجات محددة بالـ IDs.
+ *
+ * يستخدم فقط عندما يتبين أن updated_at
+ * تغيّر فعلًا أو أن هناك منتجات ناقصة.
+ */
+async function fetchProductsByIds(ids) {
+
+    if (
+        !Array.isArray(ids) ||
+        ids.length === 0
+    ) {
+
+        return [];
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("products")
+            .select(
+                getProductsSelectFields()
+            )
+            .in(
+                "id",
+                ids
+            );
+
+
+    if (error) {
+        throw error;
+    }
+
+
+    return (data || []).map(
+        normalizeProduct
+    );
+}
+
+
+/* =========================================================
    مراقب تحميل الصور
 ========================================================= */
 
@@ -256,11 +383,15 @@ function setupImageObserver() {
                 root: null,
 
                 /*
-                 * تحميل الصورة قبل وصولها
-                 * إلى الشاشة بحوالي 300px.
+                 * نبدأ تحميل الصور قبل وصولها
+                 * إلى الشاشة بحوالي 500px.
+                 *
+                 * هذا يقلل احتمال أن يصل المستخدم
+                 * إلى البطاقة قبل انتهاء تحميل صورتها،
+                 * مع بقاء Lazy Loading فعالًا.
                  */
                 rootMargin:
-                    "300px 0px",
+                    "500px 0px",
 
                 threshold: 0.01
             }
@@ -328,6 +459,8 @@ function createProductCard(product) {
         <img
             data-src="${product.image}"
             alt="${product.name}"
+            loading="lazy"
+            decoding="async"
         >
 
         <h3>${product.name}</h3>
@@ -406,6 +539,12 @@ function displayProducts(
         }
 
 
+        /*
+         * حتى عند عدم وجود منتجات معروضة،
+         * نعيد مراقبة الدفعات الموجودة.
+         */
+        setupProductBatchSyncObserver();
+
         return;
     }
 
@@ -442,6 +581,13 @@ function displayProducts(
         setupProductsSentinel();
 
     }
+
+
+    /*
+     * إعادة تجهيز مراقب الدفعات بعد
+     * إعادة بناء الواجهة.
+     */
+    setupProductBatchSyncObserver();
 }
 
 
@@ -457,6 +603,18 @@ function appendProducts(
         !productsContainer ||
         !Array.isArray(productsToAppend) ||
         productsToAppend.length === 0
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * أثناء البحث لا نضيف دفعات جديدة.
+     */
+    if (
+        productSearchInput &&
+        productSearchInput.value.trim()
     ) {
 
         return;
@@ -496,6 +654,12 @@ function appendProducts(
 
 
     setupProductsSentinel();
+
+
+    /*
+     * إعادة تجهيز مراقب الدفعات.
+     */
+    setupProductBatchSyncObserver();
 }
 
 
@@ -521,6 +685,26 @@ function setupProductsSentinel() {
      * إذا انتهت المنتجات فلا حاجة إلى Sentinel.
      */
     if (!hasMoreProducts) {
+
+        productsSentinel = null;
+
+        if (infiniteScrollObserver) {
+
+            infiniteScrollObserver.disconnect();
+
+        }
+
+        return;
+    }
+
+
+    /*
+     * لا نضع Sentinel أثناء البحث.
+     */
+    if (
+        productSearchInput &&
+        productSearchInput.value.trim()
+    ) {
 
         productsSentinel = null;
 
@@ -643,19 +827,9 @@ async function loadNextProductsPage() {
         let query =
             supabaseClient
                 .from("products")
-                .select(`
-                    id,
-                    name,
-                    description,
-                    price,
-                    quantity,
-                    main_image,
-                    created_at,
-                    updated_at,
-                    target,
-                    category_id,
-                    product_code
-                `)
+                .select(
+                    getProductsSelectFields()
+                )
                 .order(
                     "id",
                     {
@@ -684,6 +858,18 @@ async function loadNextProductsPage() {
         }
 
 
+        /*
+         * =====================================================
+         * طلب واحد فقط إلى Supabase.
+         *
+         * هذا الطلب يجلب:
+         * - بيانات المنتج كاملة
+         * - updated_at
+         *
+         * لذلك لا يوجد بعده طلب منفصل
+         * لـ id + updated_at.
+         * =====================================================
+         */
         const {
             data,
             error
@@ -795,6 +981,35 @@ async function loadNextProductsPage() {
         }
 
 
+        /*
+         * =====================================================
+         * هذه الدفعة جاءت مباشرة من Supabase
+         * ومعها updated_at في نفس الطلب.
+         *
+         * لذلك نعتبرها متزامنة مباشرة.
+         *
+         * لا يوجد طلب:
+         * select("id, updated_at")
+         *
+         * لهذه الدفعة.
+         * =====================================================
+         */
+        const batchIndex =
+            Math.max(
+                0,
+                currentPage - 1
+            );
+
+
+        syncedProductBatches.add(
+            batchIndex
+        );
+
+
+        /*
+         * حفظ الكاش مجرد تحسين أداء.
+         * فشل الحفظ لا يمنع العرض.
+         */
         saveProductsCache();
 
 
@@ -893,8 +1108,12 @@ function loadProductsFromCache() {
         );
 
 
+    /*
+     * حساب عدد الدفعات الموجودة
+     * في الكاش.
+     */
     currentPage =
-        Math.floor(
+        Math.ceil(
             window.products.length /
             PRODUCTS_PAGE_SIZE
         );
@@ -902,15 +1121,545 @@ function loadProductsFromCache() {
 
     /*
      * في البداية نفترض وجود المزيد،
-     * ثم تقوم المزامنة بتحديد الحقيقة.
+     * ثم يتم تصحيح ذلك عند الحاجة
+     * بواسطة Infinite Scroll.
      */
     hasMoreProducts = true;
 
 
+    /*
+     * إعادة ضبط قائمة الدفعات
+     * التي تم فحصها في هذه الجلسة.
+     */
+    syncedProductBatches.clear();
+
+
+    syncingProductBatches.clear();
+
+
+    /*
+     * الكاش يمكن تحميله كاملًا إلى الذاكرة
+     * وعرضه مباشرة.
+     *
+     * هذا لا يعني أننا قمنا بتحميل كل المنتجات
+     * من Supabase؛ البيانات هنا جاءت من localStorage.
+     */
     displayProducts();
 
 
     return true;
+}
+
+
+/* =========================================================
+   تحديد الدفعة الموجودة في الكاش
+========================================================= */
+
+function getProductBatchIndexByPosition(
+    index
+) {
+
+    return Math.floor(
+        index /
+        PRODUCTS_PAGE_SIZE
+    );
+}
+
+
+/* =========================================================
+   مزامنة دفعة واحدة مع Supabase
+========================================================= */
+
+async function syncProductBatch(
+    batchIndex
+) {
+
+    /*
+     * إذا تمت مزامنة الدفعة بالفعل،
+     * لا نرسل أي طلب.
+     */
+    if (
+        syncedProductBatches.has(
+            batchIndex
+        )
+    ) {
+
+        return true;
+    }
+
+
+    /*
+     * منع طلبين متزامنين لنفس الدفعة.
+     */
+    if (
+        syncingProductBatches.has(
+            batchIndex
+        )
+    ) {
+
+        return false;
+    }
+
+
+    syncingProductBatches.add(
+        batchIndex
+    );
+
+
+    const startIndex =
+        batchIndex *
+        PRODUCTS_PAGE_SIZE;
+
+
+    const batchProducts =
+        window.products.slice(
+            startIndex,
+            startIndex +
+            PRODUCTS_PAGE_SIZE
+        );
+
+
+    if (
+        batchProducts.length === 0
+    ) {
+
+        syncedProductBatches.add(
+            batchIndex
+        );
+
+        syncingProductBatches.delete(
+            batchIndex
+        );
+
+        return true;
+    }
+
+
+    /*
+     * IDs الموجودة في الكاش لهذه الدفعة فقط.
+     */
+    const batchIds =
+        batchProducts.map(
+            product =>
+                String(product.id)
+        );
+
+
+    try {
+
+        /*
+         * =====================================================
+         * هذا الطلب خاص فقط بالدفعات القادمة من CACHE.
+         *
+         * الهدف:
+         * مقارنة updated_at دون تحميل بيانات
+         * المنتجات كاملة.
+         *
+         * لا يتم تنفيذ هذا الطلب للدفعات التي
+         * جُلبت حديثًا من Supabase، لأنها تكون
+         * قد حصلت على updated_at أصلًا.
+         * =====================================================
+         */
+        const {
+            data: metadata,
+            error: metadataError
+        } =
+            await supabaseClient
+                .from("products")
+                .select(
+                    "id, updated_at"
+                )
+                .in(
+                    "id",
+                    batchIds
+                );
+
+
+        if (metadataError) {
+            throw metadataError;
+        }
+
+
+        const remoteProducts =
+            metadata || [];
+
+
+        const remoteMap =
+            new Map(
+                remoteProducts.map(
+                    product => [
+                        String(product.id),
+                        product.updated_at || ""
+                    ]
+                )
+            );
+
+
+        /*
+         * المنتجات المحذوفة من قاعدة البيانات
+         * داخل هذه الدفعة فقط.
+         */
+        const deletedIds =
+            batchProducts
+                .filter(
+                    product =>
+                        !remoteMap.has(
+                            product.id
+                        )
+                )
+                .map(
+                    product =>
+                        product.id
+                );
+
+
+        /*
+         * المنتجات التي تغير updated_at
+         * داخل هذه الدفعة فقط.
+         */
+        const changedIds =
+            batchProducts
+                .filter(product => {
+
+                    const remoteUpdatedAt =
+                        remoteMap.get(
+                            product.id
+                        );
+
+
+                    return (
+                        remoteUpdatedAt !== undefined &&
+                        remoteUpdatedAt !==
+                        product.updatedAt
+                    );
+
+                })
+                .map(
+                    product =>
+                        product.id
+                );
+
+
+        /*
+         * إذا لم يحدث أي تغيير،
+         * ننهي المزامنة بدون جلب
+         * بيانات المنتج الكاملة.
+         */
+        if (
+            changedIds.length === 0 &&
+            deletedIds.length === 0
+        ) {
+
+            syncedProductBatches.add(
+                batchIndex
+            );
+
+            return true;
+        }
+
+
+        /*
+         * نجلب البيانات الكاملة فقط
+         * للمنتجات التي تغيرت.
+         */
+        let updatedProducts = [];
+
+
+        if (
+            changedIds.length > 0
+        ) {
+
+            updatedProducts =
+                await fetchProductsByIds(
+                    changedIds
+                );
+
+        }
+
+
+        const updatedMap =
+            new Map(
+                updatedProducts.map(
+                    product => [
+                        product.id,
+                        product
+                    ]
+                )
+            );
+
+
+        /*
+         * تحديث المنتجات التي تغيرت
+         * وحذف المنتجات التي اختفت.
+         */
+        window.products =
+            window.products
+                .filter(
+                    product =>
+                        !deletedIds.includes(
+                            product.id
+                        )
+                )
+                .map(
+                    product =>
+                        updatedMap.has(
+                            product.id
+                        )
+                        ? updatedMap.get(
+                            product.id
+                        )
+                        : product
+                );
+
+
+        /*
+         * إعادة ترتيب القائمة.
+         */
+        window.products.sort(
+            (a, b) =>
+                Number(a.id) -
+                Number(b.id)
+        );
+
+
+        /*
+         * لأن حذف منتج قد يغيّر موضع الدفعات
+         * التالية، نعيد بناء مراقب الدفعات.
+         */
+        const searchValue =
+            productSearchInput
+            ? normalizeSearchText(
+                productSearchInput.value
+            )
+            : "";
+
+
+        if (searchValue) {
+
+            filterProductsLocally();
+
+        } else {
+
+            displayProducts();
+
+        }
+
+
+        /*
+         * الكاش يتم تحديثه بعد نجاح المزامنة.
+         *
+         * وإذا فشل الحفظ، يبقى المتجر يعمل.
+         */
+        saveProductsCache();
+
+
+        /*
+         * نعتبر الدفعة متزامنة فقط بعد
+         * نجاح عملية المزامنة بالكامل.
+         */
+        syncedProductBatches.add(
+            batchIndex
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.warn(
+            `تعذر مزامنة دفعة المنتجات رقم ${batchIndex + 1}:`,
+            error
+        );
+
+
+        /*
+         * لا نضيف الدفعة إلى syncedProductBatches.
+         *
+         * وبالتالي يمكن إعادة محاولة مزامنتها
+         * لاحقًا.
+         */
+        return false;
+
+
+    } finally {
+
+        syncingProductBatches.delete(
+            batchIndex
+        );
+    }
+}
+
+
+/* =========================================================
+   مراقبة دفعات المنتجات الموجودة في الكاش
+========================================================= */
+
+function setupProductBatchSyncObserver() {
+
+    if (!productsContainer) {
+        return;
+    }
+
+
+    /*
+     * إيقاف المراقب السابق.
+     */
+    if (
+        productBatchSyncObserver
+    ) {
+
+        productBatchSyncObserver.disconnect();
+
+    }
+
+
+    /*
+     * أثناء البحث لا نحتاج إلى مزامنة
+     * دفعات جديدة؛ البحث محلي.
+     */
+    if (
+        productSearchInput &&
+        productSearchInput.value.trim()
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * نبحث عن بطاقات المنتجات الحالية.
+     */
+    const productCards =
+        productsContainer.querySelectorAll(
+            ".product-card"
+        );
+
+
+    if (
+        productCards.length === 0
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * نراقب أول بطاقة في كل دفعة.
+     *
+     * مثال:
+     * البطاقة 1  → الدفعة الأولى
+     * البطاقة 21 → الدفعة الثانية
+     * البطاقة 41 → الدفعة الثالثة
+     */
+    productBatchSyncObserver =
+        new IntersectionObserver(
+            function(entries, observer) {
+
+                entries.forEach(entry => {
+
+                    if (
+                        !entry.isIntersecting
+                    ) {
+
+                        return;
+                    }
+
+
+                    const card =
+                        entry.target;
+
+
+                    const cardsArray =
+                        Array.from(
+                            productCards
+                        );
+
+
+                    const cardIndex =
+                        cardsArray.indexOf(
+                            card
+                        );
+
+
+                    if (
+                        cardIndex < 0
+                    ) {
+
+                        return;
+                    }
+
+
+                    const batchIndex =
+                        getProductBatchIndexByPosition(
+                            cardIndex
+                        );
+
+
+                    /*
+                     * نبدأ مزامنة الدفعة.
+                     *
+                     * إذا نجحت، نوقف مراقبة البطاقة.
+                     *
+                     * إذا فشلت، تبقى البطاقة مراقبة
+                     * ويمكن إعادة المحاولة.
+                     */
+                    syncProductBatch(
+                        batchIndex
+                    ).then(
+                        success => {
+
+                            if (
+                                success
+                            ) {
+
+                                observer.unobserve(
+                                    card
+                                );
+
+                            }
+
+                        }
+                    );
+
+                });
+
+            },
+            {
+                root: null,
+
+                /*
+                 * المزامنة تبدأ قبل الوصول الفعلي
+                 * إلى الدفعة بحوالي 700px.
+                 */
+                rootMargin:
+                    "700px 0px",
+
+                threshold: 0
+            }
+        );
+
+
+    /*
+     * أول بطاقة في كل دفعة فقط.
+     */
+    productCards.forEach(
+        (card, index) => {
+
+            if (
+                index %
+                PRODUCTS_PAGE_SIZE ===
+                0
+            ) {
+
+                productBatchSyncObserver.observe(
+                    card
+                );
+
+            }
+
+        }
+    );
 }
 
 
@@ -934,321 +1683,22 @@ async function syncProductsCache() {
     try {
 
         /*
-         * طلب Metadata خفيف.
+         * لا نقوم هنا بفحص جميع المنتجات.
          *
-         * لا نحمل بيانات المنتجات الكاملة.
-         */
-        const {
-            data: metadata,
-            error
-        } =
-            await supabaseClient
-                .from("products")
-                .select(
-                    "id, updated_at"
-                )
-                .order(
-                    "id",
-                    {
-                        ascending: true
-                    }
-                );
-
-
-        if (error) {
-            throw error;
-        }
-
-
-        const remoteProducts =
-            metadata || [];
-
-
-        const remoteMap =
-            new Map(
-                remoteProducts.map(
-                    product => [
-                        String(product.id),
-                        product.updated_at || ""
-                    ]
-                )
-            );
-
-
-        /*
-         * نسخة من المنتجات الموجودة قبل التعديل.
-         */
-        const cachedProducts =
-            [...window.products];
-
-
-        const cachedIds =
-            new Set(
-                cachedProducts.map(
-                    product => product.id
-                )
-            );
-
-
-        /* =====================================================
-           حذف المنتجات التي لم تعد موجودة
-        ===================================================== */
-
-        const deletedIds =
-            cachedProducts
-                .filter(
-                    product =>
-                        !remoteMap.has(
-                            product.id
-                        )
-                )
-                .map(
-                    product =>
-                        product.id
-                );
-
-
-        if (
-            deletedIds.length > 0
-        ) {
-
-            window.products =
-                window.products.filter(
-                    product =>
-                        !deletedIds.includes(
-                            product.id
-                        )
-                );
-
-        }
-
-
-        /* =====================================================
-           تحديد المنتجات التي تغيرت
-        ===================================================== */
-
-        const changedIds =
-            cachedProducts
-                .filter(product => {
-
-                    const remoteUpdatedAt =
-                        remoteMap.get(
-                            product.id
-                        );
-
-
-                    return (
-                        remoteUpdatedAt &&
-                        remoteUpdatedAt !==
-                        product.updatedAt
-                    );
-
-                })
-                .map(
-                    product =>
-                        product.id
-                );
-
-
-        /*
-         * لا نجلب كل المنتجات الجديدة.
+         * نفحص الدفعة الأولى فقط لأنها
+         * أول دفعة ظاهرة للمستخدم.
          *
-         * نحتاج فقط إلى معرفة المنتجات الموجودة
-         * ضمن أول 20 منتجًا حاليًا.
+         * وإذا كانت هذه الدفعة قد جُلبت حديثًا
+         * من Supabase في نفس الجلسة، فإن
+         * syncedProductBatches تحتوي عليها،
+         * وبالتالي لا يتم إرسال أي طلب إضافي.
          */
-        const firstPageIds =
-            remoteProducts
-                .slice(
-                    0,
-                    PRODUCTS_PAGE_SIZE
-                )
-                .map(
-                    product =>
-                        String(product.id)
-                );
+        await syncProductBatch(0);
 
-
-        const missingFirstPageIds =
-            firstPageIds.filter(
-                id =>
-                    !cachedIds.has(id)
-            );
-
-
-        /*
-         * المنتجات التي تغيرت + المنتجات الناقصة
-         * من أول صفحة فقط.
-         */
-        const idsToFetch = [
-            ...new Set([
-                ...changedIds,
-                ...missingFirstPageIds
-            ])
-        ];
-
-
-        if (
-            idsToFetch.length > 0
-        ) {
-
-            const {
-                data,
-                error: productsError
-            } =
-                await supabaseClient
-                    .from("products")
-                    .select(`
-                        id,
-                        name,
-                        description,
-                        price,
-                        quantity,
-                        main_image,
-                        created_at,
-                        updated_at,
-                        target,
-                        category_id,
-                        product_code
-                    `)
-                    .in(
-                        "id",
-                        idsToFetch
-                    );
-
-
-            if (productsError) {
-                throw productsError;
-            }
-
-
-            const updatedProducts =
-                (data || []).map(
-                    normalizeProduct
-                );
-
-
-            const updatedMap =
-                new Map(
-                    updatedProducts.map(
-                        product => [
-                            product.id,
-                            product
-                        ]
-                    )
-                );
-
-
-            /*
-             * استبدال المنتجات التي تغيرت.
-             */
-            window.products =
-                window.products.map(
-                    product =>
-                        updatedMap.has(
-                            product.id
-                        )
-                        ? updatedMap.get(
-                            product.id
-                        )
-                        : product
-                );
-
-
-            /*
-             * إضافة المنتجات الناقصة من أول صفحة فقط.
-             */
-            updatedProducts.forEach(
-                product => {
-
-                    const exists =
-                        window.products.some(
-                            item =>
-                                item.id ===
-                                product.id
-                        );
-
-
-                    if (!exists) {
-
-                        window.products.push(
-                            product
-                        );
-
-                    }
-
-                }
-            );
-
-
-            window.products.sort(
-                (a, b) =>
-                    Number(a.id) -
-                    Number(b.id)
-            );
-
-
-            /*
-             * إعادة العرض فقط إذا حدث تغيير.
-             */
-            if (
-                changedIds.length > 0 ||
-                missingFirstPageIds.length > 0 ||
-                deletedIds.length > 0
-            ) {
-
-                const searchValue =
-                    productSearchInput
-                    ? normalizeSearchText(
-                        productSearchInput.value
-                    )
-                    : "";
-
-
-                if (searchValue) {
-
-                    filterProductsLocally();
-
-                } else {
-
-                    displayProducts();
-
-                }
-
-            }
-
-        }
-
-
-        /*
-         * تحديث آخر ID موجود في البيانات المحملة.
-         */
-        lastLoadedProductId =
-            window.products.reduce(
-                (
-                    highest,
-                    product
-                ) =>
-                    Math.max(
-                        highest,
-                        Number(product.id)
-                    ),
-                0
-            );
-
-
-        /*
-         * حفظ الكاش بعد المزامنة.
-         */
-        saveProductsCache();
-
-
-        /* =====================================================
-           تحديد حالة Infinite Scroll
-        ===================================================== */
 
         /*
          * إذا لم توجد منتجات محملة،
-         * نطلب أول دفعة.
+         * نطلب أول دفعة مباشرة من Supabase.
          */
         if (
             window.products.length === 0
@@ -1267,183 +1717,13 @@ async function syncProductsCache() {
 
 
         /*
-         * إذا كان لدينا أقل من 20 منتجًا،
-         * نتحقق من الصفحة الأولى.
-         *
-         * لا نمسح الكاش.
+         * Infinite Scroll سيطلب الدفعة التالية
+         * عند اقتراب المستخدم من نهاية المنتجات.
          */
-        if (
-            window.products.length <
-            PRODUCTS_PAGE_SIZE
-        ) {
-
-            /*
-             * إذا كانت المنتجات المحملة تمثل
-             * كل المنتجات الموجودة فعليًا،
-             * فلا توجد دفعة أخرى.
-             */
-            if (
-                remoteProducts.length <=
-                window.products.length
-            ) {
-
-                hasMoreProducts =
-                    false;
-
-            } else {
-
-                hasMoreProducts =
-                    true;
-
-                /*
-                 * إذا كان لدينا أقل من 20،
-                 * نحتاج تحميل ما ينقص الصفحة الأولى.
-                 *
-                 * نعيد آخر ID إلى صفر فقط إذا كانت
-                 * البيانات المحملة لا تغطي الصفحة الأولى.
-                 */
-                const firstPageLoadedIds =
-                    new Set(
-                        window.products.map(
-                            product =>
-                                product.id
-                        )
-                    );
-
-
-                const firstMissing =
-                    remoteProducts
-                        .slice(
-                            0,
-                            PRODUCTS_PAGE_SIZE
-                        )
-                        .filter(
-                            product =>
-                                !firstPageLoadedIds
-                                    .has(
-                                        String(
-                                            product.id
-                                        )
-                                    )
-                        );
-
-
-                if (
-                    firstMissing.length > 0
-                ) {
-
-                    /*
-                     * جلب النواقص فقط.
-                     */
-                    const {
-                        data,
-                        error:
-                            firstPageError
-                    } =
-                        await supabaseClient
-                            .from("products")
-                            .select(`
-                                id,
-                                name,
-                                description,
-                                price,
-                                quantity,
-                                main_image,
-                                created_at,
-                                updated_at,
-                                target,
-                                category_id,
-                                product_code
-                            `)
-                            .in(
-                                "id",
-                                firstMissing.map(
-                                    product =>
-                                        String(
-                                            product.id
-                                        )
-                                )
-                            );
-
-
-                    if (
-                        firstPageError
-                    ) {
-
-                        throw firstPageError;
-                    }
-
-
-                    const missingProducts =
-                        (data || []).map(
-                            normalizeProduct
-                        );
-
-
-                    window.products.push(
-                        ...missingProducts
-                    );
-
-
-                    window.products.sort(
-                        (a, b) =>
-                            Number(a.id) -
-                            Number(b.id)
-                    );
-
-
-                    lastLoadedProductId =
-                        window.products.reduce(
-                            (
-                                highest,
-                                product
-                            ) =>
-                                Math.max(
-                                    highest,
-                                    Number(
-                                        product.id
-                                    )
-                                ),
-                            0
-                        );
-
-
-                    currentPage =
-                        Math.floor(
-                            window.products.length /
-                            PRODUCTS_PAGE_SIZE
-                        );
-
-
-                    saveProductsCache();
-
-
-                    /*
-                     * إعادة العرض بعد إضافة النواقص.
-                     */
-                    displayProducts();
-
-                }
-
-            }
-
-        } else {
-
-            /*
-             * لدينا 20 أو أكثر.
-             *
-             * عدد المنتجات المحملة أقل من عدد
-             * المنتجات الموجودة في قاعدة البيانات؟
-             * إذن توجد دفعات أخرى.
-             */
-            hasMoreProducts =
-                remoteProducts.length >
-                window.products.length;
-
-        }
-
-
         setupProductsSentinel();
+
+
+        setupProductBatchSyncObserver();
 
 
     } catch (error) {
@@ -1453,10 +1733,38 @@ async function syncProductsCache() {
             error
         );
 
+
         /*
-         * في حالة فشل المزامنة:
-         * لا نمسح الكاش ولا نكسر المتجر.
+         * إذا كانت هناك منتجات في الكاش،
+         * لا نمسحها ولا نكسر المتجر.
+         *
+         * وإذا لم توجد منتجات أصلًا،
+         * نستخدم Supabase لجلب أول دفعة فقط.
          */
+        if (
+            window.products.length === 0
+        ) {
+
+            try {
+
+                currentPage = 0;
+
+                lastLoadedProductId = 0;
+
+                hasMoreProducts = true;
+
+                await loadNextProductsPage();
+
+            } catch (fallbackError) {
+
+                console.error(
+                    "فشل Fallback تحميل أول دفعة:",
+                    fallbackError
+                );
+
+            }
+
+        }
 
     } finally {
 
@@ -1479,8 +1787,18 @@ async function loadProducts() {
 
 
         /*
-         * إذا لم يوجد Cache:
-         * نجلب أول 20 فقط.
+         * =====================================================
+         * الحالة الأولى: لا يوجد Cache
+         * =====================================================
+         *
+         * نطلب أول 20 منتجًا فقط.
+         *
+         * الطلب نفسه يحتوي على:
+         * - بيانات المنتج الكاملة
+         * - updated_at
+         *
+         * لذلك لا يوجد طلب ثانٍ لمقارنة
+         * id + updated_at.
          */
         if (!hasCache) {
 
@@ -1490,17 +1808,66 @@ async function loadProducts() {
 
             hasMoreProducts = true;
 
+            syncedProductBatches.clear();
+
+            syncingProductBatches.clear();
+
+
+            const previousCount =
+                window.products.length;
+
+
             await loadNextProductsPage();
 
+
+            /*
+             * إذا فشل تحميل أول دفعة ولم نحصل
+             * على أي منتج، نعرض حالة الخطأ.
+             */
+            if (
+                window.products.length ===
+                previousCount &&
+                window.products.length === 0
+            ) {
+
+                throw new Error(
+                    "تعذر تحميل أول دفعة من المنتجات."
+                );
+
+            }
+
+
+            /*
+             * =================================================
+             * مهم جدًا:
+             *
+             * لا نستدعي syncProductsCache() هنا.
+             *
+             * loadNextProductsPage() قام أصلًا:
+             *
+             * Supabase
+             *      ↓
+             * أول 20 منتجًا + updated_at
+             *      ↓
+             * syncedProductBatches.add(0)
+             *
+             * لذلك لا يوجد أي طلب إضافي.
+             * =================================================
+             */
+
+        } else {
+
+            /*
+             * =================================================
+             * الحالة الثانية: يوجد Cache
+             * =================================================
+             *
+             * هنا فقط نبدأ مزامنة الدفعة الأولى
+             * الموجودة في الكاش.
+             */
+            await syncProductsCache();
+
         }
-
-
-        /*
-         * مزامنة واحدة عند فتح الصفحة.
-         *
-         * لا يوجد polling.
-         */
-        await syncProductsCache();
 
 
         /*
