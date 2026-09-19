@@ -696,9 +696,60 @@
     accept="image/jpeg,image/png,image/webp"
   >
 
-  <div id="productImagePreview" class="admin-product-image-preview" hidden>
-    <img id="productImagePreviewImage" src="" alt="معاينة صورة المنتج">
-  </div>
+ <div
+    id="productImageEditor"
+    class="admin-product-image-editor"
+    hidden
+>
+
+    <div class="admin-product-image-editor-stage">
+        <img
+            id="productImageEditorImage"
+            src=""
+            alt="تحرير صورة المنتج"
+            draggable="false"
+        >
+    </div>
+
+    <div class="admin-product-image-editor-controls">
+
+        <label for="productImageZoom">
+            حجم الصورة
+        </label>
+
+        <input
+            id="productImageZoom"
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.01"
+            value="1"
+        >
+
+        <button
+            type="button"
+            id="resetProductImageEditor"
+            class="admin-secondary-button"
+        >
+            إعادة ضبط الصورة
+        </button>
+
+    </div>
+
+</div>
+
+<!-- المعاينة النهائية -->
+<div
+    id="productImagePreview"
+    class="admin-product-image-preview"
+    hidden
+>
+    <img
+        id="productImagePreviewImage"
+        src=""
+        alt="معاينة صورة المنتج"
+    >
+</div>
 
   <small id="productImageStatus" class="admin-form-help">
     اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.

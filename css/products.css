@@ -721,9 +721,7 @@ border:
 border-radius:
     0;
 
-vertical-align:
-    top;
-}
+
 
 
 /* =========================================================
@@ -775,6 +773,7 @@ display:
 
 -webkit-line-clamp:
     2;
+    line-clamp: 2;
 
 overflow:
     hidden;
@@ -1324,6 +1323,7 @@ TABLET
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+        line-clamp: 2;
     overflow: hidden;
 
     line-height: 1.7;
@@ -1765,6 +1765,7 @@ PHONE
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+        line-clamp: 2;
     overflow: hidden;
 
     line-height: 1.7;
@@ -1949,6 +1950,7 @@ PHONE
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
 
     line-height: 1.7;
@@ -2027,4 +2029,5 @@ PHONE
 }
 
 }
-
+}
+}

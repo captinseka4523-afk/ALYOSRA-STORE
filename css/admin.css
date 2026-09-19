@@ -495,6 +495,145 @@
     box-sizing: border-box;
 }
 
+/* ==========================================
+   Product Image Editor
+========================================== */
+
+.admin-product-image-editor {
+
+    width: 100%;
+
+    max-width: 420px;
+
+    margin-top: 16px;
+
+}
+
+
+/* ==========================================
+   Editor Stage
+========================================== */
+
+.admin-product-image-editor-stage {
+
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    border: 1px solid #e1e6ec;
+
+    border-radius: 16px;
+
+    background: #f8fafc;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.06);
+
+    cursor: grab;
+
+    touch-action: none;
+
+}
+
+
+.admin-product-image-editor-stage:active {
+
+    cursor: grabbing;
+
+}
+
+
+/* ==========================================
+   Image
+========================================== */
+
+#productImageEditorImage {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    max-width: none;
+
+    width: auto;
+
+    height: auto;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+
+    pointer-events: none;
+
+    transform-origin: center center;
+
+}
+
+
+/* ==========================================
+   Editor Controls
+========================================== */
+
+.admin-product-image-editor-controls {
+
+    margin-top: 14px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+
+.admin-product-image-editor-controls label {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+}
+
+
+#productImageZoom {
+
+    width: 100%;
+
+    cursor: pointer;
+
+}
+
+
+#resetProductImageEditor {
+
+    align-self: flex-start;
+
+}
+
+
+@media (max-width: 768px) {
+
+    .admin-product-image-editor {
+
+        max-width: 100%;
+
+    }
+
+    #resetProductImageEditor {
+
+        width: 100%;
+
+    }
+
+}
+
 .admin-product-image-preview img {
     width: 100%;
     height: 100%;

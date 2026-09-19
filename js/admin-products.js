@@ -23,7 +23,6 @@ function showAdminProductToast(
             "adminProductToast"
         );
 
-
     if (!toast) {
 
         toast =
@@ -38,19 +37,15 @@ function showAdminProductToast(
 
     }
 
-
     toast.textContent =
         message;
-
 
     toast.className =
         `admin-product-toast ${type} show`;
 
-
     clearTimeout(
         adminProductToastTimer
     );
-
 
     adminProductToastTimer =
         setTimeout(
@@ -88,7 +83,6 @@ async function loadAdminProducts() {
             "productsEmpty"
         );
 
-
     if (loading) {
         loading.hidden = false;
     }
@@ -96,7 +90,6 @@ async function loadAdminProducts() {
     if (empty) {
         empty.hidden = true;
     }
-
 
     try {
 
@@ -110,23 +103,18 @@ async function loadAdminProducts() {
                 ascending: true
             });
 
-
         if (error) {
             throw error;
         }
 
-
         adminProducts =
             data || [];
 
-
         await loadAdminProductCosts();
-
 
         renderAdminProducts();
 
         updateProductsCount();
-
 
     } catch (error) {
 
@@ -135,14 +123,12 @@ async function loadAdminProducts() {
             error
         );
 
-
         if (loading) {
 
             loading.textContent =
                 "حدث خطأ أثناء تحميل المنتجات.";
 
         }
-
 
         showAdminProductToast(
             "حدث خطأ أثناء تحميل المنتجات.",
@@ -169,14 +155,11 @@ async function loadAdminProductCosts() {
             "product_id, purchase_cost"
         );
 
-
     if (error) {
         throw error;
     }
 
-
     adminProductCosts = {};
-
 
     (data || []).forEach(
         cost => {
@@ -210,20 +193,16 @@ async function loadAdminCategories() {
                 ascending: true
             });
 
-
         if (error) {
             throw error;
         }
 
-
         adminCategories =
             data || [];
-
 
         renderCategoryOptions();
 
         updateCategoriesCount();
-
 
     } catch (error) {
 
@@ -253,16 +232,13 @@ function renderCategoryOptions() {
             "productCategory"
         );
 
-
     if (!select) return;
-
 
     select.innerHTML = `
         <option value="">
             اختر التصنيف
         </option>
     `;
-
 
     adminCategories.forEach(
         category => {
@@ -272,14 +248,11 @@ function renderCategoryOptions() {
                     "option"
                 );
 
-
             option.value =
                 category.id;
 
-
             option.textContent =
                 category.name;
-
 
             select.appendChild(
                 option
@@ -314,23 +287,18 @@ function renderAdminProducts(
             "productsEmpty"
         );
 
-
     if (!table) return;
-
 
     if (loading) {
         loading.hidden = true;
     }
 
-
     table.innerHTML = "";
-
 
     const search =
         searchTerm
             .trim()
             .toLowerCase();
-
 
     const filteredProducts =
         adminProducts.filter(
@@ -341,12 +309,10 @@ function renderAdminProducts(
                         product.name || ""
                     ).toLowerCase();
 
-
                 const code =
                     String(
                         product.product_code || ""
                     ).toLowerCase();
-
 
                 return (
                     name.includes(search) ||
@@ -355,7 +321,6 @@ function renderAdminProducts(
 
             }
         );
-
 
     if (
         filteredProducts.length === 0
@@ -369,11 +334,9 @@ function renderAdminProducts(
 
     }
 
-
     if (empty) {
         empty.hidden = true;
     }
-
 
     filteredProducts.forEach(
         product => {
@@ -383,17 +346,14 @@ function renderAdminProducts(
                     "tr"
                 );
 
-
             const image =
                 product.main_image ||
                 "";
-
 
             const quantity =
                 Number(
                     product.quantity || 0
                 );
-
 
             const category =
                 adminCategories.find(
@@ -402,12 +362,10 @@ function renderAdminProducts(
                         String(product.category_id)
                 );
 
-
             const categoryName =
                 category
                     ? category.name
                     : "بدون تصنيف";
-
 
             row.innerHTML = `
 
@@ -443,7 +401,6 @@ function renderAdminProducts(
 
                 </td>
 
-
                 <td>
 
                     <strong>
@@ -454,7 +411,6 @@ function renderAdminProducts(
 
                 </td>
 
-
                 <td>
 
                     ${formatPrice(
@@ -462,7 +418,6 @@ function renderAdminProducts(
                     )}
 
                 </td>
-
 
                 <td>
 
@@ -478,7 +433,6 @@ function renderAdminProducts(
 
                 </td>
 
-
                 <td>
 
                     ${escapeHtml(
@@ -487,7 +441,6 @@ function renderAdminProducts(
 
                 </td>
 
-
                 <td>
 
                     ${escapeHtml(
@@ -495,7 +448,6 @@ function renderAdminProducts(
                     )}
 
                 </td>
-
 
                 <td>
 
@@ -509,7 +461,6 @@ function renderAdminProducts(
                         >
                             تعديل
                         </button>
-
 
                         <button
                             type="button"
@@ -526,13 +477,246 @@ function renderAdminProducts(
 
             `;
 
-
             table.appendChild(
                 row
             );
 
         }
     );
+
+}
+
+
+// ==========================================
+// Product Image Editor State
+// ==========================================
+
+let productImageEditorState = {
+    file: null,
+    image: null,
+    objectUrl: null,
+
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+
+    baseScale: 1,
+
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    startOffsetX: 0,
+    startOffsetY: 0
+};
+
+
+// ==========================================
+// Product Image Editor Elements
+// ==========================================
+
+function getProductImageEditorElements() {
+
+    return {
+        editor:
+            document.getElementById(
+                "productImageEditor"
+            ),
+
+        stage:
+            document.querySelector(
+                ".admin-product-image-editor-stage"
+            ),
+
+        image:
+            document.getElementById(
+                "productImageEditorImage"
+            ),
+
+        zoom:
+            document.getElementById(
+                "productImageZoom"
+            ),
+
+        reset:
+            document.getElementById(
+                "resetProductImageEditor"
+            )
+    };
+
+}
+
+
+// ==========================================
+// Reset Product Image Editor State
+// ==========================================
+
+function resetProductImageEditorState() {
+
+    /*
+     * إلغاء Object URL الخاص بالصورة المحلية
+     * السابقة لمنع بقائها في الذاكرة أو ظهورها
+     * عند فتح منتج آخر.
+     */
+
+    if (
+        productImageEditorState.objectUrl
+    ) {
+
+        URL.revokeObjectURL(
+            productImageEditorState.objectUrl
+        );
+
+    }
+
+    productImageEditorState.file =
+        null;
+
+    productImageEditorState.image =
+        null;
+
+    productImageEditorState.objectUrl =
+        null;
+
+    productImageEditorState.scale =
+        1;
+
+    productImageEditorState.offsetX =
+        0;
+
+    productImageEditorState.offsetY =
+        0;
+
+    productImageEditorState.baseScale =
+        1;
+
+    productImageEditorState.dragging =
+        false;
+
+    productImageEditorState.startX =
+        0;
+
+    productImageEditorState.startY =
+        0;
+
+    productImageEditorState.startOffsetX =
+        0;
+
+    productImageEditorState.startOffsetY =
+        0;
+
+    const elements =
+        getProductImageEditorElements();
+
+    if (elements.image) {
+
+        elements.image.removeAttribute(
+            "src"
+        );
+
+        elements.image.style.transform =
+            "";
+
+    }
+
+    if (elements.editor) {
+
+        elements.editor.hidden =
+            true;
+
+    }
+
+    if (elements.zoom) {
+
+        elements.zoom.value =
+            "1";
+
+        elements.zoom.min =
+            "0.05";
+
+        elements.zoom.max =
+            "3";
+
+        elements.zoom.step =
+            "0.01";
+
+    }
+
+}
+
+
+// ==========================================
+// Reset Complete Product Image State
+// ==========================================
+
+function resetProductImageState() {
+
+    const imageFileInput =
+        document.getElementById(
+            "productImageFile"
+        );
+
+    const previewContainer =
+        document.getElementById(
+            "productImagePreview"
+        );
+
+    const previewImage =
+        document.getElementById(
+            "productImagePreviewImage"
+        );
+
+    const status =
+        document.getElementById(
+            "productImageStatus"
+        );
+
+    if (imageFileInput) {
+
+        imageFileInput.value =
+            "";
+
+    }
+
+    if (
+        previewImage &&
+        previewImage.dataset.previewUrl
+    ) {
+
+        URL.revokeObjectURL(
+            previewImage.dataset.previewUrl
+        );
+
+        delete previewImage.dataset.previewUrl;
+
+    }
+
+    if (previewImage) {
+
+        previewImage.removeAttribute(
+            "src"
+        );
+
+    }
+
+    if (previewContainer) {
+
+        previewContainer.hidden =
+            true;
+
+    }
+
+    if (status) {
+
+        status.textContent =
+            "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
+
+    }
+
+    /*
+     * مهم جدًا:
+     * تنظيف حالة محرر الصور أيضًا.
+     */
+    resetProductImageEditorState();
 
 }
 
@@ -563,41 +747,37 @@ function openAddProductModal() {
             "productId"
         );
 
-
     if (!modal) return;
 
+    /*
+     * تنظيف كامل قبل فتح نافذة منتج جديد.
+     * هذا يمنع انتقال صورة المنتج السابق.
+     */
     resetProductImageState();
 
     if (form) {
         form.reset();
     }
 
-
     if (id) {
         id.value = "";
     }
-
 
     const purchaseCost =
         document.getElementById(
             "productPurchaseCost"
         );
 
-
     if (purchaseCost) {
         purchaseCost.value = "";
     }
-resetProductImageState();
-
 
     if (title) {
         title.textContent =
             "إضافة منتج";
     }
 
-
     clearFormMessage();
-
 
     modal.hidden = false;
 
@@ -628,16 +808,10 @@ function setProductImagePreview(
             "productImageStatus"
         );
 
-
     if (!previewContainer || !previewImage) {
         return;
     }
 
-
-    /*
-     * إلغاء Object URL السابق
-     * إذا كانت المعاينة صورة محلية.
-     */
     if (
         previewImage.dataset.previewUrl
     ) {
@@ -647,8 +821,8 @@ function setProductImagePreview(
         );
 
         delete previewImage.dataset.previewUrl;
-    }
 
+    }
 
     if (!imageUrl) {
 
@@ -667,16 +841,14 @@ function setProductImagePreview(
         }
 
         return;
-    }
 
+    }
 
     previewImage.src =
         imageUrl;
 
-
     previewContainer.hidden =
         false;
-
 
     if (status && statusText) {
 
@@ -686,6 +858,7 @@ function setProductImagePreview(
     }
 
 }
+
 
 function openEditProductModal(
     id
@@ -698,84 +871,76 @@ function openEditProductModal(
                 String(id)
         );
 
-
     if (!product) {
         return;
     }
 
+    /*
+     * تنظيف حالة محرر الصور أولًا.
+     * مهم عند الانتقال مباشرة من منتج إلى منتج آخر.
+     */
+    resetProductImageState();
 
     document.getElementById(
         "productId"
     ).value =
         product.id;
 
-
     document.getElementById(
         "productName"
     ).value =
         product.name || "";
-
 
     document.getElementById(
         "productCode"
     ).value =
         product.product_code || "";
 
-
     document.getElementById(
         "productPrice"
     ).value =
         product.price ?? "";
-
 
     document.getElementById(
         "productQuantity"
     ).value =
         product.quantity ?? 0;
 
-
     document.getElementById(
         "productCategory"
     ).value =
         product.category_id || "";
-
 
     document.getElementById(
         "productTarget"
     ).value =
         product.target || "";
 
-
-
-
-
     document.getElementById(
         "productDescription"
     ).value =
         product.description || "";
 
-        const imageFileInput =
-    document.getElementById(
-        "productImageFile"
+    const imageFileInput =
+        document.getElementById(
+            "productImageFile"
+        );
+
+    if (imageFileInput) {
+        imageFileInput.value = "";
+    }
+
+    setProductImagePreview(
+        product.main_image || null,
+        product.main_image
+            ? "الصورة الحالية للمنتج. اختر صورة جديدة لاستبدالها."
+            : "لا توجد صورة حالية لهذا المنتج."
     );
-
-if (imageFileInput) {
-    imageFileInput.value = "";
-}
-
-
-setProductImagePreview(
-    product.main_image || null,
-    product.main_image
-        ? "الصورة الحالية للمنتج. اختر صورة جديدة لاستبدالها."
-        : "لا توجد صورة حالية لهذا المنتج."
-);
 
     const purchaseCost =
         document.getElementById(
             "productPurchaseCost"
         );
-
 
     if (purchaseCost) {
 
@@ -784,21 +949,17 @@ setProductImagePreview(
                 String(product.id)
             ];
 
-
         purchaseCost.value =
             currentCost ?? "";
 
     }
-
 
     document.getElementById(
         "productModalTitle"
     ).textContent =
         "تعديل المنتج";
 
-
     clearFormMessage();
-
 
     document.getElementById(
         "productModal"
@@ -811,84 +972,12 @@ setProductImagePreview(
 // Close Modal
 // ==========================================
 
-function resetProductImageState() {
-
-    const imageFileInput =
-        document.getElementById(
-            "productImageFile"
-        );
-
-    const previewContainer =
-        document.getElementById(
-            "productImagePreview"
-        );
-
-    const previewImage =
-        document.getElementById(
-            "productImagePreviewImage"
-        );
-
-    const status =
-        document.getElementById(
-            "productImageStatus"
-        );
-
-
-    if (imageFileInput) {
-
-        imageFileInput.value =
-            "";
-
-    }
-
-
-    if (
-        previewImage &&
-        previewImage.dataset.previewUrl
-    ) {
-
-        URL.revokeObjectURL(
-            previewImage.dataset.previewUrl
-        );
-
-        delete previewImage.dataset.previewUrl;
-
-    }
-
-
-    if (previewImage) {
-
-        previewImage.removeAttribute(
-            "src"
-        );
-
-    }
-
-
-    if (previewContainer) {
-
-        previewContainer.hidden =
-            true;
-
-    }
-
-
-    if (status) {
-
-        status.textContent =
-            "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
-
-    }
-
-}
-
 function closeProductModalWindow() {
 
     const modal =
         document.getElementById(
             "productModal"
         );
-
 
     if (modal) {
 
@@ -897,9 +986,10 @@ function closeProductModalWindow() {
 
     }
 
-
+    /*
+     * تنظيف كامل لمحرر الصور عند الإغلاق.
+     */
     resetProductImageState();
-
 
     clearFormMessage();
 
@@ -907,46 +997,450 @@ function closeProductModalWindow() {
 
 
 // ==========================================
-// Save Product
+// Product Image Editor
 // ==========================================
 
+function resetProductImageEditor() {
 
-async function prepareProductImage(file) {
+    const elements =
+        getProductImageEditorElements();
+
+    productImageEditorState.scale =
+        productImageEditorState.baseScale || 1;
+
+    productImageEditorState.offsetX =
+        0;
+
+    productImageEditorState.offsetY =
+        0;
+
+    if (elements.zoom) {
+
+        elements.zoom.value =
+            productImageEditorState.scale;
+
+    }
+
+    updateProductImageEditor();
+
+}
+
+
+function updateProductImageEditor() {
+
+    const elements =
+        getProductImageEditorElements();
+
+    if (
+        !elements.image ||
+        !productImageEditorState.image
+    ) {
+        return;
+    }
+
+    const scale =
+        productImageEditorState.scale;
+
+    elements.image.style.transform =
+        `
+        translate(
+            calc(-50% + ${productImageEditorState.offsetX}px),
+            calc(-50% + ${productImageEditorState.offsetY}px)
+        )
+        scale(${scale})
+        `;
+
+}
+
+
+function setupProductImageEditor() {
+
+    const elements =
+        getProductImageEditorElements();
+
+    if (!elements.stage) {
+        return;
+    }
+
+    // ======================================
+    // Dragging
+    // ======================================
+
+    elements.stage.addEventListener(
+        "pointerdown",
+        event => {
+
+            if (
+                !productImageEditorState.image
+            ) {
+                return;
+            }
+
+            productImageEditorState.dragging =
+                true;
+
+            productImageEditorState.startX =
+                event.clientX;
+
+            productImageEditorState.startY =
+                event.clientY;
+
+            productImageEditorState.startOffsetX =
+                productImageEditorState.offsetX;
+
+            productImageEditorState.startOffsetY =
+                productImageEditorState.offsetY;
+
+            elements.stage.setPointerCapture(
+                event.pointerId
+            );
+
+        }
+    );
+
+    elements.stage.addEventListener(
+        "pointermove",
+        event => {
+
+            if (
+                !productImageEditorState.dragging
+            ) {
+                return;
+            }
+
+            const deltaX =
+                event.clientX -
+                productImageEditorState.startX;
+
+            const deltaY =
+                event.clientY -
+                productImageEditorState.startY;
+
+            productImageEditorState.offsetX =
+                productImageEditorState.startOffsetX +
+                deltaX;
+
+            productImageEditorState.offsetY =
+                productImageEditorState.startOffsetY +
+                deltaY;
+
+            updateProductImageEditor();
+
+        }
+    );
+
+    elements.stage.addEventListener(
+        "pointerup",
+        event => {
+
+            productImageEditorState.dragging =
+                false;
+
+            try {
+
+                elements.stage.releasePointerCapture(
+                    event.pointerId
+                );
+
+            } catch {}
+
+        }
+    );
+
+    elements.stage.addEventListener(
+        "pointercancel",
+        event => {
+
+            productImageEditorState.dragging =
+                false;
+
+            try {
+
+                elements.stage.releasePointerCapture(
+                    event.pointerId
+                );
+
+            } catch {}
+
+        }
+    );
+
+    // ======================================
+    // Zoom
+    // ======================================
+
+    if (elements.zoom) {
+
+        elements.zoom.addEventListener(
+            "input",
+            function() {
+
+                productImageEditorState.scale =
+                    Number(this.value);
+
+                updateProductImageEditor();
+
+            }
+        );
+
+    }
+
+    // ======================================
+    // Reset
+    // ======================================
+
+    if (elements.reset) {
+
+        elements.reset.addEventListener(
+            "click",
+            resetProductImageEditor
+        );
+
+    }
+
+}
+
+
+// ==========================================
+// Load Image Into Editor
+// ==========================================
+
+async function loadProductImageIntoEditor(file) {
+
+    const elements =
+        getProductImageEditorElements();
+
+    if (
+        !elements.editor ||
+        !elements.stage ||
+        !elements.image
+    ) {
+        return;
+    }
+
+
+    // ======================================
+    // تنظيف الصورة المحلية السابقة
+    // ======================================
+
+    if (
+        productImageEditorState.objectUrl
+    ) {
+
+        URL.revokeObjectURL(
+            productImageEditorState.objectUrl
+        );
+
+    }
+
+
+    productImageEditorState.file =
+        null;
+
+    productImageEditorState.image =
+        null;
+
+    productImageEditorState.objectUrl =
+        null;
+
+
+    // ======================================
+    // إنشاء Object URL للصورة الجديدة
+    // ======================================
+
+    const objectUrl =
+        URL.createObjectURL(file);
+
+
+    productImageEditorState.objectUrl =
+        objectUrl;
+
+
+    const image =
+        new Image();
+
+
+    await new Promise(
+        (resolve, reject) => {
+
+            image.onload =
+                resolve;
+
+            image.onerror =
+                reject;
+
+            image.src =
+                objectUrl;
+
+        }
+    );
+
+
+    // ======================================
+    // حفظ الصورة في حالة المحرر
+    // ======================================
+
+    productImageEditorState.file =
+        file;
+
+    productImageEditorState.image =
+        image;
+
+
+    elements.image.src =
+        objectUrl;
+
+
+    // ======================================
+    // مهم جدًا:
+    // إظهار المحرر قبل قياس الـ stage
+    // ======================================
+
+    elements.editor.hidden =
+        false;
+
+
+    // ======================================
+    // الآن يمكن الحصول على الحجم الحقيقي
+    // ======================================
+
+    const stageWidth =
+        elements.stage.clientWidth;
+
+    const stageHeight =
+        elements.stage.clientHeight;
+
+
+    if (
+        stageWidth <= 0 ||
+        stageHeight <= 0
+    ) {
+
+        throw new Error(
+            "تعذر تحديد حجم محرر الصورة."
+        );
+
+    }
+
+
+    // ======================================
+    // حساب الحجم الابتدائي
+    // بحيث تملأ الصورة المربع
+    // دون تشويه أبعادها
+    // ======================================
+
+    const scaleX =
+        stageWidth /
+        image.naturalWidth;
+
+    const scaleY =
+        stageHeight /
+        image.naturalHeight;
+
+
+    const baseScale =
+        Math.max(
+            scaleX,
+            scaleY
+        );
+
+
+    productImageEditorState.baseScale =
+        baseScale;
+
+    productImageEditorState.scale =
+        baseScale;
+
+    productImageEditorState.offsetX =
+        0;
+
+    productImageEditorState.offsetY =
+        0;
+
+    productImageEditorState.dragging =
+        false;
+
+
+    // ======================================
+    // إعداد شريط التحكم بالحجم
+    // ======================================
+
+    if (elements.zoom) {
+
+        const minZoom =
+            Math.max(
+                0.05,
+                baseScale * 0.5
+            );
+
+        const maxZoom =
+            Math.max(
+                minZoom + 0.01,
+                baseScale * 3
+            );
+
+        const step =
+            Math.max(
+                0.001,
+                baseScale / 100
+            );
+
+
+        elements.zoom.min =
+            String(minZoom);
+
+        elements.zoom.max =
+            String(maxZoom);
+
+        elements.zoom.step =
+            String(step);
+
+        elements.zoom.value =
+            String(baseScale);
+
+    }
+
+
+    // ======================================
+    // عرض الصورة
+    // ======================================
+
+    updateProductImageEditor();
+
+}
+
+
+async function prepareProductImage(
+    file
+) {
 
     if (!file) {
         return null;
     }
 
-
     if (!file.type.startsWith("image/")) {
+
         throw new Error(
             "الملف المحدد ليس صورة."
         );
-    }
 
+    }
 
     const image =
         await createImageBitmap(file);
 
-
     try {
 
-        /*
-         * نستخدم أبعاد الصورة الأصلية
-         * دون قص أو اكتشاف للمحتوى.
-         */
         const width =
             image.width;
 
         const height =
             image.height;
 
-
         const canvas =
             document.createElement(
                 "canvas"
             );
-
 
         canvas.width =
             width;
@@ -954,30 +1448,19 @@ async function prepareProductImage(file) {
         canvas.height =
             height;
 
-
         const context =
             canvas.getContext(
                 "2d"
             );
 
-
         if (!context) {
+
             throw new Error(
                 "تعذر تجهيز الصورة."
             );
+
         }
 
-
-        /*
-         * رسم الصورة كما هي تمامًا.
-         *
-         * لا توجد:
-         * - خلفية بيضاء
-         * - قص
-         * - تكبير
-         * - تصغير
-         * - تغيير نسبة
-         */
         context.drawImage(
             image,
             0,
@@ -986,11 +1469,6 @@ async function prepareProductImage(file) {
             height
         );
 
-
-        /*
-         * تحويل فقط إلى WebP
-         * مع الحفاظ على الأبعاد والشفافية.
-         */
         const blob =
             await new Promise(
                 (resolve, reject) => {
@@ -1015,18 +1493,14 @@ async function prepareProductImage(file) {
                             }
 
                         },
-
                         "image/webp",
-
                         0.82
                     );
 
                 }
             );
 
-
         return blob;
-
 
     } finally {
 
@@ -1035,199 +1509,407 @@ async function prepareProductImage(file) {
     }
 
 }
+
+
+// ==========================================
+// Export Edited Product Image
+// ==========================================
+
+async function exportEditedProductImage() {
+
+    const elements =
+        getProductImageEditorElements();
+
+    const state =
+        productImageEditorState;
+
+    if (
+        !elements.stage ||
+        !state.image
+    ) {
+
+        throw new Error(
+            "لم يتم اختيار صورة."
+        );
+
+    }
+
+    const outputSize =
+        1200;
+
+    const canvas =
+        document.createElement(
+            "canvas"
+        );
+
+    canvas.width =
+        outputSize;
+
+    canvas.height =
+        outputSize;
+
+    const context =
+        canvas.getContext(
+            "2d"
+        );
+
+    if (!context) {
+
+        throw new Error(
+            "تعذر تجهيز الصورة."
+        );
+
+    }
+
+    /*
+     * لا نضع أي لون للخلفية.
+     *
+     * هذا مهم جدًا للحفاظ على
+     * الشفافية الموجودة في الصورة.
+     */
+
+    context.clearRect(
+        0,
+        0,
+        outputSize,
+        outputSize
+    );
+
+    const stageWidth =
+        elements.stage.clientWidth;
+
+    const stageHeight =
+        elements.stage.clientHeight;
+
+    const renderedWidth =
+        state.image.naturalWidth *
+        state.scale;
+
+    const renderedHeight =
+        state.image.naturalHeight *
+        state.scale;
+
+    /*
+     * تحويل إحداثيات السحب من
+     * حجم الشاشة إلى 1200×1200.
+     */
+
+    const ratio =
+        outputSize /
+        stageWidth;
+
+    const drawWidth =
+        renderedWidth *
+        ratio;
+
+    const drawHeight =
+        renderedHeight *
+        ratio;
+
+    const drawX =
+        (
+            stageWidth / 2 +
+            state.offsetX
+        ) *
+        ratio -
+        drawWidth / 2;
+
+    const drawY =
+        (
+            stageHeight / 2 +
+            state.offsetY
+        ) *
+        ratio -
+        drawHeight / 2;
+
+    context.drawImage(
+        state.image,
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight
+    );
+
+    const blob =
+        await new Promise(
+            (resolve, reject) => {
+
+                canvas.toBlob(
+                    result => {
+
+                        if (result) {
+
+                            resolve(
+                                result
+                            );
+
+                        } else {
+
+                            reject(
+                                new Error(
+                                    "تعذر استخراج الصورة."
+                                )
+                            );
+
+                        }
+
+                    },
+                    "image/webp",
+                    0.82
+                );
+
+            }
+        );
+
+    return blob;
+
+}
+
+
+// ==========================================
+// Product Image File Change
+// ==========================================
+
 document
     .getElementById("productImageFile")
-    ?.addEventListener("change", async function () {
-        const file = this.files?.[0];
+    ?.addEventListener(
+        "change",
+        async function () {
 
-        const previewContainer =
-            document.getElementById("productImagePreview");
+            const file =
+                this.files?.[0];
 
-        const previewImage =
-            document.getElementById("productImagePreviewImage");
-
-        const status =
-            document.getElementById("productImageStatus");
-
-        if (!file) {
-            if (previewContainer) {
-                previewContainer.hidden = true;
-            }
-
-            if (previewImage) {
-                previewImage.src = "";
-            }
-
-            if (status) {
-                status.textContent =
-                    "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
-            }
-
-            return;
-        }
-
-        if (!file.type.startsWith("image/")) {
-            showAdminProductToast(
-                "يرجى اختيار ملف صورة صالح.",
-                "error"
-            );
-
-            this.value = "";
-
-            if (previewContainer) {
-                previewContainer.hidden = true;
-            }
-
-            if (previewImage) {
-                previewImage.src = "";
-            }
-
-            return;
-        }
-
-        try {
-            if (status) {
-                status.textContent =
-                    "جاري تجهيز معاينة الصورة...";
-            }
-
-            const optimizedImage =
-                await prepareProductImage(file);
-
-            if (!optimizedImage) {
-                throw new Error(
-                    "تعذر تجهيز الصورة."
-                );
-            }
-
-            const previewUrl =
-                URL.createObjectURL(
-                    optimizedImage
+            const previewContainer =
+                document.getElementById(
+                    "productImagePreview"
                 );
 
-            if (previewImage) {
-                if (previewImage.dataset.previewUrl) {
-                    URL.revokeObjectURL(
-                        previewImage.dataset.previewUrl
-                    );
+            const previewImage =
+                document.getElementById(
+                    "productImagePreviewImage"
+                );
+
+            const status =
+                document.getElementById(
+                    "productImageStatus"
+                );
+
+            if (!file) {
+
+                resetProductImageState();
+
+                return;
+
+            }
+
+            if (
+                !file.type.startsWith(
+                    "image/"
+                )
+            ) {
+
+                showAdminProductToast(
+                    "يرجى اختيار ملف صورة صالح.",
+                    "error"
+                );
+
+                this.value = "";
+
+                resetProductImageState();
+
+                return;
+
+            }
+
+            try {
+
+                if (status) {
+
+                    status.textContent =
+                        "جاري تجهيز محرر الصورة...";
+
                 }
 
-                previewImage.src = previewUrl;
+                /*
+                 * قبل تحميل الصورة الجديدة، يتم
+                 * تنظيف أي صورة محلية سابقة.
+                 */
+                resetProductImageEditorState();
 
-                previewImage.dataset.previewUrl =
-                    previewUrl;
-            }
+                await loadProductImageIntoEditor(
+                    file
+                );
 
-            if (previewContainer) {
-                previewContainer.hidden = false;
-            }
+                /*
+                 * نخفي المعاينة النهائية مؤقتًا.
+                 */
 
-            if (status) {
-                status.textContent =
-                    `تم تجهيز الصورة: ${file.name}`;
-            }
+                if (previewContainer) {
 
-        } catch (error) {
-            console.error(
-                "Product image preview error:",
-                error
-            );
+                    previewContainer.hidden =
+                        true;
 
-            this.value = "";
+                }
 
-            if (previewContainer) {
-                previewContainer.hidden = true;
-            }
+                if (previewImage) {
 
-            if (previewImage) {
-                previewImage.src = "";
-
-                if (previewImage.dataset.previewUrl) {
-                    URL.revokeObjectURL(
-                        previewImage.dataset.previewUrl
+                    previewImage.removeAttribute(
+                        "src"
                     );
 
-                    delete previewImage.dataset.previewUrl;
                 }
+
+                if (status) {
+
+                    status.textContent =
+                        "حرّك الصورة داخل المربع أو غيّر حجمها، ثم احفظ المنتج.";
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Product image editor error:",
+                    error
+                );
+
+                this.value = "";
+
+                resetProductImageState();
+
+                showAdminProductToast(
+                    "تعذر فتح الصورة للتحرير.",
+                    "error"
+                );
+
             }
 
-            if (status) {
-                status.textContent =
-                    "تعذر تجهيز الصورة للمعاينة.";
-            }
-
-            showAdminProductToast(
-                error.message ||
-                "تعذر تجهيز الصورة.",
-                "error"
-            );
         }
-    });
+    );
+
+
+// ==========================================
+// Upload Product Image
+// ==========================================
 
 async function uploadProductImage(file) {
+
     if (!file) {
         return null;
     }
 
-    const optimizedImage = await prepareProductImage(file);
+    const optimizedImage =
+        await exportEditedProductImage();
 
     if (!optimizedImage) {
-        throw new Error("تعذر تجهيز الصورة.");
+
+        throw new Error(
+            "تعذر تجهيز الصورة."
+        );
+
     }
 
-    const maxFileSize = 3 * 1024 * 1024;
+    const maxFileSize =
+        3 * 1024 * 1024;
 
-    if (optimizedImage.size > maxFileSize) {
+    if (
+        optimizedImage.size >
+        maxFileSize
+    ) {
+
         throw new Error(
             "حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت."
         );
+
     }
 
-    const filePath = `${crypto.randomUUID()}.webp`;
+    const filePath =
+        `${crypto.randomUUID()}.webp`;
 
-    const { error: uploadError } = await supabaseClient.storage
-        .from("product-images")
-        .upload(filePath, optimizedImage, {
-            contentType: "image/webp",
-            cacheControl: "31536000",
-            upsert: false
-        });
+    const {
+        error: uploadError
+    } =
+        await supabaseClient.storage
+            .from("product-images")
+            .upload(
+                filePath,
+                optimizedImage,
+                {
+                    contentType:
+                        "image/webp",
+
+                    cacheControl:
+                        "31536000",
+
+                    upsert:
+                        false
+                }
+            );
 
     if (uploadError) {
         throw uploadError;
     }
 
-    const { data: publicUrlData } = supabaseClient.storage
-        .from("product-images")
-        .getPublicUrl(filePath);
+    const {
+        data: publicUrlData
+    } =
+        supabaseClient.storage
+            .from("product-images")
+            .getPublicUrl(
+                filePath
+            );
 
-    if (!publicUrlData?.publicUrl) {
+    if (
+        !publicUrlData?.publicUrl
+    ) {
+
         await supabaseClient.storage
             .from("product-images")
-            .remove([filePath]);
+            .remove([
+                filePath
+            ]);
 
-        throw new Error("تعذر الحصول على رابط الصورة.");
+        throw new Error(
+            "تعذر الحصول على رابط الصورة."
+        );
+
     }
 
     return {
-        path: filePath,
-        url: publicUrlData.publicUrl
+        path:
+            filePath,
+
+        url:
+            publicUrlData.publicUrl
     };
+
 }
 
-function getProductImagePath(imageUrl) {
+
+// ==========================================
+// Get Product Image Path
+// ==========================================
+
+function getProductImagePath(
+    imageUrl
+) {
+
     if (!imageUrl) {
         return null;
     }
 
     try {
-        const url = new URL(imageUrl);
+
+        const url =
+            new URL(imageUrl);
 
         const marker =
             "/storage/v1/object/public/product-images/";
 
         const index =
-            url.pathname.indexOf(marker);
+            url.pathname.indexOf(
+                marker
+            );
 
         if (index === -1) {
             return null;
@@ -1235,173 +1917,258 @@ function getProductImagePath(imageUrl) {
 
         return decodeURIComponent(
             url.pathname.slice(
-                index + marker.length
+                index +
+                marker.length
             )
         );
+
     } catch {
+
         return null;
+
     }
+
 }
 
+
+// ==========================================
+// Save Product
+// ==========================================
+
 async function saveProduct(event) {
+
     event.preventDefault();
 
     clearFormMessage();
 
     const id =
-        document.getElementById("productId").value.trim();
+        document.getElementById(
+            "productId"
+        ).value.trim();
 
     const name =
-        document.getElementById("productName").value.trim();
+        document.getElementById(
+            "productName"
+        ).value.trim();
 
     const code =
-        document.getElementById("productCode").value.trim();
+        document.getElementById(
+            "productCode"
+        ).value.trim();
 
     const price =
         Number(
-            document.getElementById("productPrice").value
+            document.getElementById(
+                "productPrice"
+            ).value
         );
 
     const quantity =
         Number(
-            document.getElementById("productQuantity").value
+            document.getElementById(
+                "productQuantity"
+            ).value
         );
 
     const purchaseCost =
         Number(
-            document.getElementById("productPurchaseCost").value
+            document.getElementById(
+                "productPurchaseCost"
+            ).value
         );
 
     const categoryId =
-        document.getElementById("productCategory").value;
+        document.getElementById(
+            "productCategory"
+        ).value;
 
     const target =
-        document.getElementById("productTarget").value.trim();
+        document.getElementById(
+            "productTarget"
+        ).value.trim();
 
     const imageFile =
-        document.getElementById("productImageFile")
-            ?.files?.[0] || null;
+        document.getElementById(
+            "productImageFile"
+        )?.files?.[0] || null;
 
     const description =
-        document.getElementById("productDescription").value.trim();
+        document.getElementById(
+            "productDescription"
+        ).value.trim();
 
     // ======================================
     // Validation
     // ======================================
 
     if (!name) {
+
         showFormMessage(
             "يرجى إدخال اسم المنتج.",
             "error"
         );
+
         return;
+
     }
 
     if (!code) {
+
         showFormMessage(
             "يرجى إدخال Product Code.",
             "error"
         );
+
         return;
+
     }
 
     if (
         !Number.isFinite(price) ||
         price < 0
     ) {
+
         showFormMessage(
             "يرجى إدخال سعر صحيح.",
             "error"
         );
+
         return;
+
     }
 
     if (
         !Number.isInteger(quantity) ||
         quantity < 0
     ) {
+
         showFormMessage(
             "يرجى إدخال كمية صحيحة.",
             "error"
         );
+
         return;
+
     }
 
     if (
         !Number.isFinite(purchaseCost) ||
         purchaseCost <= 0
     ) {
+
         showFormMessage(
             "يرجى إدخال تكلفة شراء صحيحة أكبر من صفر.",
             "error"
         );
+
         return;
+
     }
 
     if (!categoryId) {
+
         showFormMessage(
             "يرجى اختيار التصنيف.",
             "error"
         );
+
         return;
+
     }
 
     const saveButton =
-        document.getElementById("saveProductButton");
+        document.getElementById(
+            "saveProductButton"
+        );
 
     if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.textContent = "جاري الحفظ...";
+
+        saveButton.disabled =
+            true;
+
+        saveButton.textContent =
+            "جاري الحفظ...";
+
     }
 
-    let uploadedImagePath = null;
+    let uploadedImagePath =
+        null;
 
     try {
+
         // ==================================
         // Existing Product Data
         // ==================================
 
-        const oldProduct = id
-            ? adminProducts.find(
-                item =>
-                    String(item.id) ===
-                    String(id)
-            )
-            : null;
+        const oldProduct =
+            id
+                ? adminProducts.find(
+                    item =>
+                        String(item.id) ===
+                        String(id)
+                )
+                : null;
 
-        const oldProductData = oldProduct
-            ? {
-                name: oldProduct.name,
-                description: oldProduct.description,
-                price: oldProduct.price,
-                quantity: oldProduct.quantity,
-                main_image: oldProduct.main_image,
-                target: oldProduct.target,
-                product_code: oldProduct.product_code,
-                category_id: oldProduct.category_id
-            }
-            : null;
+        const oldProductData =
+            oldProduct
+                ? {
+                    name:
+                        oldProduct.name,
+
+                    description:
+                        oldProduct.description,
+
+                    price:
+                        oldProduct.price,
+
+                    quantity:
+                        oldProduct.quantity,
+
+                    main_image:
+                        oldProduct.main_image,
+
+                    target:
+                        oldProduct.target,
+
+                    product_code:
+                        oldProduct.product_code,
+
+                    category_id:
+                        oldProduct.category_id
+                }
+                : null;
 
         const oldPurchaseCost =
             id
-                ? adminProductCosts[String(id)]
+                ? adminProductCosts[
+                    String(id)
+                ]
                 : null;
 
         const oldImageUrl =
-            oldProduct?.main_image || null;
+            oldProduct?.main_image ||
+            null;
 
         // ==================================
         // Upload New Image
         // ==================================
 
-        let imageUrl = oldImageUrl;
+        let imageUrl =
+            oldImageUrl;
 
         if (imageFile) {
-            const uploadedImage =
-                await uploadProductImage(imageFile);
 
-            imageUrl = uploadedImage.url;
-            uploadedImagePath = uploadedImage.path;
+            const uploadedImage =
+                await uploadProductImage(
+                    imageFile
+                );
+
+            imageUrl =
+                uploadedImage.url;
+
+            uploadedImagePath =
+                uploadedImage.path;
+
         }
 
         // ==================================
@@ -1409,14 +2176,28 @@ async function saveProduct(event) {
         // ==================================
 
         const productData = {
+
             name,
-            description: description || null,
+
+            description:
+                description || null,
+
             price,
+
             quantity,
-            main_image: imageUrl,
-            target: target || null,
-            product_code: code,
-            category_id: Number(categoryId)
+
+            main_image:
+                imageUrl,
+
+            target:
+                target || null,
+
+            product_code:
+                code,
+
+            category_id:
+                Number(categoryId)
+
         };
 
         // ==================================
@@ -1424,13 +2205,16 @@ async function saveProduct(event) {
         // ==================================
 
         if (!id) {
+
             const {
                 data: newProduct,
                 error: productError
             } =
                 await supabaseClient
                     .from("products")
-                    .insert(productData)
+                    .insert(
+                        productData
+                    )
                     .select()
                     .single();
 
@@ -1444,14 +2228,17 @@ async function saveProduct(event) {
                 await supabaseClient
                     .from("product_costs")
                     .insert({
+
                         product_id:
                             newProduct.id,
 
                         purchase_cost:
                             purchaseCost
+
                     });
 
             if (costError) {
+
                 console.error(
                     "Product cost save error:",
                     costError
@@ -1466,7 +2253,9 @@ async function saveProduct(event) {
                     );
 
                 throw costError;
+
             }
+
         }
 
         // ==================================
@@ -1474,13 +2263,19 @@ async function saveProduct(event) {
         // ==================================
 
         else {
+
             const {
                 error: productError
             } =
                 await supabaseClient
                     .from("products")
-                    .update(productData)
-                    .eq("id", id);
+                    .update(
+                        productData
+                    )
+                    .eq(
+                        "id",
+                        id
+                    );
 
             if (productError) {
                 throw productError;
@@ -1506,25 +2301,33 @@ async function saveProduct(event) {
                     );
 
             if (costError) {
+
                 console.error(
                     "Product cost update error:",
                     costError
                 );
 
                 if (oldProductData) {
+
                     await supabaseClient
                         .from("products")
-                        .update(oldProductData)
+                        .update(
+                            oldProductData
+                        )
                         .eq(
                             "id",
                             id
                         );
+
                 }
 
                 if (
-                    oldPurchaseCost !== undefined &&
-                    oldPurchaseCost !== null
+                    oldPurchaseCost !==
+                        undefined &&
+                    oldPurchaseCost !==
+                        null
                 ) {
+
                     await supabaseClient
                         .from("product_costs")
                         .upsert(
@@ -1540,10 +2343,13 @@ async function saveProduct(event) {
                                     "product_id"
                             }
                         );
+
                 }
 
                 throw costError;
+
             }
+
         }
 
         // ==================================
@@ -1555,25 +2361,35 @@ async function saveProduct(event) {
             oldImageUrl &&
             uploadedImagePath
         ) {
+
             try {
+
                 const oldImagePath =
                     getProductImagePath(
                         oldImageUrl
                     );
 
                 if (oldImagePath) {
+
                     await supabaseClient.storage
                         .from("product-images")
                         .remove([
                             oldImagePath
                         ]);
+
                 }
-            } catch (imageDeleteError) {
+
+            } catch (
+                imageDeleteError
+            ) {
+
                 console.warn(
                     "Old product image could not be deleted:",
                     imageDeleteError
                 );
+
             }
+
         }
 
         closeProductModalWindow();
@@ -1588,6 +2404,7 @@ async function saveProduct(event) {
         );
 
     } catch (error) {
+
         console.error(
             "Save product error:",
             error
@@ -1598,48 +2415,76 @@ async function saveProduct(event) {
         // ==================================
 
         if (uploadedImagePath) {
+
             try {
+
                 await supabaseClient.storage
                     .from("product-images")
                     .remove([
                         uploadedImagePath
                     ]);
-            } catch (cleanupError) {
+
+            } catch (
+                cleanupError
+            ) {
+
                 console.warn(
                     "Uploaded image cleanup failed:",
                     cleanupError
                 );
+
             }
+
         }
 
-        if (error.code === "23505") {
+        if (
+            error.code ===
+            "23505"
+        ) {
+
             showFormMessage(
                 "Product Code مستخدم مسبقًا. يجب اختيار كود مختلف.",
                 "error"
             );
+
         }
 
-        else if (error.code === "42501") {
+        else if (
+            error.code ===
+            "42501"
+        ) {
+
             showFormMessage(
                 "ليس لديك صلاحية لتنفيذ هذه العملية.",
                 "error"
             );
+
         }
 
         else {
+
             showFormMessage(
                 error.message ||
                 "حدث خطأ أثناء حفظ المنتج وتكلفة الشراء.",
                 "error"
             );
+
         }
 
     } finally {
+
         if (saveButton) {
-            saveButton.disabled = false;
-            saveButton.textContent = "حفظ المنتج";
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                "حفظ المنتج";
+
         }
+
     }
+
 }
 
 
@@ -1658,24 +2503,20 @@ async function deleteProduct(
                 String(id)
         );
 
-
     if (!product) {
         return;
     }
-
 
     const confirmed =
         confirm(
             `هل أنت متأكد من حذف المنتج "${product.name}"؟`
         );
 
-
     if (!confirmed) {
         return;
     }
 
-
-   try {
+    try {
 
         const {
             data: productToDelete,
@@ -1692,11 +2533,9 @@ async function deleteProduct(
                 )
                 .single();
 
-
         if (productFetchError) {
             throw productFetchError;
         }
-
 
         const {
             error
@@ -1709,50 +2548,44 @@ async function deleteProduct(
                     id
                 );
 
+        if (error) {
+            throw error;
+        }
 
-    if (error) {
-    throw error;
-}
+        // حذف صورة المنتج القديمة من Storage
+        const oldImagePath =
+            getProductImagePath(
+                productToDelete?.main_image
+            );
 
+        if (oldImagePath) {
 
-// حذف صورة المنتج القديمة من Storage
-const oldImagePath =
-    getProductImagePath(
-        productToDelete?.main_image
-    );
+            const {
+                error: imageDeleteError
+            } =
+                await supabaseClient.storage
+                    .from("product-images")
+                    .remove([
+                        oldImagePath
+                    ]);
 
-    
-if (oldImagePath) {
+            if (imageDeleteError) {
 
-    const {
-        error: imageDeleteError
-    } =
-        await supabaseClient.storage
-            .from("product-images")
-            .remove([
-                oldImagePath
-            ]);
+                console.error(
+                    "Product image delete error:",
+                    imageDeleteError
+                );
 
+            }
 
-    if (imageDeleteError) {
+        }
 
-        console.error(
-            "Product image delete error:",
-            imageDeleteError
-        );
-
-    }
-}
-
-
-await loadAdminProducts();
-
+        await loadAdminProducts();
 
         showAdminProductToast(
             "تم حذف المنتج بنجاح.",
             "success"
         );
-
 
     } catch (error) {
 
@@ -1761,9 +2594,9 @@ await loadAdminProducts();
             error
         );
 
-
         if (
-            error.code === "42501"
+            error.code ===
+            "42501"
         ) {
 
             showAdminProductToast(
@@ -1801,15 +2634,12 @@ function showFormMessage(
             "productFormMessage"
         );
 
-
     if (!element) {
         return;
     }
 
-
     element.textContent =
         message;
-
 
     element.className =
         `admin-form-message ${type}`;
@@ -1824,15 +2654,12 @@ function clearFormMessage() {
             "productFormMessage"
         );
 
-
     if (!element) {
         return;
     }
 
-
     element.textContent =
         "";
-
 
     element.className =
         "admin-form-message";
@@ -1851,11 +2678,9 @@ function setupProductSearch() {
             "productSearch"
         );
 
-
     if (!search) {
         return;
     }
-
 
     search.addEventListener(
         "input",
@@ -1882,11 +2707,9 @@ function setupProductTableActions() {
             "adminProductsTable"
         );
 
-
     if (!table) {
         return;
     }
-
 
     table.addEventListener(
         "click",
@@ -1897,19 +2720,15 @@ function setupProductTableActions() {
                     "button[data-action]"
                 );
 
-
             if (!button) {
                 return;
             }
 
-
             const action =
                 button.dataset.action;
 
-
             const id =
                 button.dataset.id;
-
 
             if (
                 action === "edit"
@@ -1920,7 +2739,6 @@ function setupProductTableActions() {
                 );
 
             }
-
 
             if (
                 action === "delete"
@@ -1949,7 +2767,6 @@ function setupAdminNavigation() {
             ".admin-nav-item"
         );
 
-
     buttons.forEach(
         button => {
 
@@ -1959,7 +2776,6 @@ function setupAdminNavigation() {
 
                     const sectionName =
                         this.dataset.section;
-
 
                     buttons.forEach(
                         item => {
@@ -1971,11 +2787,9 @@ function setupAdminNavigation() {
                         }
                     );
 
-
                     this.classList.add(
                         "active"
                     );
-
 
                     document
                         .querySelectorAll(
@@ -1991,12 +2805,10 @@ function setupAdminNavigation() {
                             }
                         );
 
-
                     const target =
                         document.getElementById(
                             `${sectionName}Section`
                         );
-
 
                     if (target) {
 
@@ -2026,7 +2838,6 @@ function updateProductsCount() {
             "productsCount"
         );
 
-
     if (element) {
 
         element.textContent =
@@ -2043,7 +2854,6 @@ function updateCategoriesCount() {
         document.getElementById(
             "categoriesCount"
         );
-
 
     if (element) {
 
@@ -2066,13 +2876,11 @@ function formatPrice(
     const number =
         Number(price);
 
-
     if (!Number.isFinite(number)) {
 
         return "0 $";
 
     }
-
 
     return `${number} $`;
 
@@ -2121,24 +2929,20 @@ function setupModalEvents() {
             "addProductButton"
         );
 
-
     const closeButton =
         document.getElementById(
             "closeProductModal"
         );
-
 
     const cancelButton =
         document.getElementById(
             "cancelProductButton"
         );
 
-
     const form =
         document.getElementById(
             "productForm"
         );
-
 
     if (addButton) {
 
@@ -2149,7 +2953,6 @@ function setupModalEvents() {
 
     }
 
-
     if (closeButton) {
 
         closeButton.addEventListener(
@@ -2159,7 +2962,6 @@ function setupModalEvents() {
 
     }
 
-
     if (cancelButton) {
 
         cancelButton.addEventListener(
@@ -2168,7 +2970,6 @@ function setupModalEvents() {
         );
 
     }
-
 
     if (form) {
 
@@ -2198,6 +2999,7 @@ document.addEventListener(
 
         setupModalEvents();
 
+        setupProductImageEditor();
 
         await loadAdminCategories();
 
