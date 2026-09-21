@@ -519,108 +519,85 @@
     }
 
 </script>
+
 <script>
 (function () {
-
     "use strict";
 
-    const sections =
-        document.querySelectorAll(
-            ".reveal-section"
-        );
+    const sections = document.querySelectorAll(".reveal-section");
+
+    if (!sections.length) return;
+
+    const revealSection = (section) => {
+        section.classList.add("is-visible");
+    };
+
+    const isInViewport = (section) => {
+        const rect = section.getBoundingClientRect();
+        const viewportHeight =
+            window.innerHeight || document.documentElement.clientHeight;
+
+        return rect.bottom > 0 && rect.top < viewportHeight;
+    };
 
     if ("IntersectionObserver" in window) {
 
-        const observer =
-            new IntersectionObserver(
-                function (entries) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
 
-                    entries.forEach(
-                        function (entry) {
+                    if (entry.isIntersecting) {
+                        revealSection(entry.target);
+                        observer.unobserve(entry.target);
+                    }
 
-                            if (entry.isIntersecting) {
-
-                                entry.target.classList.add(
-                                    "is-visible"
-                                );
-
-                                observer.unobserve(
-                                    entry.target
-                                );
-
-                            }
-
-                        }
-                    );
-
-                },
-                {
-                    threshold: 0.12,
-                    rootMargin:
-                        "0px 0px -8% 0px"
-                }
-            );
-
-        sections.forEach(
-            function (section) {
-                observer.observe(section);
+                });
+            },
+            {
+                threshold: 0,
+                rootMargin: "0px"
             }
         );
+
+        sections.forEach((section) => {
+
+            if (isInViewport(section)) {
+                revealSection(section);
+            } else {
+                observer.observe(section);
+            }
+
+        });
+
+        requestAnimationFrame(() => {
+
+            sections.forEach((section) => {
+
+                if (
+                    !section.classList.contains("is-visible") &&
+                    isInViewport(section)
+                ) {
+                    revealSection(section);
+                    observer.unobserve(section);
+                }
+
+            });
+
+        });
 
     } else {
 
-        sections.forEach(
-            function (section) {
-                section.classList.add(
-                    "is-visible"
-                );
-            }
-        );
+        sections.forEach((section) => {
+            revealSection(section);
+        });
+
     }
 
-    /*
-       SAFETY FALLBACK
-    */
-
-    window.setTimeout(
-        function () {
-
-            sections.forEach(
-                function (section) {
-
-                    if (
-                        !section.classList.contains(
-                            "is-visible"
-                        )
-                    ) {
-
-                        const rect =
-                            section.getBoundingClientRect();
-
-                        if (
-                            rect.top <
-                            window.innerHeight
-                        ) {
-
-                            section.classList.add(
-                                "is-visible"
-                            );
-
-                        }
-
-                    }
-
-                }
-            );
-
-        },
-        1800
-    );
-
 })();
-
-
 </script>
+
+
+
 
 <script>
 (function () {

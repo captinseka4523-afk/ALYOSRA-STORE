@@ -1,758 +1,480 @@
-/* =========================
-   CART PAGE
-========================= */
+/* =========================================================
+   AL YOSRA STORE — LUXURY CART CSS (UNIFIED & MOBILE-FIRST)
+   ========================================================= */
+
+body.cart-body {
+    margin: 0;
+    font-family: inherit;
+    background: #f4f6f9;
+    color: #071a2b;
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   PAGE CONTAINER
+   ========================================================= */
 
 .cart-page {
     min-height: 100vh;
-
-    padding: 120px 20px 60px;
-
+    padding: 100px 12px 60px;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(7, 26, 43, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(178, 139, 69, 0.05) 0%, transparent 40%),
+        #f4f6f9;
+    font-family: inherit;
 }
-
 
 .cart-box-page {
     width: 100%;
-    max-width: 1200px;
-
-    padding: 45px;
-
-    background: rgba(255, 255, 255, .22);
-
-    border: 1px solid rgba(255, 255, 255, .4);
-
-    border-radius: 35px;
-
+    max-width: 1350px;
+    padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 24px;
     backdrop-filter: blur(20px);
-
-    box-shadow:
-        0 25px 60px rgba(0, 0, 0, .15);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 20px 50px rgba(7, 26, 43, 0.08),
+        0 4px 12px rgba(7, 26, 43, 0.03);
 }
 
+.cart-header-section {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.cart-eyebrow {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: #b28b45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    font-family: inherit;
+}
 
 .cart-box-page h1 {
-    text-align: center;
-
-    font-size: 45px;
-
-    color: #111827;
-
-    margin-bottom: 15px;
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 900;
+    color: #071a2b;
+    letter-spacing: -0.5px;
+    font-family: inherit;
 }
 
-
-.cart-box-page > p {
-    text-align: center;
-
-    color: #4b5563;
-
-    font-size: 19px;
-
-    margin-bottom: 40px;
+.cart-box-page > .cart-header-section > p {
+    margin: 0;
+    color: #64707d;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
 }
 
-
-/* =========================
-   CART GRID
-========================= */
+/* =========================================================
+   CART GRID CONTAINER (MOBILE-FIRST: 2 COLUMNS ON MOBILE)
+   ========================================================= */
 
 #cartContainer {
     width: 100%;
-
     display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(260px, 1fr));
-
-    gap: 25px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 30px;
 }
 
-
-/* =========================
-   NORMAL PRODUCT CARD
-========================= */
+/* =========================================================
+   STANDARD PRODUCT CARD IN CART (MOBILE-FIRST)
+   ========================================================= */
 
 .cart-item {
-    background: #d0daff;
-
-    border-radius: 30px;
-
-    padding: 25px;
-
+    position: relative;
+    background: #ffffff;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 16px;
+    padding: 14px 10px;
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     text-align: center;
-
-    box-shadow:
-        0 15px 35px rgba(0, 0, 0, .12);
-
-    transition: .3s;
+    box-shadow: 0 4px 15px rgba(7, 26, 43, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    font-family: inherit;
 }
-
 
 .cart-item:hover {
-    transform: translateY(-6px);
+    transform: translateY(-3px);
+    border-color: rgba(178, 139, 69, 0.3);
+    box-shadow: 0 10px 25px rgba(7, 26, 43, 0.06);
 }
-
 
 .cart-item img {
-    width: 140px;
-
-    height: 140px;
-
+    width: 90px;
+    height: 90px;
     object-fit: contain;
-
-    margin-bottom: 20px;
-
+    margin-bottom: 12px;
     display: block;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 4px;
+    box-sizing: border-box;
 }
-
 
 .cart-info {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: inherit;
 }
-
 
 .cart-info h3 {
-    font-size: 22px;
-
-    color: #111827;
-
-    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #071a2b;
+    margin: 0 0 6px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-family: inherit;
 }
-
 
 .cart-info p {
-    color: #6b7280;
-
-    font-size: 16px;
+    color: #b28b45;
+    font-size: 13px;
+    font-weight: 800;
+    margin: 0 0 12px;
+    font-family: inherit;
 }
 
-
-/* =========================
-   OFFER CARD IN CART
-========================= */
+/* =========================================================
+   OFFER CARD IN CART (MOBILE-FIRST)
+   ========================================================= */
 
 .offer-cart-item {
     position: relative;
-
-    width: 100%;
-
-    max-width: 420px;
-
-    justify-self: center;
-
-    box-sizing: border-box;
-
-    background:
-        #d0daff;
-
-    border: 1px solid rgba(37, 99, 235, 0.18);
-
-    border-radius: 25px;
-
+    background: #ffffff;
+    border: 1px solid rgba(178, 139, 69, 0.22);
+    border-radius: 16px;
     padding: 0;
-
     overflow: hidden;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: stretch;
-
     text-align: right;
-
-    box-shadow:
-        0 10px 30px rgba(37, 99, 235, .14);
-
-    transition:
-        transform .3s ease,
-        box-shadow .3s ease;
+    box-shadow: 0 4px 15px rgba(7, 26, 43, 0.04);
+    font-family: inherit;
 }
-
-
-.offer-cart-item:hover {
-    transform: translateY(-5px);
-
-    box-shadow:
-        0 16px 35px rgba(37, 99, 235, .20);
-}
-
-
-/* شارة العرض */
 
 .offer-cart-item::before {
     content: "عرض خاص";
-
     position: absolute;
-
-    top: 14px;
-
-    right: 14px;
-
+    top: 8px;
+    right: 8px;
     z-index: 2;
-
-    padding: 6px 11px;
-
-    border-radius: 16px;
-
-    background: #2563eb;
-
-    color: white;
-
-    font-size: 11px;
-
-    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #071a2b;
+    color: #f5dfaa;
+    font-size: 9px;
+    font-weight: 800;
+    font-family: inherit;
 }
-
-
-/* صورة العرض */
 
 .offer-cart-item > img {
     width: 100%;
-
-    height: 220px;
-
+    height: 120px;
     object-fit: contain;
-
     display: block;
-
     margin: 0;
-
-    border-radius: 0;
-
-    background: #f3f6fb;
+    background: #f8fafc;
+    padding: 6px;
+    box-sizing: border-box;
 }
-
-
-/* في حال عدم وجود صورة */
 
 .offer-cart-item .cart-offer-placeholder {
     width: 100%;
-
-    height: 220px;
-
-    margin: 0;
-
-    border-radius: 0;
-
-    background:
-        linear-gradient(
-            135deg,
-            #dbeafe,
-            #eef2ff
-        );
-
+    height: 120px;
+    background: linear-gradient(135deg, #071a2b, #0c2a42);
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
-    color: #2563eb;
-
-    font-size: 20px;
-
-    font-weight: bold;
+    color: #f5dfaa;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: inherit;
 }
-
-
-/* معلومات العرض */
 
 .offer-cart-item .cart-info {
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 20px 22px 22px;
-
+    padding: 12px;
     text-align: right;
+    align-items: flex-start;
 }
-
-
-/* اسم العرض */
 
 .offer-cart-item .cart-info h3 {
-    margin: 0 0 8px;
-
-    font-size: 21px;
-
-    line-height: 1.5;
-
-    color: #111827;
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #071a2b;
+    font-family: inherit;
 }
-
-
-/* سعر العرض */
 
 .offer-cart-item .cart-info p {
-    margin: 0;
-
-    color: #2563eb;
-
-    font-size: 16px;
-
-    font-weight: bold;
+    margin: 0 0 10px;
+    color: #b28b45;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: inherit;
 }
-
-
-/* أزرار الكمية في العرض */
 
 .offer-cart-item .quantity-box {
     justify-content: flex-start;
-
-    margin: 18px 0;
-
-    gap: 12px;
+    margin: 0 0 10px;
+    gap: 8px;
 }
-
-
-/* زر الحذف في العرض */
 
 .offer-cart-item .remove-btn {
-    display: block;
-
     width: 100%;
-
-    padding: 11px 20px;
-
-    margin-top: 4px;
-
-    border-radius: 12px;
+    border-radius: 9px;
+    padding: 7px 10px;
 }
 
-
-/* =========================
-   QUANTITY
-========================= */
+/* =========================================================
+   QUANTITY CONTROLS (COMPACT MOBILE)
+   ========================================================= */
 
 .quantity-box {
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
-    gap: 18px;
-
-    margin: 22px 0;
+    gap: 10px;
+    margin: 10px 0;
 }
-
 
 .quantity-box span {
-    min-width: 40px;
-
-    font-size: 24px;
-
-    font-weight: bold;
-
-    color: #111827;
-
+    min-width: 24px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #071a2b;
     text-align: center;
+    font-family: inherit;
 }
-
 
 .quantity-btn {
-    width: 42px;
-
-    height: 42px;
-
+    width: 28px;
+    height: 28px;
     border: none;
-
     border-radius: 50%;
-
-    background: #2563eb;
-
+    background: #071a2b;
     color: white;
-
-    font-size: 25px;
-
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-
-    transition: .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    font-family: inherit;
 }
-
 
 .quantity-btn:hover {
-    background: #1d4ed8;
-
-    transform: scale(1.12);
+    background: #b28b45;
 }
 
-
-/* =========================
+/* =========================================================
    REMOVE BUTTON
-========================= */
+   ========================================================= */
 
 .remove-btn {
     border: none;
-
-    padding: 11px 30px;
-
-    border-radius: 25px;
-
-    background: #ef4444;
-
-    color: white;
-
-    font-size: 16px;
-
+    padding: 7px 16px;
+    border-radius: 9px;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
-
-    transition: .3s;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: inherit;
 }
-
 
 .remove-btn:hover {
     background: #dc2626;
-
-    transform: translateY(-2px);
+    color: white;
 }
 
+/* =========================================================
+   CART SUMMARY & FOOTER ACTIONS
+   ========================================================= */
 
-/* =========================
-   CART TOTAL
-========================= */
-
-.cart-total {
-    margin-top: 45px;
-
-    text-align: center;
-
-    font-size: 32px;
-
-    font-weight: bold;
-
-    color: #111827;
+.cart-summary-footer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(7, 26, 43, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    font-family: inherit;
 }
 
+.cart-total-box {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #64707d;
+    font-family: inherit;
+}
 
 #cartTotal {
-    color: #2563eb;
+    color: #071a2b;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    font-family: inherit;
 }
 
+.cart-actions-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
 
-/* =========================
-   CHECKOUT
-========================= */
+.continue-shopping-btn,
+.checkout-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.continue-shopping-btn {
+    background: #f1f3f5;
+    color: #334155;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+}
 
 .checkout-btn {
-    display: block;
-
-    margin: 30px auto 0;
-
-    padding: 17px 55px;
-
-    border: none;
-
-    border-radius: 28px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #111827,
-            #2563eb
-        );
-
-    color: white;
-
-    font-size: 20px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    transition: .3s;
-
-    text-decoration: none;
-
-    text-align: center;
+    background: linear-gradient(135deg, #071a2b, #0c2a42);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(7, 26, 43, 0.15);
 }
 
 
-.checkout-btn:hover {
-    transform: translateY(-4px);
-
-    box-shadow:
-        0 15px 30px rgba(37, 99, 235, .3);
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 700px) {
-
-    .cart-page {
-        padding:
-            100px 10px 40px;
-    }
-
-
-    .cart-box-page {
-        width: 95%;
-
-        padding: 20px;
-
-        border-radius: 25px;
-    }
-
-
-    .cart-box-page h1 {
-        font-size: 32px;
-    }
-
-
-    .cart-box-page > p {
-        font-size: 16px;
-
-        margin-bottom: 25px;
-    }
-
-
-    #cartContainer {
-        grid-template-columns:
-            repeat(2, 1fr);
-
-        gap: 12px;
-    }
-
-
-    /* المنتجات العادية */
-
-    .cart-item {
-        padding: 12px;
-
-        border-radius: 20px;
-    }
-
-
-    .cart-item img {
-        width: 80px;
-
-        height: 80px;
-
-        margin-bottom: 10px;
-    }
-
-
-    .cart-info h3 {
-        font-size: 15px;
-
-        margin-bottom: 5px;
-    }
-
-
-    .cart-info p {
-        font-size: 13px;
-    }
-
-
-    .quantity-box {
-        gap: 8px;
-
-        margin: 10px 0;
-    }
-
-
-    .quantity-box span {
-        font-size: 18px;
-
-        min-width: 28px;
-    }
-
-
-    .quantity-btn {
-        width: 30px;
-
-        height: 30px;
-
-        font-size: 18px;
-    }
-
-
-    .remove-btn {
-        padding: 7px 15px;
-
-        font-size: 13px;
-    }
-
-
-    /* =====================
-       OFFER ON MOBILE
-    ===================== */
-
-    .offer-cart-item {
-        max-width: none;
-
-        border-radius: 18px;
-    }
-
-
-    .offer-cart-item::before {
-        top: 8px;
-
-        right: 8px;
-
-        padding: 4px 7px;
-
-        font-size: 9px;
-    }
-
-
-    .offer-cart-item > img {
-        height: 120px;
-
-        border-radius: 0;
-    }
-
-
-    .offer-cart-item .cart-offer-placeholder {
-        height: 120px;
-
-        border-radius: 0;
-
-        font-size: 16px;
-    }
-
-
-    .offer-cart-item .cart-info {
-        padding: 13px;
-    }
-
-
-    .offer-cart-item .cart-info h3 {
-        font-size: 14px;
-
-        line-height: 1.4;
-
-        margin-bottom: 4px;
-    }
-
-
-    .offer-cart-item .cart-info p {
-        font-size: 12px;
-    }
-
-
-    .offer-cart-item .quantity-box {
-        justify-content: flex-start;
-
-        margin: 10px 0;
-
-        gap: 7px;
-    }
-
-
-    .offer-cart-item .quantity-btn {
-        width: 30px;
-
-        height: 30px;
-
-        font-size: 17px;
-    }
-
-
-    .offer-cart-item .remove-btn {
-        padding: 7px 14px;
-
-        font-size: 12px;
-    }
-
-
-    .cart-total {
-        font-size: 25px;
-    }
-
-
-    .checkout-btn {
-        width: 90%;
-
-        padding: 12px;
-
-        font-size: 17px;
-    }
-
-}
-
-
-/* =========================
-   CART TOAST
-========================= */
+/* =========================================================
+   TOAST NOTIFICATION
+   ========================================================= */
 
 .cart-toast {
     position: fixed;
-
-    top: 90px;
-
+    bottom: 20px;
     left: 50%;
-
-    transform:
-        translate(-50%, -20px);
-
-    background: rgba(17, 24, 39, 0.95);
-
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(7, 26, 43, 0.95);
     color: white;
-
-    padding: 13px 22px;
-
-    border-radius: 14px;
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.2);
-
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(7, 26, 43, 0.2);
     opacity: 0;
-
     visibility: hidden;
-
     pointer-events: none;
-
-    transition:
-        opacity 0.25s ease,
-        transform 0.25s ease,
-        visibility 0.25s ease;
-
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
     z-index: 9999;
-
-    white-space: nowrap;
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
+    font-family: inherit;
 }
-
 
 .cart-toast.show {
     opacity: 1;
-
     visibility: visible;
-
-    transform:
-        translate(-50%, 0);
+    transform: translateX(-50%) translateY(0);
 }
 
 
-@media (max-width: 700px) {
+/* =========================================================
+   RESPONSIVE DESIGN (MOBILE-FIRST SCALING UP)
+   ========================================================= */
 
-    .cart-toast {
-        top: 75px;
-
-        width: 90%;
-
-        max-width: 360px;
-
-        text-align: center;
-
-        white-space: normal;
-
-        font-size: 14px;
+/* Tablets & Small Laptops (min-width: 640px) -> 3 Columns */
+@media (min-width: 640px) {
+    #cartContainer {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
     }
+    .cart-box-page {
+        padding: 32px 28px;
+    }
+    .cart-actions-box {
+        flex-direction: row;
+    }
+    .continue-shopping-btn,
+    .checkout-btn {
+        width: auto;
+        flex: 1;
+    }
+}
 
+/* Laptops (min-width: 992px) -> 4 Columns */
+@media (min-width: 992px) {
+    #cartContainer {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+    }
+    .cart-page {
+        padding: 120px 20px 70px;
+    }
+    .cart-box-page {
+        padding: 40px 45px;
+        border-radius: 28px;
+    }
+    .cart-box-page h1 {
+        font-size: 34px;
+    }
+    .cart-item {
+        padding: 20px 16px;
+        border-radius: 18px;
+    }
+    .cart-item img {
+        width: 110px;
+        height: 110px;
+    }
+    .cart-info h3 {
+        font-size: 16px;
+    }
+    .offer-cart-item > img,
+    .offer-cart-item .cart-offer-placeholder {
+        height: 160px;
+    }
+}
+
+/* Large Screens (min-width: 1280px) -> 5 Columns */
+@media (min-width: 1280px) {
+    #cartContainer {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 22px;
+    }
 }

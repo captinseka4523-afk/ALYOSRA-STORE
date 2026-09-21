@@ -1,40 +1,178 @@
-// ==========================================
-// AL YOSRA STORE
-// Checkout System
-// Products + Offers
-// ==========================================
+// ==========================================================
+// AL YOSRA STORE — CHECKOUT
+// Products + Offers + WhatsApp
+// ==========================================================
+//
+// القاعدة الأساسية:
+// create_order هي المصدر الوحيد للحقيقة بالنسبة للطلب.
+//
+// Telegram:
+// - يتم إرساله تلقائيًا من قاعدة البيانات بعد إنشاء الطلب.
+// - لا يوجد أي استدعاء Telegram من المتصفح.
+// - لا يوجد Telegram Bot Token أو Chat ID هنا.
+// - لا يوجد send_telegram_secure.
+// - لا يتم إرسال الأسعار أو تفاصيل الطلب إلى Telegram من المتصفح.
+//
+// مهم:
+// نجاح create_order = نجاح الطلب.
+// Telegram مجرد إشعار إداري، ولا يجب أن يمنع نجاح الطلب.
+// ==========================================================
 
 
-// ==========================================
-// قراءة السلة
-// ==========================================
-
-const checkoutCart =
-    JSON.parse(
-        localStorage.getItem("cart")
-    ) || {};
-
-
-// ==========================================
-// مكان عرض ملخص الطلب
-// ==========================================
+// ==========================================================
+// 1. عناصر الصفحة
+// ==========================================================
 
 const orderSummary =
-    document.getElementById(
-        "orderSummary"
-    );
+    document.getElementById("orderSummary");
+
+const checkoutFinalTotal =
+    document.getElementById("checkoutFinalTotal");
+
+const confirmOrderBtn =
+    document.getElementById("confirmOrderBtn");
+
+const whatsappOrderBtn =
+    document.getElementById("whatsappOrderBtn");
+
+const successModal =
+    document.getElementById("successModal");
+
+const backToHomeBtn =
+    document.getElementById("backToHomeBtn");
 
 
-// ==========================================
-// بيانات العروض
-// ==========================================
+// ==========================================================
+// 2. بيانات السلة
+// ==========================================================
+
+function getCheckoutCart() {
+
+    try {
+
+        const rawCart =
+            localStorage.getItem("cart");
+
+        if (!rawCart) {
+            return {};
+        }
+
+        const cart =
+            JSON.parse(rawCart);
+
+        if (
+            !cart ||
+            typeof cart !== "object" ||
+            Array.isArray(cart)
+        ) {
+            return {};
+        }
+
+        return cart;
+
+    } catch (error) {
+
+        console.error(
+            "تعذر قراءة السلة:",
+            error
+        );
+
+        return {};
+    }
+}
+
+
+// ==========================================================
+// 3. بيانات العروض
+// ==========================================================
 
 let checkoutOffers = [];
 
 
-// ==========================================
-// تحميل العروض
-// ==========================================
+// ==========================================================
+// 4. حالة الطلب
+// ==========================================================
+
+let isOrderProcessing = false;
+
+
+// ==========================================================
+// 5. أدوات مساعدة
+// ==========================================================
+
+function getCartEntries() {
+
+    const cart =
+        getCheckoutCart();
+
+    return Object.entries(cart)
+        .map(([id, quantity]) => ({
+            id: String(id),
+            quantity: Number(quantity)
+        }))
+        .filter(item =>
+            Number.isInteger(item.quantity) &&
+            item.quantity > 0
+        );
+}
+
+
+function isOfferItem(id) {
+
+    return String(id)
+        .startsWith("offer_");
+}
+
+
+function getOfferId(id) {
+
+    return String(id)
+        .replace("offer_", "");
+}
+
+
+function getProduct(productId) {
+
+    if (
+        !Array.isArray(window.products)
+    ) {
+        return null;
+    }
+
+    return window.products.find(
+        product =>
+            String(product.id) ===
+            String(productId)
+    ) || null;
+}
+
+
+function getOffer(offerId) {
+
+    return checkoutOffers.find(
+        offer =>
+            String(offer.id) ===
+            String(offerId)
+    ) || null;
+}
+
+
+function formatPrice(value) {
+
+    const number =
+        Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "0.00";
+    }
+
+    return number.toFixed(2);
+}
+
+
+// ==========================================================
+// 6. تحميل العروض
+// ==========================================================
 
 async function loadCheckoutOffers() {
 
@@ -43,32 +181,25 @@ async function loadCheckoutOffers() {
         const {
             data,
             error
-        } =
-            await supabaseClient
-                .from("offers")
-                .select(`
-                    id,
-                    name,
-                    price,
-                    image,
-                    active
-                `)
-                .eq(
-                    "active",
-                    true
-                );
-
+        } = await supabaseClient
+            .from("offers")
+            .select(`
+                id,
+                name,
+                price,
+                image,
+                active
+            `)
+            .eq("active", true);
 
         if (error) {
-
             throw error;
-
         }
 
-
         checkoutOffers =
-            data || [];
-
+            Array.isArray(data)
+                ? data
+                : [];
 
     } catch (error) {
 
@@ -78,39 +209,28 @@ async function loadCheckoutOffers() {
         );
 
         checkoutOffers = [];
-
     }
 
-
     displayCheckout();
-
 }
 
 
-// ==========================================
-// عرض ملخص الطلب
-// ==========================================
+// ==========================================================
+// 7. عرض ملخص الطلب
+// ==========================================================
 
 function displayCheckout() {
 
-    if (!orderSummary) return;
-
+    if (!orderSummary) {
+        return;
+    }
 
     orderSummary.innerHTML = "";
 
+    const entries =
+        getCartEntries();
 
-    let totalPrice = 0;
-
-
-    // ======================================
-    // السلة فارغة
-    // ======================================
-
-    if (
-        Object.keys(
-            checkoutCart
-        ).length === 0
-    ) {
+    if (entries.length === 0) {
 
         orderSummary.innerHTML = `
             <p style="text-align:center;">
@@ -118,119 +238,154 @@ function displayCheckout() {
             </p>
         `;
 
-        return;
+        if (checkoutFinalTotal) {
+            checkoutFinalTotal.textContent =
+                "0.00 $";
+        }
 
+        return;
     }
 
+    let displayTotal = 0;
 
-    // ======================================
-    // عرض عناصر السلة
-    // ======================================
+    entries.forEach(
+        ({
+            id,
+            quantity
+        }) => {
 
-    Object.keys(
-        checkoutCart
-    ).forEach(
-        id => {
+            // ==================================================
+            // عرض
+            // ==================================================
 
-            const quantity =
-                Number(
-                    checkoutCart[id]
-                ) || 0;
-
-
-            if (
-                quantity <= 0
-            ) {
-
-                return;
-
-            }
-
-
-            // ==================================
-            // العرض
-            // ==================================
-
-            if (
-                String(id).startsWith(
-                    "offer_"
-                )
-            ) {
-
-                const offerId =
-                    String(id).replace(
-                        "offer_",
-                        ""
-                    );
-
+            if (isOfferItem(id)) {
 
                 const offer =
-                    checkoutOffers.find(
-                        item =>
-                            String(
-                                item.id
-                            ) ===
-                            String(
-                                offerId
-                            )
+                    getOffer(
+                        getOfferId(id)
                     );
 
-
                 if (!offer) {
-
                     return;
-
                 }
 
-
                 const price =
-                    Number(
-                        offer.price
-                    ) || 0;
-
+                    Number(offer.price) || 0;
 
                 const subtotal =
                     price * quantity;
 
-
-                totalPrice +=
+                displayTotal +=
                     subtotal;
-
 
                 orderSummary.innerHTML += `
 
+                    <div class="order-item">
+
+                        ${
+                            offer.image
+                                ? `
+                                    <img
+                                        src="${offer.image}"
+                                        alt="${offer.name || "عرض"}"
+                                        style="
+                                            width:80px;
+                                            height:80px;
+                                            object-fit:contain;
+                                        "
+                                    >
+                                  `
+                                : `
+                                    <div
+                                        style="
+                                            width:80px;
+                                            height:80px;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;
+                                            background:#f3f4f6;
+                                            border-radius:10px;
+                                        "
+                                    >
+                                        عرض
+                                    </div>
+                                  `
+                        }
+
+                        <div
+                            style="
+                                flex:1;
+                                padding:0 15px;
+                            "
+                        >
+
+                            <h3>
+                                ${offer.name || "عرض"}
+                            </h3>
+
+                            <p>
+                                النوع: عرض
+                            </p>
+
+                            <p>
+                                الكمية: ${quantity}
+                            </p>
+
+                            <p>
+                                سعر العرض:
+                                ${formatPrice(price)}$
+                            </p>
+
+                        </div>
+
+                        <strong>
+                            ${formatPrice(subtotal)}$
+                        </strong>
+
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            // ==================================================
+            // منتج
+            // ==================================================
+
+            const product =
+                getProduct(id);
+
+            if (!product) {
+                return;
+            }
+
+            const price =
+                Number(product.price) || 0;
+
+            const subtotal =
+                price * quantity;
+
+            displayTotal +=
+                subtotal;
+
+            orderSummary.innerHTML += `
+
                 <div class="order-item">
 
-                    ${
-                        offer.image
-                            ? `
-                                <img
-                                    src="${offer.image}"
-                                    alt="${offer.name}"
-                                    style="
-                                        width:80px;
-                                        height:80px;
-                                        object-fit:contain;
-                                    "
-                                >
-                              `
-                            : `
-                                <div
-                                    style="
-                                        width:80px;
-                                        height:80px;
-                                        display:flex;
-                                        align-items:center;
-                                        justify-content:center;
-                                        background:#f3f4f6;
-                                        border-radius:10px;
-                                    "
-                                >
-                                    عرض
-                                </div>
-                              `
-                    }
-
+                    <img
+                        src="${
+                            product.image ||
+                            product.main_image ||
+                            ""
+                        }"
+                        alt="${product.name || "منتج"}"
+                        style="
+                            width:80px;
+                            height:80px;
+                            object-fit:contain;
+                        "
+                    >
 
                     <div
                         style="
@@ -240,973 +395,771 @@ function displayCheckout() {
                     >
 
                         <h3>
-                            ${offer.name}
+                            ${product.name || "منتج"}
                         </h3>
 
-
                         <p>
-                            النوع: عرض
+                            الكمية: ${quantity}
                         </p>
 
-
                         <p>
-                            الكمية:
-                            ${quantity}
-                        </p>
-
-
-                        <p>
-                            سعر العرض:
-                            ${price}$
+                            سعر القطعة:
+                            ${formatPrice(price)}$
                         </p>
 
                     </div>
 
-
                     <strong>
-                        ${subtotal}$
+                        ${formatPrice(subtotal)}$
                     </strong>
 
                 </div>
-
-                `;
-
-
-                return;
-
-            }
-
-
-            // ==================================
-            // المنتج العادي
-            // ==================================
-
-            const product =
-                window.products.find(
-                    p =>
-                        p.id ===
-                        String(id)
-                );
-
-
-            if (!product) {
-
-                return;
-
-            }
-
-
-            const price =
-                Number(
-                    product.price
-                ) || 0;
-
-
-            const subtotal =
-                price * quantity;
-
-
-            totalPrice +=
-                subtotal;
-
-
-            orderSummary.innerHTML += `
-
-            <div class="order-item">
-
-                <img
-                    src="${product.image}"
-                    alt="${product.name}"
-                    style="
-                        width:80px;
-                        height:80px;
-                        object-fit:contain;
-                    "
-                >
-
-
-                <div
-                    style="
-                        flex:1;
-                        padding:0 15px;
-                    "
-                >
-
-                    <h3>
-                        ${product.name}
-                    </h3>
-
-
-                    <p>
-                        الكمية:
-                        ${quantity}
-                    </p>
-
-
-                    <p>
-                        سعر القطعة:
-                        ${price}$
-                    </p>
-
-                </div>
-
-
-                <strong>
-                    ${subtotal}$
-                </strong>
-
-            </div>
-
             `;
-
         }
     );
 
+    if (checkoutFinalTotal) {
 
-    // ======================================
-    // المجموع
-    // ======================================
-
-    orderSummary.innerHTML += `
-
-        <hr>
-
-        <h2 style="text-align:center;">
-
-            المجموع التقديري:
-
-            <span style="color:#2563eb;">
-
-                ${totalPrice}$
-
-            </span>
-
-        </h2>
-
-        <p style="
-            text-align:center;
-            font-size:14px;
-            opacity:0.75;
-        ">
-
-            يتم اعتماد السعر النهائي عند تأكيد الطلب.
-
-        </p>
-
-    `;
-
+        checkoutFinalTotal.textContent =
+            `${formatPrice(displayTotal)} $`;
+    }
 }
 
 
-// ==========================================
-// تجهيز عناصر الطلب
-// ==========================================
+// ==========================================================
+// 8. تجهيز عناصر الطلب
+// ==========================================================
+// نرسل IDs والكميات فقط.
+// السعر والمخزون يتم التحقق منهما داخل create_order.
+// ==========================================================
 
 function prepareOrderItems() {
 
-    const orderItems = [];
+    const entries =
+        getCartEntries();
 
+    if (entries.length === 0) {
 
-    for (
-        const id of Object.keys(
-            checkoutCart
-        )
-    ) {
+        throw new Error(
+            "السلة فارغة."
+        );
+    }
 
-        const quantity =
-            Number(
-                checkoutCart[id]
-            );
+    return entries.map(
+        ({
+            id,
+            quantity
+        }) => {
 
+            // ================================================
+            // عرض
+            // ================================================
 
-        if (
-            !Number.isInteger(
-                quantity
-            ) ||
-            quantity <= 0
-        ) {
+            if (isOfferItem(id)) {
 
-            throw new Error(
-                "توجد كمية غير صالحة في السلة."
-            );
+                const offer =
+                    getOffer(
+                        getOfferId(id)
+                    );
 
-        }
+                if (!offer) {
 
+                    throw new Error(
+                        "تعذر العثور على أحد العروض."
+                    );
+                }
 
-        // ==================================
-        // عرض
-        // ==================================
+                return {
 
-        if (
-            String(id).startsWith(
-                "offer_"
-            )
-        ) {
+                    product_id: null,
 
-            const offerId =
-                String(id).replace(
-                    "offer_",
-                    ""
-                );
+                    offer_id:
+                        Number(offer.id),
 
-
-            const offer =
-                checkoutOffers.find(
-                    item =>
-                        String(
-                            item.id
-                        ) ===
-                        String(
-                            offerId
-                        )
-                );
-
-
-            if (!offer) {
-
-                throw new Error(
-                    "تعذر العثور على أحد العروض."
-                );
-
+                    quantity
+                };
             }
 
 
-            orderItems.push({
+            // ================================================
+            // منتج
+            // ================================================
 
-                product_id: null,
+            const product =
+                getProduct(id);
 
-                offer_id:
-                    Number(
-                        offer.id
-                    ),
+            if (!product) {
 
-                quantity:
-                    quantity
+                throw new Error(
+                    "تعذر العثور على أحد المنتجات."
+                );
+            }
 
-            });
+            return {
 
+                product_id:
+                    Number(product.id),
 
-            continue;
+                offer_id: null,
 
-        }
-
-
-        // ==================================
-        // منتج عادي
-        // ==================================
-
-        const product =
-            window.products.find(
-                p =>
-                    p.id ===
-                    String(id)
-            );
-
-
-        if (!product) {
-
-            throw new Error(
-                "تعذر العثور على أحد المنتجات في قاعدة البيانات."
-            );
-
-        }
-
-
-        orderItems.push({
-
-            product_id:
-                Number(
-                    product.id
-                ),
-
-            offer_id: null,
-
-            quantity:
                 quantity
-
-        });
-
-    }
-
-
-    return orderItems;
-
+            };
+        }
+    );
 }
 
 
-// ==========================================
-// إنشاء رسالة WhatsApp
-// ==========================================
+// ==========================================================
+// 9. بيانات العميل
+// ==========================================================
+
+function getCustomerData() {
+
+    return {
+
+        name:
+            document
+                .getElementById("customerName")
+                ?.value
+                .trim() || "",
+
+        phone:
+            document
+                .getElementById("customerPhone")
+                ?.value
+                .trim() || "",
+
+        address:
+            document
+                .getElementById("customerAddress")
+                ?.value
+                .trim() || "",
+
+        note:
+            document
+                .getElementById("customerNote")
+                ?.value
+                .trim() || ""
+    };
+}
+
+
+// ==========================================================
+// 10. التحقق من بيانات العميل
+// ==========================================================
+
+function validateCustomer(customer) {
+
+    if (!customer.name) {
+
+        return {
+            valid: false,
+            message: "يرجى إدخال الاسم."
+        };
+    }
+
+    if (!customer.phone) {
+
+        return {
+            valid: false,
+            message: "يرجى إدخال رقم الهاتف."
+        };
+    }
+
+    if (!customer.address) {
+
+        return {
+            valid: false,
+            message: "يرجى إدخال العنوان."
+        };
+    }
+
+    return {
+        valid: true,
+        message: ""
+    };
+}
+
+
+// ==========================================================
+// 11. بناء رسالة WhatsApp
+// ==========================================================
+// هذا المسار مستقل عن Telegram.
+// ==========================================================
 
 function buildWhatsAppMessage(
     orderNumber,
     total,
-    name,
-    phone,
-    address,
-    note
+    customer
 ) {
 
     let message =
+        `🛒 *طلب جديد | متجر اليُسرى*\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `🆔 *رقم الطلب:* ${orderNumber}\n\n` +
+        `👤 *بيانات العميل:*\n` +
+        `▪️ *الاسم:* ${customer.name}\n` +
+        `▪️ *الهاتف:* ${customer.phone}\n` +
+        `▪️ *العنوان:* ${customer.address}\n` +
+        `📝 *الملاحظات:* ${
+            customer.note || "لا توجد"
+        }\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `📦 *تفاصيل الطلب:*\n`;
 
-`متجر اليُسرى
+    getCartEntries().forEach(
+        ({
+            id,
+            quantity
+        }) => {
 
-━━━━━━━━━━━━━━━━━━
-
-طلب جديد
-
-رقم الطلب:
-${orderNumber}
-
-بيانات العميل
-
-الاسم:
-${name}
-
-رقم الهاتف:
-${phone}
-
-العنوان:
-${address}
-
-━━━━━━━━━━━━━━━━━━
-
-تفاصيل الطلب
-
-`;
-
-
-    // ======================================
-    // إضافة عناصر السلة
-    // ======================================
-
-    Object.keys(
-        checkoutCart
-    ).forEach(
-        id => {
-
-            const quantity =
-                Number(
-                    checkoutCart[id]
-                ) || 0;
-
-
-            if (
-                quantity <= 0
-            ) {
-
-                return;
-
-            }
-
-
-            // ==================================
+            // ================================================
             // عرض
-            // ==================================
+            // ================================================
 
-            if (
-                String(id).startsWith(
-                    "offer_"
-                )
-            ) {
-
-                const offerId =
-                    String(id).replace(
-                        "offer_",
-                        ""
-                    );
-
+            if (isOfferItem(id)) {
 
                 const offer =
-                    checkoutOffers.find(
-                        item =>
-                            String(
-                                item.id
-                            ) ===
-                            String(
-                                offerId
-                            )
+                    getOffer(
+                        getOfferId(id)
                     );
 
+                if (!offer) {
+                    return;
+                }
 
-                const offerName =
-                    offer?.name ||
-                    `العرض رقم ${offerId}`;
-
-
-                const offerPrice =
-                    Number(
-                        offer?.price
-                    ) || 0;
-
+                const price =
+                    Number(offer.price) || 0;
 
                 const subtotal =
-                    offerPrice *
-                    quantity;
-
+                    price * quantity;
 
                 message +=
-
-`
-${offerName}
-
-النوع: عرض
-الكمية: ${quantity}
-سعر العرض: ${offerPrice}$
-الإجمالي: ${subtotal}$
-`;
+                    `\n🎁 *${
+                        offer.name || "عرض"
+                    }* (عرض)\n` +
+                    `   الكمية: ${quantity} | ` +
+                    `السعر: ${
+                        formatPrice(price)
+                    }$ | ` +
+                    `الإجمالي: ${
+                        formatPrice(subtotal)
+                    }$\n`;
 
                 return;
-
             }
 
 
-            // ==================================
-            // منتج عادي
-            // ==================================
+            // ================================================
+            // منتج
+            // ================================================
 
             const product =
-                window.products.find(
-                    p =>
-                        p.id ===
-                        String(id)
-                );
-
+                getProduct(id);
 
             if (!product) {
-
                 return;
-
             }
 
-
             const price =
-                Number(
-                    product.price
-                ) || 0;
-
+                Number(product.price) || 0;
 
             const subtotal =
-                price *
-                quantity;
-
+                price * quantity;
 
             message +=
-
-`
-${product.name}
-
-الكمية: ${quantity}
-سعر القطعة: ${price}$
-الإجمالي: ${subtotal}$
-`;
-
+                `\n🔹 *${
+                    product.name || "منتج"
+                }*\n` +
+                `   الكمية: ${quantity} | ` +
+                `السعر: ${
+                    formatPrice(price)
+                }$ | ` +
+                `الإجمالي: ${
+                    formatPrice(subtotal)
+                }$\n`;
         }
     );
 
-
-    // ======================================
-    // المجموع النهائي
-    // ======================================
-
     message +=
-
-`
-━━━━━━━━━━━━━━━━━━
-
-المجموع الكلي:
-${total}$
-
-ملاحظات:
-${note || "لا توجد ملاحظات"}
-
-━━━━━━━━━━━━━━━━━━
-
-شكراً لاختياركم متجر اليُسرى
-
-نتمنى لكم تجربة موفقة.
-`;
-
+        `\n━━━━━━━━━━━━━━━━━━\n` +
+        `💰 *المجموع الكلي:* ${
+            formatPrice(total)
+        }$\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `شكراً لاختياركم متجر اليُسرى 🌟`;
 
     return message;
-
 }
 
 
-// ==========================================
-// انتظار تحميل المنتجات
-// ==========================================
+// ==========================================================
+// 12. التحكم بالأزرار
+// ==========================================================
+
+function setOrderButtonsDisabled(
+    disabled
+) {
+
+    if (confirmOrderBtn) {
+        confirmOrderBtn.disabled =
+            disabled;
+    }
+
+    if (whatsappOrderBtn) {
+        whatsappOrderBtn.disabled =
+            disabled;
+    }
+}
+
+
+// ==========================================================
+// 13. معالجة الطلب
+// ==========================================================
+
+async function processOrder(orderType) {
+
+    // ------------------------------------------------------
+    // منع الضغط المكرر
+    // ------------------------------------------------------
+
+    if (isOrderProcessing) {
+        return;
+    }
+
+
+    const activeBtn =
+        orderType === "whatsapp"
+            ? whatsappOrderBtn
+            : confirmOrderBtn;
+
+
+    if (!activeBtn) {
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // التحقق من السلة
+    // ------------------------------------------------------
+
+    if (
+        getCartEntries().length === 0
+    ) {
+
+        alert(
+            "السلة فارغة."
+        );
+
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // التحقق من تحميل المنتجات
+    // ------------------------------------------------------
+
+    if (
+        !Array.isArray(window.products) ||
+        window.products.length === 0
+    ) {
+
+        alert(
+            "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
+        );
+
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // بيانات العميل
+    // ------------------------------------------------------
+
+    const customer =
+        getCustomerData();
+
+
+    const validation =
+        validateCustomer(customer);
+
+
+    if (!validation.valid) {
+
+        alert(
+            validation.message
+        );
+
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // تجهيز عناصر الطلب
+    // ------------------------------------------------------
+
+    let orderItems;
+
+
+    try {
+
+        orderItems =
+            prepareOrderItems();
+
+    } catch (error) {
+
+        console.error(
+            "خطأ في تجهيز عناصر الطلب:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "تعذر تجهيز الطلب."
+        );
+
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // بدء العملية
+    // ------------------------------------------------------
+
+    isOrderProcessing =
+        true;
+
+    setOrderButtonsDisabled(
+        true
+    );
+
+
+    const originalText =
+        activeBtn.textContent;
+
+
+    activeBtn.textContent =
+        "جاري تأكيد الطلب...";
+
+
+    try {
+
+        // ==================================================
+        // 1. إنشاء الطلب
+        // ==================================================
+        //
+        // create_order هي المصدر الوحيد للحقيقة.
+        //
+        // السعر النهائي والمخزون يحسبان داخل PostgreSQL.
+        // ==================================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "create_order",
+            {
+                p_customer_name:
+                    customer.name,
+
+                p_customer_phone:
+                    customer.phone,
+
+                p_customer_address:
+                    customer.address,
+
+                p_customer_note:
+                    customer.note || null,
+
+                p_items:
+                    orderItems
+            }
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (
+            !data ||
+            data.success !== true
+        ) {
+
+            throw new Error(
+                "لم يتم إنشاء الطلب بشكل صحيح."
+            );
+        }
+
+
+        const orderId =
+            Number(data.order_id);
+
+
+        const orderNumber =
+            data.order_number;
+
+
+        const total =
+            Number(data.total) || 0;
+
+
+        if (
+            !Number.isInteger(orderId) ||
+            orderId <= 0 ||
+            !orderNumber
+        ) {
+
+            throw new Error(
+                "تم إنشاء الطلب ولكن بيانات الطلب الناتجة غير مكتملة."
+            );
+        }
+
+
+        // ==================================================
+        // 2. حفظ رقم الطلب
+        // ==================================================
+
+        localStorage.setItem(
+            "orderId",
+            String(orderNumber)
+        );
+
+
+        // ==================================================
+        // 3. مسار WhatsApp
+        // ==================================================
+        //
+        // WhatsApp يحتاج الرسالة التي سيقوم المستخدم
+        // بإرسالها يدويًا، لذلك يبقى هذا المسار مستقلًا.
+        // ==================================================
+
+        if (
+            orderType === "whatsapp"
+        ) {
+
+            const message =
+                buildWhatsAppMessage(
+                    orderNumber,
+                    total,
+                    customer
+                );
+
+
+            localStorage.setItem(
+                "whatsappMessage",
+                message
+            );
+
+
+            // الطلب أصبح مسجلًا بنجاح.
+            // إزالة السلة المحلية قبل الانتقال.
+
+            localStorage.removeItem(
+                "cart"
+            );
+
+
+            window.location.href =
+                "order-success.html";
+
+
+            return;
+        }
+
+
+        // ==================================================
+        // 4. إنهاء عملية العميل بعد نجاح create_order
+        // ==================================================
+        //
+        // Telegram يتم إرساله تلقائيًا من قاعدة البيانات
+        // عبر Trigger + pg_net بعد اكتمال عملية إنشاء الطلب.
+        //
+        // لا يوجد أي انتظار أو استدعاء Telegram من المتصفح.
+        // ==================================================
+
+        localStorage.removeItem(
+            "cart"
+        );
+
+
+        if (successModal) {
+
+            successModal.hidden =
+                false;
+
+        } else {
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        // --------------------------------------------------
+        // العملية انتهت من وجهة نظر العميل.
+        // --------------------------------------------------
+
+        isOrderProcessing =
+            false;
+
+        setOrderButtonsDisabled(
+            false
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "خطأ أثناء إنشاء الطلب:",
+            error
+        );
+
+
+        alert(
+            "تعذر تأكيد الطلب حالياً.\n\nيرجى المحاولة مرة أخرى."
+        );
+
+
+        isOrderProcessing =
+            false;
+
+
+        setOrderButtonsDisabled(
+            false
+        );
+
+
+        activeBtn.textContent =
+            originalText;
+    }
+}
+
+
+// ==========================================================
+// 14. ربط الأزرار
+// ==========================================================
+
+if (confirmOrderBtn) {
+
+    confirmOrderBtn.addEventListener(
+        "click",
+        () => processOrder("telegram")
+    );
+}
+
+
+if (whatsappOrderBtn) {
+
+    whatsappOrderBtn.addEventListener(
+        "click",
+        () => processOrder("whatsapp")
+    );
+}
+
+
+// ==========================================================
+// 15. تحميل المنتجات
+// ==========================================================
 
 document.addEventListener(
     "productsLoaded",
-    function() {
-
+    () => {
         displayCheckout();
-
     }
 );
 
 
-// ==========================================
-// بدء الصفحة
-// ==========================================
+// ==========================================================
+// 16. تحميل الصفحة
+// ==========================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    function() {
+    () => {
 
         loadCheckoutOffers();
 
+        displayCheckout();
     }
 );
 
 
-// ==========================================
-// إذا كانت المنتجات محملة مسبقًا
-// ==========================================
+// ==========================================================
+// 17. إذا كانت المنتجات محملة مسبقًا
+// ==========================================================
 
 if (
-    window.products &&
+    Array.isArray(window.products) &&
     window.products.length > 0
 ) {
 
     displayCheckout();
-
 }
 
 
-// ==========================================
-// زر تأكيد الطلب
-// ==========================================
-
-const confirmOrder =
-    document.getElementById(
-        "confirmOrder"
-    );
-
-
-if (confirmOrder) {
-
-    confirmOrder.addEventListener(
-        "click",
-        async function() {
-
-
-            // ==================================
-            // منع الضغط المتكرر
-            // ==================================
-
-            if (
-                confirmOrder.disabled
-            ) {
-
-                return;
-
-            }
-
-
-            // ==================================
-            // التحقق من تحميل المنتجات
-            // ==================================
-
-            if (
-                !window.products ||
-                window.products.length === 0
-            ) {
-
-                alert(
-                    "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
-                );
-
-                return;
-
-            }
-
-
-            // ==================================
-            // التحقق من السلة
-            // ==================================
-
-            if (
-                Object.keys(
-                    checkoutCart
-                ).length === 0
-            ) {
-
-                alert(
-                    "السلة فارغة."
-                );
-
-                return;
-
-            }
-
-
-            // ==================================
-            // بيانات العميل
-            // ==================================
-
-            const name =
-                document
-                    .getElementById(
-                        "customerName"
-                    )
-                    .value
-                    .trim();
-
-
-            const phone =
-                document
-                    .getElementById(
-                        "customerPhone"
-                    )
-                    .value
-                    .trim();
-
-
-            const address =
-                document
-                    .getElementById(
-                        "customerAddress"
-                    )
-                    .value
-                    .trim();
-
-
-            const note =
-                document
-                    .getElementById(
-                        "customerNote"
-                    )
-                    .value
-                    .trim();
-
-
-            // ==================================
-            // التحقق من البيانات
-            // ==================================
-
-            if (
-                !name ||
-                !phone ||
-                !address
-            ) {
-
-                alert(
-                    "يرجى تعبئة الاسم ورقم الهاتف والعنوان."
-                );
-
-                return;
-
-            }
-
-
-            // ==================================
-            // تجهيز عناصر الطلب
-            // ==================================
-
-            let orderItems;
-
-
-            try {
-
-                orderItems =
-                    prepareOrderItems();
-
-            } catch (error) {
-
-                console.error(
-                    "خطأ في تجهيز عناصر الطلب:",
-                    error
-                );
-
-
-                alert(
-                    error.message
-                );
-
-                return;
-
-            }
-
-
-            // ==================================
-            // تغيير حالة الزر
-            // ==================================
-
-            confirmOrder.disabled =
-                true;
-
-
-            const originalButtonText =
-                confirmOrder.textContent;
-
-
-            confirmOrder.textContent =
-                "جاري تأكيد الطلب...";
-
-
-            try {
-
-
-                // ==================================
-                // إنشاء الطلب في Supabase
-                // ==================================
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.rpc(
-                        "create_order",
-                        {
-
-                            p_customer_name:
-                                name,
-
-                            p_customer_phone:
-                                phone,
-
-                            p_customer_address:
-                                address,
-
-                            p_customer_note:
-                                note || null,
-
-                            p_items:
-                                orderItems
-
-                        }
-                    );
-
-
-                // ==================================
-                // التحقق من خطأ Supabase
-                // ==================================
-
-                if (error) {
-
-                    console.error(
-                        "Supabase order error:",
-                        {
-                            message:
-                                error?.message,
-
-                            details:
-                                error?.details,
-
-                            hint:
-                                error?.hint,
-
-                            code:
-                                error?.code
-                        }
-                    );
-
-
-                    throw error;
-
-                }
-
-
-                // ==================================
-                // التحقق من نتيجة الدالة
-                // ==================================
-
-                if (
-                    !data ||
-                    data.success !== true
-                ) {
-
-                    throw new Error(
-                        "لم يتم إنشاء الطلب بشكل صحيح."
-                    );
-
-                }
-
-
-                // ==================================
-                // بيانات الطلب
-                // ==================================
-
-                const orderNumber =
-                    data.order_number;
-
-
-                const total =
-                    Number(
-                        data.total
-                    ) || 0;
-
-
-                // ==================================
-                // رسالة WhatsApp
-                // ==================================
-
-                const message =
-                    buildWhatsAppMessage(
-                        orderNumber,
-                        total,
-                        name,
-                        phone,
-                        address,
-                        note
-                    );
-
-
-                // ==================================
-                // رقم WhatsApp
-                // ==================================
-
-                const whatsappNumber =
-                    "963988902539";
-
-
-                // المتغير محفوظ للاستخدام لاحقًا
-                // في صفحة نجاح الطلب
-
-                console.log(
-                    "WhatsApp:",
-                    whatsappNumber
-                );
-
-
-                // ==================================
-                // حفظ بيانات الطلب
-                // ==================================
-
-                localStorage.setItem(
-                    "orderId",
-                    orderNumber
-                );
-
-
-                localStorage.setItem(
-                    "whatsappMessage",
-                    message
-                );
-
-
-                // ==================================
-                // الانتقال إلى صفحة نجاح الطلب
-                // ==================================
-
-                window.location.href =
-                    "order-success.html";
-
-
-            } catch (error) {
-
-
-                // ==================================
-                // فشل إنشاء الطلب
-                // ==================================
-
-                console.error(
-                    "خطأ أثناء إنشاء الطلب:",
-                    error
-                );
-
-
-                alert(
-                    "تعذر تأكيد الطلب حالياً.\n\n" +
-                    "يرجى المحاولة مرة أخرى."
-                );
-
-
-                confirmOrder.disabled =
-                    false;
-
-
-                confirmOrder.textContent =
-                    originalButtonText;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ==========================================
-// حقول العميل
-// ==========================================
+// ==========================================================
+// 18. حفظ بيانات العميل
+// ==========================================================
 
 const customerFields = [
-
     "customerName",
-
     "customerPhone",
-
     "customerAddress",
-
     "customerNote"
-
 ];
 
 
-// ==========================================
-// حفظ البيانات أثناء الكتابة
-// ==========================================
-
 customerFields.forEach(
     id => {
 
         const field =
-            document.getElementById(
-                id
-            );
+            document.getElementById(id);
 
-
-        if (field) {
-
-            field.addEventListener(
-                "input",
-                function() {
-
-                    localStorage.setItem(
-                        id,
-                        field.value
-                    );
-
-                }
-            );
-
+        if (!field) {
+            return;
         }
 
-    }
-);
 
-
-// ==========================================
-// استرجاع البيانات المحفوظة
-// ==========================================
-
-customerFields.forEach(
-    id => {
-
-        const savedData =
-            localStorage.getItem(
-                id
-            );
-
-
-        const field =
-            document.getElementById(
-                id
-            );
+        const savedValue =
+            localStorage.getItem(id);
 
 
         if (
-            savedData !== null &&
-            field
+            savedValue !== null
         ) {
 
             field.value =
-                savedData;
-
+                savedValue;
         }
 
+
+        field.addEventListener(
+            "input",
+            () => {
+
+                localStorage.setItem(
+                    id,
+                    field.value
+                );
+            }
+        );
     }
 );
+
+
+// ==========================================================
+// 19. زر العودة للرئيسية
+// ==========================================================
+
+if (backToHomeBtn) {
+
+    backToHomeBtn.addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "index.html";
+        }
+    );
+}

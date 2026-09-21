@@ -2,240 +2,109 @@
 <html lang="ar" dir="rtl">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سلة المشتريات | AL YOSRA STORE</title>
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AL YOSRA STORE | السلة</title>
-
-
-<link rel="stylesheet" href="css/style.css">
-
-<link rel="stylesheet" href="css/cart.css">
-
-
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
 </head>
 
+<body class="cart-body">
 
-<body>
-
-
-
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 <nav class="navbar">
-
-    <button
-        class="menu-toggle"
-        id="menuToggle"
-        aria-label="فتح القائمة"
-        type="button"
-    >
+    <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة" type="button">
         ☰
     </button>
 
-
-    
-
-
     <div class="nav-logo">
-
-        <span class="nav-logo-ar">
-            متجر اليُسرى
-        </span>
-
-     
+        <span class="nav-logo-ar">متجر اليُسرى</span>
     </div>
 
-
     <ul class="nav-links">
-
-        <li>
-            <a href="index.html">
-                الرئيسية
-            </a>
-        </li>
-
-        <li>
-            <a href="products.html">
-                المنتجات
-            </a>
-        </li>
-
-        <li>
-            <a href="offers.html">
-                العروض
-            </a>
-        </li>
-
-        <li>
-            <a class="active" href="cart.html">
-                السلة
-            </a>
-        </li>
-
-        <li>
-            <a href="contact.html">
-                تواصل معنا
-            </a>
-        </li>
-
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="products.html">المنتجات</a></li>
+        <li><a href="offers.html">العروض</a></li>
+        <li><a class="active" href="cart.html">السلة</a></li>
+        <li><a href="contact.html">تواصل معنا</a></li>
     </ul>
 
-
-    <a href="cart.html" class="cart-icon">
-
-        <svg
-            class="cart-svg"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        >
-
+    <a href="cart.html" class="cart-icon" aria-label="السلة">
+        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 6h15l-2 8H8L6 6Z"></path>
-
             <path d="M6 6L5 3H2"></path>
-
             <circle cx="9" cy="20" r="1.5"></circle>
-
             <circle cx="18" cy="20" r="1.5"></circle>
-
         </svg>
-
-        <span id="cartCount">
-            0
-        </span>
-
+        <span id="cartCount">0</span>
     </a>
-
 </nav>
 
 <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
-
-    <a href="index.html">
-        الرئيسية
-    </a>
-
-    <a href="products.html">
-        المنتجات
-    </a>
-
-    <a href="offers.html">
-        العروض
-    </a>
-
-    <a class="active" href="cart.html">
-        السلة
-    </a>
-
-    <a href="contact.html">
-        تواصل معنا
-    </a>
-
+    <a href="index.html">الرئيسية</a>
+    <a href="products.html">المنتجات</a>
+    <a href="offers.html">العروض</a>
+    <a class="active" href="cart.html">السلة</a>
+    <a href="contact.html">تواصل معنا</a>
 </nav>
 
 <div class="side-menu-overlay" id="sideMenuOverlay"></div>
-
-<aside class="side-menu" id="sideMenu">
-
+<aside class="side-menu" id="sideMenu" aria-hidden="true">
     <div class="side-menu-header">
-
         <span>القائمة</span>
-
-        <button
-            class="side-menu-close"
-            id="sideMenuClose"
-            type="button"
-            aria-label="إغلاق القائمة"
-        >
-            ×
-        </button>
-
+        <button class="side-menu-close" id="sideMenuClose" type="button" aria-label="إغلاق القائمة">×</button>
     </div>
-
     <ul class="side-menu-links">
-
-        <li>
-            <a href="index.html">الرئيسية</a>
-        </li>
-
-        <li>
-            <a href="products.html">المنتجات</a>
-        </li>
-
-        <li>
-            <a class="active" href="cart.html">السلة</a>
-        </li>
-
-        <li>
-            <a href="contact.html">تواصل معنا</a>
-        </li>
-
-      <li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
-
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="products.html">المنتجات</a></li>
+        <li><a href="offers.html">العروض</a></li>
+        <li><a class="active" href="cart.html">السلة</a></li>
+        <li><a href="contact.html">تواصل معنا</a></li>
     </ul>
-
 </aside>
 
-
+<!-- =====================================================
+     MAIN CART PAGE
+===================================================== -->
 <main class="cart-page">
+    <div class="cart-box-page">
+        
+        <div class="cart-header-section">
+            <span class="cart-eyebrow">AL YOSRA SHOPPING CART</span>
+            <h1>سلة المشتريات</h1>
+            <p>راجع المنتجات والمعدات التي اخترتها بعناية قبل تأكيد طلبك.</p>
+        </div>
 
+        <!-- حاوية المنتجات -->
+        <div id="cartContainer" class="cart-grid-container">
+            <!-- سيتم حقن المنتجات برمجياً هنا دون أي طلبات لقاعدة البيانات -->
+        </div>
 
-<div class="cart-box-page">
+        <!-- ملخص السلة وزر الإتمام -->
+        <div class="cart-summary-footer">
+            <div class="cart-total-box">
+                <span>المجموع الكلي:</span>
+                <strong id="cartTotal">0.00 $</strong>
+            </div>
 
+            <div class="cart-actions-box">
+                <a href="products.html" class="continue-shopping-btn">متابعة التسوق</a>
+                <a href="checkout.html" class="checkout-btn">إتمام الطلب بأمان</a>
+            </div>
+        </div>
 
-<h1>
-سلة المشتريات
-</h1>
-
-
-<p>
-راجع المنتجات التي اخترتها قبل تأكيد الطلب.
-</p>
-
-
-
-<div id="cartContainer">
-
-
-<!-- المنتجات ستظهر هنا -->
-
-
-</div>
-
-
-
-
-<div class="cart-total">
-
-المجموع:
-<span id="cartTotal">
-0$
-</span>
-
-</div>
-
-
-
-<a href="checkout.html" class="checkout-btn">
-إتمام الطلب
-</a>
-
-
-
-</div>
-
-
+    </div>
 </main>
 
+<!-- شاشة الإشعارات السريعة (Toast) -->
+<div id="cartToast" class="cart-toast" aria-live="polite" role="status"></div>
 
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/products.js"></script>
@@ -244,54 +113,30 @@
 <script src="js/navbar.js"></script>
 
 <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const sideMenu = document.getElementById("sideMenu");
+    const sideMenuClose = document.getElementById("sideMenuClose");
+    const sideMenuOverlay = document.getElementById("sideMenuOverlay");
 
-    const menuToggle =
-        document.getElementById("menuToggle");
-
-    const sideMenu =
-        document.getElementById("sideMenu");
-
-    const sideMenuClose =
-        document.getElementById("sideMenuClose");
-
-    const sideMenuOverlay =
-        document.getElementById("sideMenuOverlay");
-
-
-    menuToggle.addEventListener(
-        "click",
-        () => {
-
+    function openMenu() {
+        if(sideMenu && sideMenuOverlay) {
             sideMenu.classList.add("open");
             sideMenuOverlay.classList.add("open");
-
+            sideMenu.setAttribute("aria-hidden", "false");
         }
-    );
-
-
-    sideMenuClose.addEventListener(
-        "click",
-        () => {
-
+    }
+    function closeMenu() {
+        if(sideMenu && sideMenuOverlay) {
             sideMenu.classList.remove("open");
             sideMenuOverlay.classList.remove("open");
-
+            sideMenu.setAttribute("aria-hidden", "true");
         }
-    );
+    }
 
-
-    sideMenuOverlay.addEventListener(
-        "click",
-        () => {
-
-            sideMenu.classList.remove("open");
-            sideMenuOverlay.classList.remove("open");
-
-        }
-    );
-
+    if(menuToggle) menuToggle.addEventListener("click", openMenu);
+    if(sideMenuClose) sideMenuClose.addEventListener("click", closeMenu);
+    if(sideMenuOverlay) sideMenuOverlay.addEventListener("click", closeMenu);
 </script>
 
 </body>
-
 </html>

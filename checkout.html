@@ -2,101 +2,194 @@
 <html lang="ar" dir="rtl">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الطلب | متجر اليُسرى</title>
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>إتمام الطلب</title>
-
-<link rel="stylesheet" href="../css/checkout.css">
-
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/checkout.css">
 </head>
 
+<body class="checkout-body">
 
-<body>
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+<nav class="navbar">
+    <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة" type="button">
+        ☰
+    </button>
 
-
-<div class="checkout-page">
-
-
-<div class="checkout-box">
-
-
-<h1>
-إتمام الطلب
-</h1>
-<div class="checkout-actions">
-
-    <a href="cart.html">
-        العودة إلى السلة
-    </a>
-
-
-    <a href="products.html">
-        متابعة التسوق
-    </a>
-
-</div>
-
-
-<div class="order-summary-box">
-
-    <h2>
-        ملخص الطلب
-    </h2>
-
-    <div id="orderSummary">
-     
-
+    <div class="nav-logo">
+        <span class="nav-logo-ar">متجر اليُسرى</span>
     </div>
 
+    <ul class="nav-links">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="products.html">المنتجات</a></li>
+        <li><a href="offers.html">العروض</a></li>
+        <li><a href="cart.html">السلة</a></li>
+        <li><a href="contact.html">تواصل معنا</a></li>
+    </ul>
+
+    <a href="cart.html" class="cart-icon" aria-label="السلة">
+        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6h15l-2 8H8L6 6Z"></path>
+            <path d="M6 6L5 3H2"></path>
+            <circle cx="9" cy="20" r="1.5"></circle>
+            <circle cx="18" cy="20" r="1.5"></circle>
+        </svg>
+        <span id="cartCount">0</span>
+    </a>
+</nav>
+
+<nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+    <a href="index.html">الرئيسية</a>
+    <a href="products.html">المنتجات</a>
+    <a href="offers.html">العروض</a>
+    <a href="cart.html">السلة</a>
+    <a href="contact.html">تواصل معنا</a>
+</nav>
+
+<div class="side-menu-overlay" id="sideMenuOverlay"></div>
+<aside class="side-menu" id="sideMenu" aria-hidden="true">
+    <div class="side-menu-header">
+        <span>القائمة</span>
+        <button class="side-menu-close" id="sideMenuClose" type="button" aria-label="إغلاق القائمة">×</button>
+    </div>
+    <ul class="side-menu-links">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="products.html">المنتجات</a></li>
+        <li><a href="offers.html">العروض</a></li>
+        <li><a href="cart.html">السلة</a></li>
+        <li><a href="contact.html">تواصل معنا</a></li>
+    </ul>
+</aside>
+
+<!-- =====================================================
+     MAIN CHECKOUT PAGE
+===================================================== -->
+<main class="checkout-page">
+    <div class="checkout-box">
+
+        <div class="checkout-header-section">
+            <span class="checkout-eyebrow">SECURE CHECKOUT</span>
+            <h1>إتمام الطلب</h1>
+            <p>أدخل بياناتك لتأكيد الطلب واختيار طريقة الإرسال المناسبة.</p>
+        </div>
+
+        <div class="checkout-actions-top">
+            <a href="cart.html" class="checkout-nav-link">← العودة إلى السلة</a>
+            <a href="products.html" class="checkout-nav-link">متابعة التسوق</a>
+        </div>
+
+        <!-- ملخص الطلب -->
+        <div class="order-summary-box">
+            <h2>ملخص الطلب</h2>
+            <div id="orderSummary">
+                <!-- يتم تعبئته برمجياً من السلة المحلية -->
+            </div>
+            <div class="checkout-total-row">
+                <span>المجموع النهائي:</span>
+                <strong id="checkoutFinalTotal">0.00 $</strong>
+            </div>
+        </div>
+
+   <!-- ملاحظة طرق الدفع -->
+        <div class="checkout-payment-note" role="note">
+            <span class="checkout-payment-note-icon">💳</span>
+            <p>
+                <strong>ملاحظة:</strong>
+                نقبل الدفع بالدولار الأمريكي أو الليرة السورية أو عبر تطبيق شام كاش عند التسليم.
+            </p>
+        </div>
+
+        <!-- بيانات العميل -->
+        <div class="customer-box">
+            <h2>بيانات العميل</h2>
+            
+            <div class="checkout-form-group">
+                <label for="customerName">الاسم الكامل</label>
+                <input type="text" id="customerName" placeholder="أدخل اسمك الثلاثي" required>
+            </div>
+
+            <div class="checkout-form-group">
+                <label for="customerPhone">رقم الهاتف</label>
+                <input type="tel" id="customerPhone" placeholder="09xxxxxxxx" dir="rtl" required>
+            </div>
+
+            <div class="checkout-form-group">
+                <label for="customerAddress">اسم الجامعة / العنوان</label>
+                <input type="text" id="customerAddress" placeholder="مثال: جامعة دمشق - سنة ثالثة" required>
+            </div>
+
+            <div class="checkout-form-group">
+                <label for="customerNote">ملاحظات إضافية (اختياري)</label>
+                <textarea id="customerNote" placeholder="أي تفاصيل خاصة بتوصيل الطلب..."></textarea>
+            </div>
+        </div>
+
+        <!-- أزرار التأكيد الثنائية -->
+        <div class="checkout-submit-actions">
+            <button id="confirmOrderBtn" class="primary-confirm-btn" type="button">
+                تأكيد الطلب المباشر 
+            </button>
+            <button id="whatsappOrderBtn" class="whatsapp-confirm-btn" type="button">
+                تأكيد الطلب عبر واتساب 💬
+            </button>
+        </div>
+
+    </div>
+</main>
+
+<!-- شاشة النجاح المنبثقة (Modal) عند التأكيد المباشر -->
+<div id="successModal" class="checkout-modal" hidden>
+    <div class="checkout-modal-backdrop"></div>
+    <div class="checkout-modal-content">
+        <div class="success-icon">✓</div>
+        <h2>تم تأكيد طلبك بنجاح!</h2>
+        <p>شكراً لثقتك بمتجر اليُسرى. تم تسجيل طلبك وسنتواصل معك في أقرب وقت لتجهيزه.</p>
+        <button type="button" id="backToHomeBtn" class="checkout-modal-btn">العودة إلى الرئيسية</button>
+    </div>
 </div>
 
+<!-- شاشة الإشعارات (Toast) -->
+<div id="checkoutToast" class="checkout-toast" aria-live="polite" role="status"></div>
 
-<div class="customer-box">
-
-    <h2>
-        بيانات العميل
-    </h2>
-
-
-<input type="text" id="customerName" placeholder="الاسم الكامل">
-
-
-<input 
-type="tel" 
-id="customerPhone" 
-placeholder="رقم الهاتف"
-dir="rtl">
-
-
-<input type="text" id="customerAddress" placeholder="اسم الجامعة">
-
-
-<textarea id="customerNote" placeholder="ملاحظات الطلب"></textarea>
-
-</div>
-
-
-<button id="confirmOrder">
-تأكيد الطلب
-</button>
-
-
-
-</div>
-
-
-</div>
-
-
-
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/products.js"></script>
+<script src="js/cart-count.js"></script>
 <script src="js/checkout.js"></script>
 
-</body>
+<script>
+    const menuToggle = document.getElementById("menuToggle");
+    const sideMenu = document.getElementById("sideMenu");
+    const sideMenuClose = document.getElementById("sideMenuClose");
+    const sideMenuOverlay = document.getElementById("sideMenuOverlay");
 
+    function openMenu() {
+        if(sideMenu && sideMenuOverlay) {
+            sideMenu.classList.add("open");
+            sideMenuOverlay.classList.add("open");
+            sideMenu.setAttribute("aria-hidden", "false");
+        }
+    }
+    function closeMenu() {
+        if(sideMenu && sideMenuOverlay) {
+            sideMenu.classList.remove("open");
+            sideMenuOverlay.classList.remove("open");
+            sideMenu.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    if(menuToggle) menuToggle.addEventListener("click", openMenu);
+    if(sideMenuClose) sideMenuClose.addEventListener("click", closeMenu);
+    if(sideMenuOverlay) sideMenuOverlay.addEventListener("click", closeMenu);
+</script>
+
+</body>
 </html>
