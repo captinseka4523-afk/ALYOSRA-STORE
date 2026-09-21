@@ -10,6 +10,11 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta
+        name="description"
+        content="تفاصيل عروض متجر اليُسرى وأهم المنتجات المشمولة بكل عرض."
+    >
+
     <title>تفاصيل العرض - متجر اليُسرى</title>
 
 
@@ -37,62 +42,90 @@
 <main class="offer-details-page">
 
 
-    <!-- =========================
-         أزرار التنقل
-    ========================== -->
+    <!-- =========================================
+         شريط التنقل الخاص بالصفحة
+    ========================================== -->
 
     <div class="offer-details-navigation">
 
         <a
             href="offers.html"
-            class="offer-back-button"
+            class="offer-navigation-button offer-navigation-back"
         >
-            ← العودة إلى العروض
+            <span class="offer-navigation-icon">←</span>
+            <span>العودة إلى العروض</span>
         </a>
 
 
         <a
             href="products.html"
-            class="offer-back-button"
+            class="offer-navigation-button"
         >
-            تصفح المنتجات
+            <span class="offer-navigation-icon">⌕</span>
+            <span>تصفح المنتجات</span>
         </a>
 
 
         <a
             href="cart.html"
-            class="offer-go-cart-button"
+            class="offer-navigation-button offer-navigation-cart"
         >
-            🛒 الذهاب إلى السلة
+            <span class="offer-navigation-icon">🛒</span>
+            <span>الذهاب إلى السلة</span>
         </a>
 
     </div>
 
 
 
-    <!-- =========================
-         تفاصيل العرض
-    ========================== -->
+    <!-- =========================================
+         المحتوى الرئيسي
+    ========================================== -->
 
-    <div id="offerDetails">
+    <section
+        id="offerDetails"
+        class="offer-details-container"
+        aria-live="polite"
+    >
 
-        جاري تحميل تفاصيل العرض...
+        <div class="offer-details-loading">
 
-    </div>
+            <div class="offer-loading-shimmer offer-loading-image"></div>
+
+            <div class="offer-loading-content">
+
+                <div class="offer-loading-line offer-loading-small"></div>
+
+                <div class="offer-loading-line offer-loading-title"></div>
+
+                <div class="offer-loading-line"></div>
+
+                <div class="offer-loading-line offer-loading-medium"></div>
+
+                <div class="offer-loading-price"></div>
+
+                <div class="offer-loading-button"></div>
+
+            </div>
+
+        </div>
+
+    </section>
 
 
 </main>
 
 
 
-<!-- =========================
-     رسالة نجاح الإضافة
-========================== -->
+<!-- =========================================
+     رسالة نجاح الإضافة إلى السلة
+========================================== -->
 
 <div
     id="offerToast"
     class="offer-toast"
     aria-live="polite"
+    role="status"
 >
 
     <span class="offer-toast-icon">
@@ -107,6 +140,10 @@
 
 
 
+<!-- =========================================
+     Supabase
+========================================== -->
+
 <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ></script>
@@ -115,6 +152,8 @@
 <script src="js/supabase-client.js"></script>
 
 <script src="js/cart-count.js"></script>
+
+
 
 
 
@@ -144,7 +183,7 @@
 
 
     // ==========================================
-    // قراءة رقم العرض
+    // قراءة رقم العرض من الرابط
     // ==========================================
 
     const params =
@@ -159,7 +198,7 @@
 
 
     // ==========================================
-    // إظهار رسالة نجاح غير معطِّلة
+    // رسالة النجاح
     // ==========================================
 
     let toastTimer;
@@ -214,8 +253,32 @@
 
         if (!offerId) {
 
-            offerDetails.textContent =
-                "العرض غير موجود.";
+            offerDetails.innerHTML = `
+
+                <div class="offer-details-state">
+
+                    <div class="offer-state-icon">
+                        !
+                    </div>
+
+                    <h1>
+                        العرض غير موجود
+                    </h1>
+
+                    <p>
+                        لم يتم العثور على العرض المطلوب.
+                    </p>
+
+                    <a
+                        href="offers.html"
+                        class="offer-state-button"
+                    >
+                        العودة إلى العروض
+                    </a>
+
+                </div>
+
+            `;
 
             return;
 
@@ -276,8 +339,32 @@
 
             if (!data) {
 
-                offerDetails.textContent =
-                    "العرض غير موجود.";
+                offerDetails.innerHTML = `
+
+                    <div class="offer-details-state">
+
+                        <div class="offer-state-icon">
+                            !
+                        </div>
+
+                        <h1>
+                            العرض غير موجود
+                        </h1>
+
+                        <p>
+                            قد يكون العرض انتهى أو لم يعد متاحًا.
+                        </p>
+
+                        <a
+                            href="offers.html"
+                            class="offer-state-button"
+                        >
+                            استكشاف العروض
+                        </a>
+
+                    </div>
+
+                `;
 
                 return;
 
@@ -298,11 +385,16 @@
                 products
 
                     .map(
-                        (item) => `
+                        (item, index) => `
 
-                            <div
+                            <article
                                 class="offer-detail-product"
                             >
+
+                                <div class="offer-product-number">
+                                    ${String(index + 1).padStart(2, "0")}
+                                </div>
+
 
                                 <div
                                     class="offer-product-detail-info"
@@ -310,18 +402,47 @@
 
                                     ${
                                         item.products?.main_image
+
                                             ? `
-                                                <img
-                                                    src="${item.products.main_image}"
-                                                    alt="${item.products?.name || "منتج"}"
-                                                    class="offer-product-detail-image"
+
+                                                <div
+                                                    class="offer-product-image-wrap"
                                                 >
+
+                                                    <img
+                                                        src="${item.products.main_image}"
+                                                        alt="${item.products?.name || "منتج"}"
+                                                        class="offer-product-detail-image"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                    >
+
+                                                </div>
+
                                               `
-                                            : ""
+
+                                            : `
+
+                                                <div
+                                                    class="offer-product-image-wrap offer-product-image-empty"
+                                                >
+                                                    <span>اليُسرى</span>
+                                                </div>
+
+                                              `
                                     }
 
 
-                                    <div>
+                                    <div
+                                        class="offer-product-text"
+                                    >
+
+                                        <span
+                                            class="offer-product-label"
+                                        >
+                                            منتج ضمن العرض
+                                        </span>
+
 
                                         <strong>
                                             ${
@@ -333,11 +454,15 @@
 
                                         ${
                                             item.products?.description
+
                                                 ? `
+
                                                     <p>
                                                         ${item.products.description}
                                                     </p>
+
                                                   `
+
                                                 : ""
                                         }
 
@@ -346,14 +471,21 @@
                                 </div>
 
 
-                                <span
+                                <div
                                     class="offer-product-quantity"
                                 >
-                                    الكمية:
-                                    ${item.quantity}
-                                </span>
 
-                            </div>
+                                    <span>
+                                        الكمية
+                                    </span>
+
+                                    <strong>
+                                        ${item.quantity}
+                                    </strong>
+
+                                </div>
+
+                            </article>
 
                         `
                     )
@@ -368,61 +500,93 @@
 
             offerDetails.innerHTML = `
 
-                <div class="offer-details-box">
+                <article class="offer-details-shell">
 
 
-                    <div class="offer-details-main">
+                    <!-- =================================
+                         Hero / المعلومات الرئيسية
+                    ================================== -->
 
+                    <section
+                        class="offer-details-hero"
+                    >
 
-                        <!-- =====================
-                             صورة العرض
-                        ====================== -->
 
                         <div
-                            class="offer-details-media"
+                            class="offer-details-visual"
                         >
 
-                            ${
-                                data.image
+                            <div
+                                class="offer-visual-frame"
+                            >
 
-                                    ? `
+                                <div
+                                    class="offer-visual-glow"
+                                ></div>
 
-                                        <img
-                                            src="${data.image}"
-                                            alt="${data.name}"
-                                            class="offer-detail-image"
-                                        >
 
-                                      `
+                                ${
+                                    data.image
 
-                                    : `
+                                        ? `
 
-                                        <div
-                                            class="offer-no-image"
-                                        >
-                                            صورة العرض
-                                        </div>
+                                            <img
+                                                src="${data.image}"
+                                                alt="${data.name}"
+                                                class="offer-detail-image"
+                                                fetchpriority="high"
+                                                decoding="async"
+                                            >
 
-                                      `
-                            }
+                                          `
+
+                                        : `
+
+                                            <div
+                                                class="offer-no-image"
+                                            >
+                                                <span>
+                                                    متجر اليُسرى
+                                                </span>
+                                            </div>
+
+                                          `
+                                }
+
+
+                                <div
+                                    class="offer-image-badge"
+                                >
+                                    عرض خاص
+                                </div>
+
+                            </div>
 
                         </div>
 
 
 
-                        <!-- =====================
-                             معلومات العرض
-                        ====================== -->
-
                         <div
                             class="offer-details-info"
                         >
+
+                            <div
+                                class="offer-details-eyebrow"
+                            >
+
+                                <span class="offer-eyebrow-line"></span>
+
+                                <span>
+                                    عرض متجر اليُسرى
+                                </span>
+
+                            </div>
 
 
                             <span
                                 class="offer-details-label"
                             >
-                                عرض خاص
+                                عرض مميز
                             </span>
 
 
@@ -431,31 +595,36 @@
                             </h1>
 
 
-                            ${
-                                data.description
-
-                                    ? `
-
-                                        <p
-                                            class="offer-detail-description"
-                                        >
-                                            ${data.description}
-                                        </p>
-
-                                      `
-
-                                    : ""
-                            }
+                            <div
+                                class="offer-detail-divider"
+                            ></div>
 
 
 
                             <div
-                                class="offer-detail-price"
+                                class="offer-price-area"
                             >
 
-                                $${Number(
-                                    data.price
-                                ).toFixed(2)}
+                                <span
+                                    class="offer-price-label"
+                                >
+                                    سعر العرض
+                                </span>
+
+
+                                <div
+                                    class="offer-detail-price"
+                                >
+
+                                    <span class="offer-price-currency">
+                                        $
+                                    </span>
+
+                                    <span>
+                                        ${Number(data.price).toFixed(2)}
+                                    </span>
+
+                                </div>
 
                             </div>
 
@@ -467,24 +636,115 @@
                                 data-offer-id="${data.id}"
                             >
 
-                                🛒 أضف العرض إلى السلة
+                                <span class="offer-cart-button-icon">
+                                    🛒
+                                </span>
+
+                                <span>
+                                    أضف العرض إلى السلة
+                                </span>
 
                             </button>
-
 
 
                         </div>
 
 
+                    </section>
+
+
+
+                    <!-- =================================
+                         وصف العرض
+                    ================================== -->
+
+                    ${
+                        data.description
+
+                            ? `
+
+                                <section
+                                    class="offer-description-section"
+                                >
+
+                                    <div
+                                        class="offer-description-heading"
+                                    >
+
+                                        <div>
+
+                                            <span
+                                                class="offer-description-overline"
+                                            >
+                                                تفاصيل العرض
+                                            </span>
+
+                                            <h2>
+                                                عن هذا العرض
+                                            </h2>
+
+                                        </div>
+
+
+                                        <span
+                                            class="offer-description-mark"
+                                        >
+                                            DESCRIPTION
+                                        </span>
+
+                                    </div>
+
+
+                                    <div
+                                        class="offer-description-box"
+                                    >
+
+                                        <div
+                                            class="offer-description-scroll"
+                                        >
+
+                                            <p>
+                                                ${data.description}
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+                              `
+
+                            : ""
+                    }
+
+
+
+                    <!-- =================================
+                         فاصل زخرفي
+                    ================================== -->
+
+                    <div
+                        class="offer-details-section-divider"
+                    >
+
+                        <span></span>
+
+                        <div class="offer-divider-diamond">
+                            ◆
+                        </div>
+
+                        <span></span>
+
                     </div>
 
 
 
-                    <!-- =====================
+                    <!-- =================================
                          محتويات العرض
-                    ====================== -->
+                    ================================== -->
 
-                    <div
+                    <section
                         class="offer-detail-products"
                     >
 
@@ -495,27 +755,40 @@
 
                             <div>
 
-                                <span>
-                                    محتويات العرض
+                                <span
+                                    class="offer-products-overline"
+                                >
+                                    مكونات العرض
                                 </span>
 
                                 <h2>
                                     ما الذي يتضمنه هذا العرض؟
                                 </h2>
 
+                                <p>
+                                    منتجات مختارة بعناية ضمن عرض واحد.
+                                </p>
+
                             </div>
 
 
-                            <span
+                            <div
                                 class="offer-products-count"
                             >
-                                ${products.length}
-                                ${
-                                    products.length === 1
-                                        ? "منتج"
-                                        : "منتجات"
-                                }
-                            </span>
+
+                                <strong>
+                                    ${products.length}
+                                </strong>
+
+                                <span>
+                                    ${
+                                        products.length === 1
+                                            ? "منتج"
+                                            : "منتجات"
+                                    }
+                                </span>
+
+                            </div>
 
                         </div>
 
@@ -526,21 +799,30 @@
                         >
 
                             ${
-                                productsHTML ||
+                                productsHTML
+
+                                    ||
+
                                 `
-                                    <p>
-                                        لا توجد منتجات ضمن هذا العرض.
-                                    </p>
+
+                                    <div
+                                        class="offer-products-empty"
+                                    >
+
+                                        لا توجد منتجات ضمن هذا العرض حاليًا.
+
+                                    </div>
+
                                 `
                             }
 
                         </div>
 
 
-                    </div>
+                    </section>
 
 
-                </div>
+                </article>
 
             `;
 
@@ -553,8 +835,33 @@
             );
 
 
-            offerDetails.textContent =
-                "حدث خطأ أثناء تحميل تفاصيل العرض.";
+            offerDetails.innerHTML = `
+
+                <div class="offer-details-state">
+
+                    <div class="offer-state-icon">
+                        !
+                    </div>
+
+                    <h1>
+                        تعذر تحميل العرض
+                    </h1>
+
+                    <p>
+                        حدث خطأ أثناء تحميل تفاصيل العرض. يرجى المحاولة مرة أخرى.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="offer-state-button"
+                        onclick="loadOfferDetails()"
+                    >
+                        المحاولة مرة أخرى
+                    </button>
+
+                </div>
+
+            `;
 
         }
 
@@ -564,17 +871,6 @@
 
     // ==========================================
     // إضافة العرض إلى السلة
-    // ==========================================
-    //
-    // مهم:
-    // كمية العرض تعتمد فقط على:
-    //
-    // offers.quantity
-    //
-    // ولا تعتمد على:
-    //
-    // products.quantity
-    //
     // ==========================================
 
     document.addEventListener(
@@ -614,11 +910,20 @@
 
 
             const originalText =
-                button.textContent;
+                button.innerHTML;
 
 
-            button.textContent =
-                "جاري التحقق...";
+            button.innerHTML = `
+
+                <span class="offer-cart-button-icon">
+                    …
+                </span>
+
+                <span>
+                    جاري التحقق...
+                </span>
+
+            `;
 
 
             try {
@@ -703,7 +1008,7 @@
 
 
                 // ==================================
-                // التحقق من مخزون العرض
+                // التحقق من المخزون
                 // ==================================
 
                 if (
@@ -734,7 +1039,7 @@
 
 
                 // ==================================
-                // إضافة العرض مرة واحدة
+                // إضافة العرض
                 // ==================================
 
                 cart[cartKey] =
@@ -774,9 +1079,19 @@
                     (currentQuantity + 1);
 
 
-                showOfferToast(
-                    `تمت إضافة العرض إلى السلة. يمكنك إضافة ${remaining} عرض إضافي.`
-                );
+                if (remaining > 0) {
+
+                    showOfferToast(
+                        `تمت إضافة العرض إلى السلة. يمكنك إضافة ${remaining} عرض إضافي.`
+                    );
+
+                } else {
+
+                    showOfferToast(
+                        "تمت إضافة العرض إلى السلة."
+                    );
+
+                }
 
 
             } catch (error) {
@@ -802,7 +1117,7 @@
                     false;
 
 
-                button.textContent =
+                button.innerHTML =
                     originalText;
 
             }

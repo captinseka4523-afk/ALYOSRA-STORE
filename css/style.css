@@ -2491,50 +2491,7 @@ border-top: 40px solid #cacbcb;
 }
 
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
 
-@media (prefers-reduced-motion:reduce) {
-
-    html {
-        scroll-behavior:
-            auto;
-    }
-
-
-    *,
-    *::before,
-    *::after {
-        animation-duration:
-            .01ms !important;
-
-        animation-iteration-count:
-            1 !important;
-
-        transition-duration:
-            .01ms !important;
-    }
-
-
-    .reveal-section {
-        opacity:
-            1;
-
-        transform:
-            none;
-    }
-
-
-    .reveal-child {
-        opacity:
-            1;
-
-        transform:
-            none;
-    }
-
-}
 
 
 
@@ -3002,23 +2959,7 @@ border-top: 40px solid #cacbcb;
 }
 
 
-/* =========================================================
-   REDUCED MOTION
-   ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-
- 
-    .hero-content {
-        animation: none;
-        opacity: 1;
-        transform: none;
-    }
-
-    .hero-button {
-        transition: none;
-    }
-}
 
 
 /* Desktop hero image size */
