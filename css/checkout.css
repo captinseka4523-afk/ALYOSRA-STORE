@@ -505,3 +505,10 @@ body.checkout-body {
         line-height: 1.75;
     }
 }
+
+@media (max-width: 768px) {
+    .checkout-page,
+    .checkout-container {
+        padding-bottom: 110px;
+    }
+}

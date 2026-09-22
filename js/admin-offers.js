@@ -2452,3 +2452,5 @@ if (uploadedOfferImage?.path) {
 loadProducts();
 
 loadOffers();
+
+

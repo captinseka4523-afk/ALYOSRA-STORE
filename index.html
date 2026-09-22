@@ -22,6 +22,11 @@
         href="css/style.css"
     >
 
+       <link
+        rel="stylesheet"
+        href="css/index.css"
+    >
+
 </head>
 
 
@@ -193,7 +198,7 @@
     <div class="side-menu-header">
 
         <span>
-            القائمة
+        الاقسام
         </span>
 
         <button
@@ -211,7 +216,10 @@
     <ul class="side-menu-links">
 
         <li>
-            <a href="index.html">
+             
+            <a 
+             class="active"
+            href="index.html">
                 الرئيسية
             </a>
         </li>
@@ -234,11 +242,29 @@
             </a>
         </li>
 
+
+
         <li>
+            <a href="clinic-setup.html">
+          تجهيز العيادات
+            </a>
+
+        </li>
+
+
+       <li>
+            <a href="student-consultation.html">
+             استشارات الطلاب
+            </a>
+
+        </li>
+
+           <li>
             <a href="contact.html">
                 تواصل معنا
             </a>
         </li>
+
 
     </ul>
 
@@ -733,34 +759,27 @@
         </div>
 
 
-        <div class="footer-links-group">
+       <div class="footer-links-group">
+    <h3>
+        روابط مهمة
+    </h3>
 
-            <h3>
-                روابط مهمة
-            </h3>
+    <a href="#" id="privacyPolicyBtn">
+        سياسة الخصوصية
+    </a>
 
-            <!--
-                سيتم استبدال # بالصفحات الحقيقية
-                عند إنشائها.
-            -->
+    <a href="#" id="returnsPolicyBtn">
+        سياسة الاستبدال والاسترجاع
+    </a>
 
-            <a href="#">
-                سياسة الخصوصية
-            </a>
+    <a href="#" id="shippingPolicyBtn">
+        سياسة الشحن والتوصيل
+    </a>
 
-            <a href="#">
-                سياسة الاستبدال والاسترجاع
-            </a>
-
-            <a href="#">
-                سياسة الشحن والتوصيل
-            </a>
-
-            <a href="#">
-                الشروط والأحكام
-            </a>
-
-        </div>
+    <a href="#" id="termsBtn">
+        الشروط والأحكام
+    </a>
+</div>
 
 
         <div class="footer-links-group">
@@ -814,6 +833,24 @@
 
 
 
+
+<!-- =====================================================
+     POLICY MODAL (نافذة السياسات المنبثقة)
+===================================================== -->
+<div id="policyModal" class="policy-modal-overlay" hidden>
+    <div class="policy-modal-box">
+        <div class="policy-modal-header">
+            <h2 id="policyModalTitle">عنوان السياسة</h2>
+            <button type="button" id="policyModalClose" class="policy-modal-close">×</button>
+        </div>
+        <div class="policy-modal-body" id="policyModalContent">
+            <!-- سيتم تعبئة النص هنا برمجياً -->
+        </div>
+    </div>
+</div>
+
+
+
 <!-- =====================================================
      CART COUNT
 ===================================================== -->
@@ -825,6 +862,87 @@
 <!-- =====================================================
      SIDE MENU + PAGE REVEALS
 ===================================================== -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("policyModal");
+    const modalTitle = document.getElementById("policyModalTitle");
+    const modalContent = document.getElementById("policyModalContent");
+    const closeBtn = document.getElementById("policyModalClose");
+
+    // نصوص السياسات المحدثة لمتجر اليُسرى
+    const policiesData = {
+        privacy: {
+            title: "سياسة الخصوصية",
+            content: `
+                <p><strong>نحترم خصوصيتك ونحمي بياناتك</strong></p>
+                <p>في متجر اليُسرى (Al Yosra Store)، نؤمن أن الثقة تبدأ من الحفاظ على سرية معلوماتك. نجمع البيانات الأساسية فقط (مثل الاسم، رقم الهاتف، وعنوان الاستلام) بهدف تسهيل تجهيز وتوصيل طلباتكم بدقة.</p>
+                <p>نحن نلتزم عدم مشاركة أو بيع بياناتك لأي طرف ثالث، وتُستخدم معلوماتك حصرياً داخل إطار خدمة المتجر وتطوير تجربتكم معنا.</p>
+            `
+        },
+        returns: {
+            title: "سياسة الاستبدال والاسترجاع",
+            content: `
+                <p><strong>ضمان الجودة وراحة البال</strong></p>
+                <p>حرصاً منا على تقديم أداة عمل تليق بدراستكم وعياداتكم:</p>
+                <ul>
+                    <li>يُحَق للعميل طلب استبدال أو استرجاع المنتج خلال <strong>3 أيام</strong> من تاريخ الاستلام.</li>
+                    <li>يُشترط أن يكون المنتج بحالته الأصلية تماماً، غير مستخدم، وفي غلافه الأصلي مع إبراز فاتورة الشراء.</li>
+                    <li>المنتجات التي تم فتحها أو استخدامها وتضررت بسبب سوء الاستخدام لا تتيح للمستخدم الاسترجاع أو الاستبدال.</li>
+                    <li>في حال وجود عيب مصنعي في الأداة أو المنتج، يتحمل المتجر كامل تكاليف الاستبدال.</li>
+                </ul>
+            `
+        },
+        shipping: {
+            title: "سياسة الشحن والتوصيل",
+            content: `
+                <p><strong>خدمة التوصيل الحالية</strong></p>
+                <p>نود إعلام عملائنا الكرام أنه <strong>لا يوجد حالياً شحن أو توصيل للمحافظات الأخرى</strong>، حيث نركز جهودنا حالياً على تقديم أفضل خدمة سرعة وجودة.</p>
+                <p>عمليات التوصيل والخدمات مقتصرة في الوقت الحالي على <strong>دمشق وريفها</strong> فقط، لتلبية احتياجات الطلاب والعيادات بأسرع وقت ممكن. تابعونا لمعرفة توسع نطاق خدماتنا في القريب العاجل.</p>
+            `
+        },
+        terms: {
+            title: "الشروط والأحكام",
+            content: `
+                <p><strong>شروط استخدام المتجر</strong></p>
+                <p>باستهلاكك أو طلبك لأي منتج من متجر اليُسرى، فإنك توافق على الشروط التالية:</p>
+                <ul>
+                    <li><strong>الأسعار والتوفر:</strong> أسعار المنتجات قابلة للتحديث بناءً على السوق، ونبذل قصارى جهدنا لضمان دقة الأسعار والمواصفات المعروضة.</li>
+                    <li><strong>الملكية الفكرية:</strong> جميع التصاميم، النصوص، والشعارات الخاصة بمتجر اليُسرى هي ملكية حصرية للمتجر ولا يُسمح باستهلاكها دون إذن مسبق.</li>
+                    <li><strong>المسؤولية:</strong> المتجر يقدم استشارات ومستلزمات طبية وأكاديمية، ويبقى استخدام الأدوات في الممارسة العملية مسؤولية الطبيب أو المستخدم.</li>
+                </ul>
+            `
+        }
+    };
+
+    function openPolicy(policyKey) {
+        const data = policiesData[policyKey];
+        if (!data) return;
+        
+        modalTitle.textContent = data.title;
+        modalContent.innerHTML = data.content;
+        modal.hidden = false;
+        requestAnimationFrame(() => modal.classList.add("open"));
+    }
+
+    function closePolicy() {
+        modal.classList.remove("open");
+        setTimeout(() => modal.hidden = true, 300);
+    }
+
+    // ربط الأزرار بالحدث
+    document.getElementById("privacyPolicyBtn")?.addEventListener("click", (e) => { e.preventDefault(); openPolicy("privacy"); });
+    document.getElementById("returnsPolicyBtn")?.addEventListener("click", (e) => { e.preventDefault(); openPolicy("returns"); });
+    document.getElementById("shippingPolicyBtn")?.addEventListener("click", (e) => { e.preventDefault(); openPolicy("shipping"); });
+    document.getElementById("termsBtn")?.addEventListener("click", (e) => { e.preventDefault(); openPolicy("terms"); });
+
+    closeBtn?.addEventListener("click", closePolicy);
+    modal?.addEventListener("click", (e) => { if (e.target === modal) closePolicy(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePolicy(); });
+});
+</script>
+
+
+
 
 <script>
 

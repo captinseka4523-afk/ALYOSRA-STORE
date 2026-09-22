@@ -1672,6 +1672,7 @@
     .student-footer {
         padding:
             24px 14px;
+            padding-bottom: 100px;
     }
 
     .student-footer-inner {
@@ -1715,22 +1716,3 @@
 }
 
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .student-page *,
-    .student-page *::before,
-    .student-page *::after {
-        scroll-behavior: auto !important;
-
-        transition-duration: .01ms !important;
-
-        animation-duration: .01ms !important;
-
-        animation-iteration-count: 1 !important;
-    }
-
-}
