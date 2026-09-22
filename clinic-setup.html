@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="خدمة تجهيز العيادات من متجر اليُسرى — حلول وتجهيزات مصممة حسب احتياجات عيادتك."
+    >
+
+    <title>تجهيز العيادات | متجر اليُسرى</title>
+
+    <!-- CSS المشترك للموقع -->
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <!-- CSS الخاص بهذه الصفحة فقط -->
+    <link
+        rel="stylesheet"
+        href="css/clinic-setup.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<nav class="navbar">
+
+    <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="فتح القائمة"
+    >
+        ☰
+    </button>
+
+
+    <div class="nav-logo">
+
+        <span class="nav-logo-ar">
+            متجر اليُسرى
+        </span>
+
+    </div>
+
+
+    <ul class="nav-links">
+
+        <li>
+            <a href="index.html">
+                الرئيسية
+            </a>
+        </li>
+
+        <li>
+            <a href="products.html">
+                المنتجات
+            </a>
+        </li>
+
+        <li>
+            <a href="offers.html">
+                العروض
+            </a>
+        </li>
+
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
+
+    </ul>
+
+
+    <a
+        href="cart.html"
+        class="cart-icon"
+        aria-label="السلة"
+        title="السلة"
+    >
+
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+
+            <path d="M6 6h15l-2 8H8L6 6Z"></path>
+
+            <path d="M6 6L5 3H2"></path>
+
+            <circle
+                cx="9"
+                cy="20"
+                r="1.5"
+            ></circle>
+
+            <circle
+                cx="18"
+                cy="20"
+                r="1.5"
+            ></circle>
+
+        </svg>
+
+        <span id="cartCount">
+            0
+        </span>
+
+    </a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== -->
+
+<nav
+    class="mobile-bottom-nav"
+    aria-label="التنقل الرئيسي"
+>
+
+    <a href="index.html">
+        الرئيسية
+    </a>
+
+    <a href="products.html">
+        المنتجات
+    </a>
+
+    <a href="offers.html">
+        العروض
+    </a>
+
+    <a href="cart.html">
+        السلة
+    </a>
+
+    <a href="contact.html">
+        تواصل معنا
+    </a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     SIDE MENU
+===================================================== -->
+
+<div
+    class="side-menu-overlay"
+    id="sideMenuOverlay"
+></div>
+
+
+<aside
+    class="side-menu"
+    id="sideMenu"
+    aria-hidden="true"
+>
+
+    <div class="side-menu-header">
+
+        <span>
+            القائمة
+        </span>
+
+        <button
+            class="side-menu-close"
+            id="sideMenuClose"
+            type="button"
+            aria-label="إغلاق القائمة"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <ul class="side-menu-links">
+
+        <li>
+            <a href="index.html">
+                الرئيسية
+            </a>
+        </li>
+
+        <li>
+            <a href="products.html">
+                المنتجات
+            </a>
+        </li>
+
+        <li>
+            <a href="offers.html">
+                العروض
+            </a>
+        </li>
+
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
+
+    </ul>
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="clinic-page">
+
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section
+    class="clinic-hero"
+    aria-labelledby="clinicHeroTitle"
+>
+
+    <div class="clinic-container clinic-hero-grid">
+
+
+        <!-- =================================================
+             HERO CONTENT
+        ================================================== -->
+
+        <div class="clinic-hero-content">
+
+            <span class="clinic-eyebrow">
+                AL YOSRA SERVICES
+            </span>
+
+
+            <h1 id="clinicHeroTitle">
+                جهّز عيادتك
+                <span>بثقة.</span>
+            </h1>
+
+
+            <p class="clinic-hero-description">
+                من الأدوات والمستلزمات إلى الأجهزة والمعدات،
+                نساعدك على تحديد ما تحتاجه لعيادتك
+                بما يتناسب مع طبيعة عملك واحتياجاتك.
+            </p>
+
+
+            <div class="clinic-hero-actions">
+
+                <a
+                    href="#clinic-form"
+                    class="clinic-primary-button"
+                >
+
+                    <span>
+                        ابدأ تجهيز عيادتك
+                    </span>
+
+                    <span
+                        aria-hidden="true"
+                        class="clinic-button-arrow"
+                    >
+                        ←
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="#clinic-help"
+                    class="clinic-secondary-button"
+                >
+                    كيف نساعدك؟
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HERO VISUAL
+        ================================================== -->
+
+        <div
+            class="clinic-hero-card"
+            aria-hidden="true"
+        >
+
+            <div class="clinic-hero-card-top">
+
+                <span>
+                    AL YOSRA
+                </span>
+
+                <span>
+                    CLINIC SETUP
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 PREMIUM MEDICAL / ARCHITECTURAL VISUAL
+            ================================================== -->
+
+            <svg
+                class="clinic-medical-visual"
+                viewBox="0 0 520 520"
+                xmlns="http://www.w3.org/2000/svg"
+                focusable="false"
+            >
+
+                <defs>
+
+                    <radialGradient
+                        id="medicalCoreGlow"
+                        cx="50%"
+                        cy="50%"
+                        r="50%"
+                    >
+                        <stop
+                            offset="0%"
+                            stop-color="#60a5fa"
+                            stop-opacity=".22"
+                        />
+
+                        <stop
+                            offset="45%"
+                            stop-color="#2563eb"
+                            stop-opacity=".08"
+                        />
+
+                        <stop
+                            offset="100%"
+                            stop-color="#2563eb"
+                            stop-opacity="0"
+                        />
+                    </radialGradient>
+
+
+                    <linearGradient
+                        id="medicalRingGradient"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="1"
+                    >
+                        <stop
+                            offset="0%"
+                            stop-color="#ffffff"
+                            stop-opacity=".72"
+                        />
+
+                        <stop
+                            offset="50%"
+                            stop-color="#93c5fd"
+                            stop-opacity=".28"
+                        />
+
+                        <stop
+                            offset="100%"
+                            stop-color="#60a5fa"
+                            stop-opacity=".58"
+                        />
+                    </linearGradient>
+
+
+                    <filter
+                        id="medicalBlur"
+                        x="-50%"
+                        y="-50%"
+                        width="200%"
+                        height="200%"
+                    >
+                        <feGaussianBlur
+                            stdDeviation="18"
+                        />
+                    </filter>
+
+
+                    <filter
+                        id="medicalBlurSmall"
+                        x="-50%"
+                        y="-50%"
+                        width="200%"
+                        height="200%"
+                    >
+                        <feGaussianBlur
+                            stdDeviation="8"
+                        />
+                    </filter>
+
+                </defs>
+
+
+                <!-- =================================================
+                     ATMOSPHERIC GLOW
+                ================================================== -->
+
+                <circle
+                    class="visual-glow"
+                    cx="260"
+                    cy="260"
+                    r="145"
+                />
+
+                <circle
+                    class="visual-glow-small"
+                    cx="260"
+                    cy="260"
+                    r="78"
+                />
+
+
+                <!-- =================================================
+                     LARGE TECHNICAL CIRCLE
+                ================================================== -->
+
+                <circle
+                    class="visual-circle-soft"
+                    cx="260"
+                    cy="260"
+                    r="184"
+                />
+
+                <circle
+                    class="visual-circle"
+                    cx="260"
+                    cy="260"
+                    r="155"
+                />
+
+                <circle
+                    class="visual-circle-bright"
+                    cx="260"
+                    cy="260"
+                    r="112"
+                />
+
+
+                <!-- =================================================
+                     DASHED TECHNICAL RINGS
+                ================================================== -->
+
+                <circle
+                    class="visual-dashed"
+                    cx="260"
+                    cy="260"
+                    r="169"
+                />
+
+                <circle
+                    class="visual-dashed-small"
+                    cx="260"
+                    cy="260"
+                    r="128"
+                />
+
+                <circle
+                    class="visual-dashed-small"
+                    cx="260"
+                    cy="260"
+                    r="96"
+                />
+
+
+                <!-- =================================================
+                     ARCHITECTURAL CROSS AXES
+                ================================================== -->
+
+                <line
+                    class="visual-axis"
+                    x1="65"
+                    y1="260"
+                    x2="455"
+                    y2="260"
+                />
+
+                <line
+                    class="visual-axis"
+                    x1="260"
+                    y1="65"
+                    x2="260"
+                    y2="455"
+                />
+
+                <line
+                    class="visual-axis-bright"
+                    x1="120"
+                    y1="120"
+                    x2="400"
+                    y2="400"
+                />
+
+                <line
+                    class="visual-axis-bright"
+                    x1="400"
+                    y1="120"
+                    x2="120"
+                    y2="400"
+                />
+
+
+                <!-- =================================================
+                     MEDICAL CORE
+                ================================================== -->
+
+                <circle
+                    class="visual-core"
+                    cx="260"
+                    cy="260"
+                    r="54"
+                />
+
+                <circle
+                    class="visual-core-inner"
+                    cx="260"
+                    cy="260"
+                    r="43"
+                />
+
+
+                <!-- =================================================
+                     MEDICAL CROSS
+                ================================================== -->
+
+                <line
+                    class="visual-cross-soft"
+                    x1="260"
+                    y1="222"
+                    x2="260"
+                    y2="298"
+                />
+
+                <line
+                    class="visual-cross-soft"
+                    x1="222"
+                    y1="260"
+                    x2="298"
+                    y2="260"
+                />
+
+                <line
+                    class="visual-cross"
+                    x1="260"
+                    y1="237"
+                    x2="260"
+                    y2="283"
+                />
+
+                <line
+                    class="visual-cross"
+                    x1="237"
+                    y1="260"
+                    x2="283"
+                    y2="260"
+                />
+
+
+                <!-- =================================================
+                     CENTER POINT
+                ================================================== -->
+
+                <circle
+                    cx="260"
+                    cy="260"
+                    r="5"
+                    fill="#ffffff"
+                    fill-opacity=".95"
+                />
+
+                <circle
+                    cx="260"
+                    cy="260"
+                    r="10"
+                    fill="none"
+                    stroke="#60a5fa"
+                    stroke-opacity=".45"
+                    stroke-width="1"
+                />
+
+
+                <!-- =================================================
+                     OUTER ORBIT
+                ================================================== -->
+
+                <ellipse
+                    class="visual-orbit"
+                    cx="260"
+                    cy="260"
+                    rx="207"
+                    ry="92"
+                    transform="rotate(-24 260 260)"
+                />
+
+                <ellipse
+                    class="visual-orbit-highlight"
+                    cx="260"
+                    cy="260"
+                    rx="205"
+                    ry="91"
+                    transform="rotate(31 260 260)"
+                />
+
+                <ellipse
+                    class="visual-orbit"
+                    cx="260"
+                    cy="260"
+                    rx="193"
+                    ry="70"
+                    transform="rotate(62 260 260)"
+                />
+
+
+                <!-- =================================================
+                     ORBIT NODES
+                ================================================== -->
+
+                <circle
+                    class="visual-node-halo"
+                    cx="101"
+                    cy="181"
+                    r="12"
+                />
+
+                <circle
+                    class="visual-node"
+                    cx="101"
+                    cy="181"
+                    r="3.5"
+                />
+
+
+                <circle
+                    class="visual-node-halo"
+                    cx="414"
+                    cy="337"
+                    r="12"
+                />
+
+                <circle
+                    class="visual-node"
+                    cx="414"
+                    cy="337"
+                    r="3.5"
+                />
+
+
+                <circle
+                    class="visual-node-halo"
+                    cx="366"
+                    cy="91"
+                    r="10"
+                />
+
+                <circle
+                    class="visual-node"
+                    cx="366"
+                    cy="91"
+                    r="3"
+                />
+
+
+                <circle
+                    class="visual-node-halo"
+                    cx="154"
+                    cy="430"
+                    r="10"
+                />
+
+                <circle
+                    class="visual-node"
+                    cx="154"
+                    cy="430"
+                    r="3"
+                />
+
+
+                <!-- =================================================
+                     PRECISION TICKS
+                ================================================== -->
+
+                <g class="visual-tick">
+
+                    <line x1="260" y1="76" x2="260" y2="86"/>
+                    <line x1="260" y1="434" x2="260" y2="444"/>
+
+                    <line x1="76" y1="260" x2="86" y2="260"/>
+                    <line x1="434" y1="260" x2="444" y2="260"/>
+
+                    <line x1="130" y1="130" x2="137" y2="137"/>
+                    <line x1="383" y1="383" x2="390" y2="390"/>
+
+                    <line x1="383" y1="137" x2="390" y2="130"/>
+                    <line x1="130" y1="390" x2="137" y2="383"/>
+
+                </g>
+
+
+                <!-- =================================================
+                     FOUR CORNER MARKERS
+                ================================================== -->
+
+                <path
+                    class="visual-corner"
+                    d="M86 110 H112 M86 110 V136"
+                />
+
+                <path
+                    class="visual-corner"
+                    d="M434 110 H408 M434 110 V136"
+                />
+
+                <path
+                    class="visual-corner"
+                    d="M86 410 H112 M86 410 V384"
+                />
+
+                <path
+                    class="visual-corner"
+                    d="M434 410 H408 M434 410 V384"
+                />
+
+
+                <!-- =================================================
+                     MICRO TECHNICAL MARKS
+                ================================================== -->
+
+                <g
+                    fill="#ffffff"
+                    fill-opacity=".42"
+                >
+
+                    <circle cx="260" cy="42" r="1.5"/>
+                    <circle cx="260" cy="478" r="1.5"/>
+                    <circle cx="42" cy="260" r="1.5"/>
+                    <circle cx="478" cy="260" r="1.5"/>
+
+                </g>
+
+            </svg>
+
+
+            <!-- Existing ambient orbits retained -->
+
+            <div class="clinic-hero-orbit clinic-orbit-one"></div>
+
+            <div class="clinic-hero-orbit clinic-orbit-two"></div>
+
+
+            <div class="clinic-hero-label">
+
+                <span class="clinic-hero-label-dot"></span>
+
+                <span>
+                    تجهيز يناسب احتياجك
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     INTRO / HELP
+===================================================== -->
+
+<section
+    class="clinic-help"
+    id="clinic-help"
+    aria-labelledby="clinicHelpTitle"
+>
+
+    <div class="clinic-container">
+
+
+        <div class="clinic-section-heading">
+
+            <div>
+
+                <span class="clinic-section-eyebrow">
+                    OUR APPROACH
+                </span>
+
+                <h2 id="clinicHelpTitle">
+                    نبدأ من احتياجك.
+                </h2>
+
+            </div>
+
+
+            <p>
+                لا تحتاج إلى معرفة كل التفاصيل مسبقًا.
+                أخبرنا بما تبحث عنه، ونبدأ معك من هناك.
+            </p>
+
+        </div>
+
+
+
+        <div class="clinic-help-grid">
+
+
+            <article class="clinic-help-card">
+
+                <span class="clinic-help-number">
+                    01
+                </span>
+
+                <div class="clinic-help-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="6.5"
+                        ></circle>
+
+                        <path d="m16 16 4 4"></path>
+
+                    </svg>
+
+                </div>
+
+
+                <h3>
+                    نفهم احتياجك
+                </h3>
+
+                <p>
+                    نتعرف على طبيعة العيادة وما تحتاجه
+                    قبل اقتراح أي تجهيز.
+                </p>
+
+            </article>
+
+
+
+            <article class="clinic-help-card">
+
+                <span class="clinic-help-number">
+                    02
+                </span>
+
+                <div class="clinic-help-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+
+                        <path d="M6 5h12v14H6z"></path>
+
+                        <path d="M9 9h6"></path>
+
+                        <path d="M9 13h6"></path>
+
+                        <path d="M9 17h4"></path>
+
+                    </svg>
+
+                </div>
+
+
+                <h3>
+                    نحدد التجهيز
+                </h3>
+
+                <p>
+                    نساعدك على تحديد الأدوات والمستلزمات
+                    والأجهزة التي تدخل ضمن احتياجك.
+                </p>
+
+            </article>
+
+
+
+            <article class="clinic-help-card">
+
+                <span class="clinic-help-number">
+                    03
+                </span>
+
+                <div class="clinic-help-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+
+                        <path d="M4 19V8l8-4 8 4v11"></path>
+
+                        <path d="M8 19v-6h8v6"></path>
+
+                        <path d="M3 20h18"></path>
+
+                    </svg>
+
+                </div>
+
+
+                <h3>
+                    نبني الحل المناسب
+                </h3>
+
+                <p>
+                    يمكن أن يكون التجهيز كاملًا أو جزءًا
+                    محددًا من العيادة حسب احتياجك.
+                </p>
+
+            </article>
+
+
+
+            <article class="clinic-help-card">
+
+                <span class="clinic-help-number">
+                    04
+                </span>
+
+                <div class="clinic-help-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+
+                        <path
+                            d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4 3v-3h-.5A2.5 2.5 0 0 1 5 14.5z"
+                        ></path>
+
+                    </svg>
+
+                </div>
+
+
+                <h3>
+                    نبقى على تواصل
+                </h3>
+
+                <p>
+                    بعد إرسال المعلومات، نتواصل معك
+                    لاستكمال التفاصيل ومناقشة احتياجاتك.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FORM
+===================================================== -->
+
+<section
+    class="clinic-form-section"
+    id="clinic-form"
+    aria-labelledby="clinicFormTitle"
+>
+
+    <div class="clinic-container">
+
+
+        <div class="clinic-form-shell">
+
+
+            <!-- FORM INTRO -->
+
+            <div class="clinic-form-intro">
+
+                <span class="clinic-section-eyebrow">
+                    LET'S GET STARTED
+                </span>
+
+
+                <h2 id="clinicFormTitle">
+                    أخبرنا عن
+                    <span>احتياجات عيادتك.</span>
+                </h2>
+
+
+                <p>
+                    املأ المعلومات الأساسية فقط.
+                    لا تحتاج إلى تحديد كل شيء الآن،
+                    وسنكمل معك التفاصيل بعد التواصل.
+                </p>
+
+
+                <div class="clinic-form-benefits">
+
+                    <div class="clinic-form-benefit">
+
+                        <span>01</span>
+
+                        <p>
+                            تختار نوع أو أنواع التجهيز التي تحتاجها.
+                        </p>
+
+                    </div>
+
+
+                    <div class="clinic-form-benefit">
+
+                        <span>02</span>
+
+                        <p>
+                            ترسل معلومات التواصل الأساسية.
+                        </p>
+
+                    </div>
+
+
+                    <div class="clinic-form-benefit">
+
+                        <span>03</span>
+
+                        <p>
+                            نراجع احتياجك ونتواصل معك مباشرة.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="clinic-interior-note" role="note">
+
+    <div class="clinic-interior-note-title">
+        <span class="clinic-interior-note-icon" aria-hidden="true">✦</span>
+        <strong>ملاحظة</strong>
+    </div>
+
+    <div class="clinic-interior-note-body">
+        <p>
+            يتوفر لدينا أيضًا فريق متخصص في
+            <strong>التجهيز الداخلي (Interior Design) لعيادات طب الأسنان</strong>،
+            لمساعدتك في تصميم وتجهيز مساحة عيادتك بما يتناسب مع طبيعة عملك،
+            <strong>وبأسعار مناسبة</strong>.
+        </p>
+    </div>
+
+</div>
+
+            </div>
+
+
+
+            <!-- FORM -->
+
+            <form
+                class="clinic-form"
+                id="clinicSetupForm"
+            >
+
+
+                <!-- SETUP TYPE -->
+
+                <fieldset class="clinic-fieldset">
+
+                    <legend>
+
+                        <span>
+                            نوع التجهيز
+                        </span>
+
+                        <small>
+                            اختر واحدًا أو أكثر
+                        </small>
+
+                    </legend>
+
+
+                    <div class="clinic-choice-grid">
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="تجهيز عيادة كاملة"
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    تجهيز عيادة كاملة
+                                </strong>
+
+                                <small>
+                                    تجهيز متكامل من البداية
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="تجديد أو تطوير عيادة"
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    تجديد أو تطوير
+                                </strong>
+
+                                <small>
+                                    تطوير عيادة قائمة
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="أجهزة ومعدات إلكترونية"
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    أجهزة ومعدات
+                                </strong>
+
+                                <small>
+                                    أجهزة إلكترونية ومعدات
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="أدوات ومستلزمات "
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    أدوات ومستلزمات
+                                </strong>
+
+                                <small>
+                            معدنيات و مواد استهلاكية
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="تجهيز قسم أو جزء محدد"
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    جزء محدد من العيادة
+                                </strong>
+
+                                <small>
+                                    تجهيز قسم أو مساحة معينة
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+
+                        <label class="clinic-choice">
+
+                            <input
+                                type="checkbox"
+                                name="setup_type"
+                                value="أخرى"
+                            >
+
+                            <span class="clinic-choice-mark">
+                                ✓
+                            </span>
+
+                            <span class="clinic-choice-content">
+
+                                <strong>
+                                    أخرى
+                                </strong>
+
+                                <small>
+                                    احتياج مختلف
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </fieldset>
+
+
+
+                <!-- CONTACT -->
+
+                <fieldset class="clinic-fieldset">
+
+                    <legend>
+
+                        <span>
+                            معلومات التواصل
+                        </span>
+
+                    </legend>
+
+
+                    <div class="clinic-input-grid">
+
+
+                        <label class="clinic-input-group">
+
+                            <span>
+                                الاسم الكامل
+                                <b>*</b>
+                            </span>
+
+                            <input
+                                type="text"
+                                name="customer_name"
+                                autocomplete="name"
+                                placeholder="اكتب الاسم الكامل"
+                                required
+                            >
+
+                        </label>
+
+
+
+                        <label class="clinic-input-group">
+
+                            <span>
+                                رقم التواصل
+                                <b>*</b>
+                            </span>
+
+                            <input
+                                type="tel"
+                                name="customer_phone"
+                                autocomplete="tel"
+                                inputmode="tel"
+                                placeholder="اكتب رقم الهاتف"
+                                required
+                            >
+
+                        </label>
+
+
+
+                        <label class="clinic-input-group clinic-input-full">
+
+                            <span>
+
+                                الموقع / المدينة
+
+                                <em>
+                                    اختياري
+                                </em>
+
+                            </span>
+
+                            <input
+                                type="text"
+                                name="customer_location"
+                                autocomplete="address-level2"
+                                placeholder="المدينة أو المنطقة"
+                            >
+
+                        </label>
+
+
+
+                        <label class="clinic-input-group clinic-input-full">
+
+                            <span>
+
+                                تفاصيل أو ملاحظات إضافية
+
+                                <em>
+                                    اختياري
+                                </em>
+
+                            </span>
+
+                            <textarea
+                                name="customer_note"
+                                rows="5"
+                                placeholder="اكتب أي تفاصيل ترغب بإخبارنا بها عن العيادة أو التجهيز المطلوب..."
+                            ></textarea>
+
+                        </label>
+
+                    </div>
+
+                </fieldset>
+
+
+
+                <!-- ACTIONS -->
+
+                <div class="clinic-form-actions">
+
+
+                    <!--
+                        استبدل الرابط لاحقًا برقم واتساب متجر اليُسرى الحقيقي.
+                        لا يتم وضع الرقم داخل الصفحة إلا بعد تحديده.
+                    -->
+
+                    <button
+                        type="submit"
+                        class="clinic-whatsapp-button"
+                    >
+
+                        <span class="clinic-whatsapp-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+
+                                <path
+                                    d="M20 4.5A9.7 9.7 0 0 0 13 2a9.8 9.8 0 0 0-8.4 14.8L3 22l5.4-1.4A9.8 9.8 0 0 0 22 12.3a9.7 9.7 0 0 0-2-7.8ZM13 20a8 8 0 0 1-4.1-1.1l-.3-.2-3.2.8.9-3.1-.2-.3A8 8 0 1 1 13 20Zm4.4-6c-.2-.1-1.3-.7-1.5-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8 1-.2.2-.3.2-.6.1a6.4 6.4 0 0 1-1.9-1.2 7.2 7.2 0 0 1-1.3-1.6c-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.2-.5a.5.5 0 0 0 0-.5c-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3c-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.1 1.6.1.5-.1 1.3-.5 1.5-1 .2-.5.2-1 .1-1.1-.1-.2-.3-.2-.5-.3Z"
+                                ></path>
+
+                            </svg>
+
+                        </span>
+
+
+                        <span>
+                            إرسال المعلومات عبر واتساب
+                        </span>
+
+
+                        <span
+                            class="clinic-action-arrow"
+                            aria-hidden="true"
+                        >
+                            ←
+                        </span>
+
+                    </button>
+
+
+
+                    <!--
+                        استبدل الرابط لاحقًا بحساب Instagram الحقيقي للمتجر.
+                    -->
+
+                    <a
+                       href="https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg=="
+                        class="clinic-instagram-button"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+
+                        <span>
+                            التواصل عبر Instagram
+                        </span>
+
+                        <span aria-hidden="true">
+                            ↗
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                <p class="clinic-form-disclaimer">
+
+                    عند اختيار واتساب، سيتم تجهيز رسالة بالمعلومات
+                    التي أدخلتها وفتح المحادثة لإرسالها.
+
+                </p>
+
+
+                
+
+            </form>
+
+
+
+            
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     NEXT STEPS
+===================================================== -->
+
+<section
+    class="clinic-steps"
+    aria-labelledby="clinicStepsTitle"
+>
+
+    <div class="clinic-container">
+
+
+        <div class="clinic-section-heading clinic-steps-heading">
+
+            <div>
+
+                <span class="clinic-section-eyebrow">
+                    WHAT'S NEXT
+                </span>
+
+                <h2 id="clinicStepsTitle">
+                    وبعدها؟
+                </h2>
+
+            </div>
+
+            <p>
+                ثلاث خطوات بسيطة تفصل بين إرسال احتياجك
+                والبدء بمناقشة التجهيز المناسب.
+            </p>
+
+        </div>
+
+
+
+        <div class="clinic-steps-grid">
+
+
+            <article class="clinic-step">
+
+                <span class="clinic-step-number">
+                    01
+                </span>
+
+                <div>
+
+                    <h3>
+                        أرسل المعلومات
+                    </h3>
+
+                    <p>
+                        اختر احتياجاتك وأرسل المعلومات
+                        الأساسية عبر واتساب.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="clinic-step">
+
+                <span class="clinic-step-number">
+                    02
+                </span>
+
+                <div>
+
+                    <h3>
+                        نراجع احتياجك
+                    </h3>
+
+                    <p>
+                        نطلع على المعلومات التي أرسلتها
+                        ونفهم طبيعة التجهيز المطلوب.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="clinic-step">
+
+                <span class="clinic-step-number">
+                    03
+                </span>
+
+                <div>
+
+                    <h3>
+                        نتواصل معك
+                    </h3>
+
+                    <p>
+                        نناقش معك التفاصيل والخطوات
+                        المناسبة لاحتياج عيادتك.
+                    </p>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER — نفس Footer المتجر
+===================================================== -->
+
+<footer class="home-footer">
+
+    <div class="footer-container">
+
+
+        <div class="footer-brand">
+
+            <img
+                src="images/LOGO.png"
+                alt="AL YOSRA STORE"
+            >
+
+            <div>
+
+                <h2>
+                    متجر اليُسرى
+                </h2>
+
+                <span>
+                    AL YOSRA STORE
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-links-group">
+
+            <h3>
+                روابط مهمة
+            </h3>
+
+            <a href="#">
+                سياسة الخصوصية
+            </a>
+
+            <a href="#">
+                سياسة الاستبدال والاسترجاع
+            </a>
+
+            <a href="#">
+                سياسة الشحن والتوصيل
+            </a>
+
+            <a href="#">
+                الشروط والأحكام
+            </a>
+
+        </div>
+
+
+        <div class="footer-links-group">
+
+            <h3>
+                المتجر
+            </h3>
+
+            <a href="products.html">
+                المنتجات
+            </a>
+
+            <a href="offers.html">
+                العروض
+            </a>
+
+            <a href="cart.html">
+                السلة
+            </a>
+
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 AL YOSRA STORE
+        </span>
+
+        <span>
+            جميع الحقوق محفوظة
+        </span>
+
+        <span>
+            powered by
+            <a href="https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg==">
+                Mohamad Balwi
+            </a>
+        </span>
+
+    </div>
+
+</footer>
+
+
+
+<!-- =====================================================
+     SHARED SCRIPTS
+===================================================== -->
+
+
+
+<script src="js/navbar.js"></script>
+
+<script> /* =================================================
+       SIDE MENU
+    ================================================= */
+
+    const menuToggle =
+        document.getElementById("menuToggle");
+
+    const sideMenu =
+        document.getElementById("sideMenu");
+
+    const sideMenuClose =
+        document.getElementById("sideMenuClose");
+
+    const sideMenuOverlay =
+        document.getElementById("sideMenuOverlay");
+
+
+    function openSideMenu() {
+
+        if (!sideMenu || !sideMenuOverlay) {
+            return;
+        }
+
+        sideMenu.classList.add("open");
+
+        sideMenuOverlay.classList.add("open");
+
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "menu-open"
+        );
+
+    }
+
+
+    function closeSideMenu() {
+
+        if (!sideMenu || !sideMenuOverlay) {
+            return;
+        }
+
+        sideMenu.classList.remove("open");
+
+        sideMenuOverlay.classList.remove("open");
+
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.classList.remove(
+            "menu-open"
+        );
+
+    }
+
+
+    if (menuToggle) {
+
+        menuToggle.addEventListener(
+            "click",
+            openSideMenu
+        );
+
+    }
+
+
+    if (sideMenuClose) {
+
+        sideMenuClose.addEventListener(
+            "click",
+            closeSideMenu
+        );
+
+    }
+
+
+    if (sideMenuOverlay) {
+
+        sideMenuOverlay.addEventListener(
+            "click",
+            closeSideMenu
+        );
+
+    }
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                closeSideMenu();
+
+            }
+
+        }
+    );
+
+
+</script>
+
+<!-- =====================================================
+     MINIMAL FORM UI
+     لا يوجد أي منطق خارجي هنا حاليًا.
+===================================================== -->
+
+<script>
+(function () {
+
+    "use strict";
+
+    const form =
+        document.getElementById("clinicSetupForm");
+
+    if (!form) {
+        return;
+    }
+
+
+    /* =====================================================
+       Visual selection state
+       ===================================================== */
+
+    const choices =
+        form.querySelectorAll(
+            ".clinic-choice input"
+        );
+
+    choices.forEach(function (input) {
+
+        input.addEventListener(
+            "change",
+            function () {
+
+                const choice =
+                    input.closest(
+                        ".clinic-choice"
+                    );
+
+                if (!choice) {
+                    return;
+                }
+
+                choice.classList.toggle(
+                    "is-selected",
+                    input.checked
+                );
+
+            }
+        );
+
+    });
+
+
+    /* =====================================================
+       WhatsApp
+       ===================================================== */
+
+    form.addEventListener(
+        "submit",
+        function (event) {
+
+            event.preventDefault();
+
+
+            const name =
+                form.elements.customer_name.value.trim();
+
+            const phone =
+                form.elements.customer_phone.value.trim();
+
+            const location =
+                form.elements.customer_location.value.trim();
+
+            const note =
+                form.elements.customer_note.value.trim();
+
+
+            const setupTypes =
+                Array.from(
+                    form.querySelectorAll(
+                        'input[name="setup_type"]:checked'
+                    )
+                ).map(function (input) {
+                    return input.value.trim();
+                });
+
+
+            if (!name || !phone) {
+                return;
+            }
+
+
+            const messageParts = [
+
+                "  السلام عليكم",
+                "",
+                "أرغب بالاستفسار عن تجهيز عيادتي.",
+                "",
+                "الاسم: " + name,
+                "رقم التواصل: " + phone
+
+            ];
+
+
+            if (setupTypes.length) {
+
+                messageParts.push(
+                    "نوع التجهيز: " +
+                    setupTypes.join("، ")
+                );
+
+            }
+
+
+            if (location) {
+
+                messageParts.push(
+                    "الموقع / المدينة: " +
+                    location
+                );
+
+            }
+
+
+            if (note) {
+
+                messageParts.push(
+                    "تفاصيل إضافية: " +
+                    note
+                );
+
+            }
+
+
+            const message =
+                messageParts.join("\n");
+
+
+            const whatsappNumber =
+                "963988902539";
+
+            const whatsappUrl =
+                "https://wa.me/" +
+                whatsappNumber +
+                "?text=" +
+                encodeURIComponent(message);
+
+
+            window.open(
+                whatsappUrl,
+                "_blank",
+                "noopener,noreferrer"
+            );
+
+        }
+    );
+
+})();
+</script>
+
+
+</body>
+
+</html>

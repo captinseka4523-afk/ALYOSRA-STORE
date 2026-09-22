@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="استشارات طلاب طب الأسنان من متجر اليُسرى لمساعدتك في اختيار الأدوات وفهم المواد الدراسية."
+    >
+
+    <title>استشارات الطلاب | متجر اليُسرى</title>
+
+    <!-- Global Store CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="css/student-consultation.css">
+</head>
+
+<body class="student-page">
+
+    <!-- =====================================================
+         NAVBAR
+    ====================================================== -->
+
+    <nav class="navbar">
+
+        <button
+            class="menu-toggle"
+            id="menuToggle"
+            type="button"
+            aria-label="فتح القائمة">
+            ☰
+        </button>
+
+        <div class="nav-logo">
+            <span class="nav-logo-ar">متجر اليُسرى</span>
+        </div>
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="index.html">الرئيسية</a>
+            </li>
+
+            <li>
+                <a href="products.html">المنتجات</a>
+            </li>
+
+            <li>
+                <a href="offers.html">العروض</a>
+            </li>
+
+            <li>
+                <a href="cart.html">السلة</a>
+            </li>
+
+            <li>
+                <a href="contact.html">تواصل معنا</a>
+            </li>
+
+        </ul>
+
+        <a
+            href="cart.html"
+            class="cart-icon"
+            aria-label="السلة"
+            title="السلة">
+
+            <svg
+                class="cart-svg"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true">
+
+                <path d="M6 6h15l-2 8H8L6 6Z"></path>
+                <path d="M6 6L5 3H2"></path>
+                <circle cx="9" cy="20" r="1.5"></circle>
+                <circle cx="18" cy="20" r="1.5"></circle>
+
+            </svg>
+
+            <span id="cartCount">0</span>
+
+        </a>
+
+    </nav>
+
+
+    <!-- =====================================================
+         SIDE MENU
+    ====================================================== -->
+
+    <div
+        class="side-menu-overlay"
+        id="sideMenuOverlay">
+    </div>
+
+
+    <aside
+        class="side-menu"
+        id="sideMenu"
+        aria-hidden="true">
+
+        <div class="side-menu-header">
+
+            <span>متجر اليُسرى</span>
+
+            <button
+                class="side-menu-close"
+                id="sideMenuClose"
+                type="button"
+                aria-label="إغلاق القائمة">
+                ×
+            </button>
+
+        </div>
+
+
+        <ul class="side-menu-links">
+
+            <li>
+                <a href="index.html">الرئيسية</a>
+            </li>
+
+            <li>
+                <a href="products.html">المنتجات</a>
+            </li>
+
+            <li>
+                <a href="offers.html">العروض</a>
+            </li>
+
+            <li>
+                <a href="cart.html">السلة</a>
+            </li>
+
+            <li>
+                <a href="contact.html">تواصل معنا</a>
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main>
+
+
+        <!-- =================================================
+             HERO
+        ================================================== -->
+
+        <section
+            class="student-hero"
+            aria-labelledby="studentHeroTitle">
+
+            <div class="student-hero-grid">
+
+
+                <!-- HERO TEXT -->
+
+                <div class="student-hero-content">
+
+                    <span class="student-eyebrow">
+                        AL YOSRA STUDENT CONSULTATION
+                    </span>
+
+
+                    <h1 id="studentHeroTitle">
+
+                        المعرفة تبدأ
+
+                        <span>
+                            بسؤال صحيح.
+                        </span>
+
+                    </h1>
+
+
+                    <p class="student-hero-description">
+
+                        محتار في اختيار أداة؟
+                        تحتاج إلى فهم أفضل لمادة دراسية؟
+                        أو تريد معرفة ما تحتاجه قبل دخول مرحلة عملية جديدة؟
+
+                        أخبرنا بما يشغلك وسنساعدك بالمعلومات المناسبة.
+
+                    </p>
+
+
+                    <div class="student-hero-actions">
+
+                        <a
+                            href="#student-consultation"
+                            class="student-primary-button">
+
+                            <span>
+                                ابدأ استشارتك
+                            </span>
+
+                            <span
+                                class="student-button-arrow"
+                                aria-hidden="true">
+                                ←
+                            </span>
+
+                        </a>
+
+
+                        <a
+                            href="#consultation-types"
+                            class="student-secondary-button">
+
+                            تعرف على الاستشارات
+
+                        </a>
+
+                    </div>
+
+
+                    <div class="student-hero-note">
+
+                        <span
+                            class="student-hero-note-icon"
+                            aria-hidden="true">
+                            ✦
+                        </span>
+
+                        <span>
+                            استشارة موجهة لطلاب طب الأسنان بناءً على احتياجك.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HERO KNOWLEDGE VISUAL -->
+
+                <div
+                    class="student-hero-visual"
+                    aria-hidden="true">
+
+                    <div class="student-orbit student-orbit-one"></div>
+
+                    <div class="student-orbit student-orbit-two"></div>
+
+                    <div class="student-glow student-glow-main"></div>
+
+                    <div class="student-glow student-glow-small"></div>
+
+
+                    <div class="student-book-scene">
+
+                        <div class="student-light-beam"></div>
+
+
+                        <svg
+                            class="student-book-svg"
+                            viewBox="0 0 620 520"
+                            xmlns="http://www.w3.org/2000/svg">
+
+                            <defs>
+
+                                <linearGradient
+                                    id="bookCover"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="1">
+
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#173e79"/>
+
+                                    <stop
+                                        offset="55%"
+                                        stop-color="#0b2448"/>
+
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#061426"/>
+
+                                </linearGradient>
+
+
+                                <linearGradient
+                                    id="bookPage"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1">
+
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#ffffff"/>
+
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#dbeafe"/>
+
+                                </linearGradient>
+
+
+                                <linearGradient
+                                    id="lightGradient"
+                                    x1="0"
+                                    y1="1"
+                                    x2="0"
+                                    y2="0">
+
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#60a5fa"
+                                        stop-opacity=".55"/>
+
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#bfdbfe"
+                                        stop-opacity="0"/>
+
+                                </linearGradient>
+
+
+                                <radialGradient id="centerGlow">
+
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#dbeafe"
+                                        stop-opacity=".95"/>
+
+                                    <stop
+                                        offset="35%"
+                                        stop-color="#60a5fa"
+                                        stop-opacity=".5"/>
+
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#60a5fa"
+                                        stop-opacity="0"/>
+
+                                </radialGradient>
+
+
+                                <filter id="softBlur">
+
+                                    <feGaussianBlur stdDeviation="14"/>
+
+                                </filter>
+
+
+                                <filter id="smallBlur">
+
+                                    <feGaussianBlur stdDeviation="5"/>
+
+                                </filter>
+
+                            </defs>
+
+
+                            <!-- Central knowledge glow -->
+
+                            <ellipse
+                                cx="310"
+                                cy="215"
+                                rx="145"
+                                ry="145"
+                                fill="url(#centerGlow)"
+                                filter="url(#softBlur)"/>
+
+
+                            <!-- Light rising from the book -->
+
+                            <path
+                                d="
+                                    M310 370
+                                    C250 320 235 250 255 155
+                                    C275 210 290 235 310 250
+                                    C330 235 345 210 365 155
+                                    C385 250 370 320 310 370Z
+                                "
+                                fill="url(#lightGradient)"
+                                opacity=".9"
+                                filter="url(#smallBlur)"/>
+
+
+                            <!-- Knowledge rays -->
+
+                            <g
+                                fill="none"
+                                stroke="#93c5fd"
+                                stroke-linecap="round"
+                                opacity=".55">
+
+                                <path d="M310 75V35"/>
+                                <path d="M270 86L248 50"/>
+                                <path d="M350 86L372 50"/>
+
+                                <path d="M232 125L198 106"/>
+                                <path d="M388 125L422 106"/>
+
+                            </g>
+
+
+                            <!-- Book shadow -->
+
+                            <ellipse
+                                cx="310"
+                                cy="430"
+                                rx="205"
+                                ry="34"
+                                fill="#000000"
+                                opacity=".3"
+                                filter="url(#softBlur)"/>
+
+
+                            <!-- Left cover -->
+
+                            <path
+                                d="
+                                    M310 388
+                                    C267 353 211 328 142 320
+                                    L118 365
+                                    C196 374 254 402 310 438Z
+                                "
+                                fill="url(#bookCover)"
+                                stroke="#4f8bd8"
+                                stroke-opacity=".55"
+                                stroke-width="2"/>
+
+
+                            <!-- Right cover -->
+
+                            <path
+                                d="
+                                    M310 388
+                                    C353 353 409 328 478 320
+                                    L502 365
+                                    C424 374 366 402 310 438Z
+                                "
+                                fill="url(#bookCover)"
+                                stroke="#4f8bd8"
+                                stroke-opacity=".55"
+                                stroke-width="2"/>
+
+
+                            <!-- Left pages -->
+
+                            <path
+                                d="
+                                    M310 382
+                                    C266 346 207 325 140 320
+                                    L154 286
+                                    C218 292 270 313 310 347Z
+                                "
+                                fill="url(#bookPage)"
+                                stroke="#bfdbfe"
+                                stroke-width="2"/>
+
+
+                            <!-- Right pages -->
+
+                            <path
+                                d="
+                                    M310 382
+                                    C354 346 413 325 480 320
+                                    L466 286
+                                    C402 292 350 313 310 347Z
+                                "
+                                fill="url(#bookPage)"
+                                stroke="#bfdbfe"
+                                stroke-width="2"/>
+
+
+                            <!-- Left page writing -->
+
+                            <g
+                                stroke="#93a9c4"
+                                stroke-width="3"
+                                stroke-linecap="round"
+                                opacity=".65">
+
+                                <path d="M170 310C214 316 256 331 292 353"/>
+                                <path d="M164 320C210 327 250 340 284 360"/>
+                                <path d="M180 335C218 341 250 351 278 368"/>
+
+                            </g>
+
+
+                            <!-- Right page writing -->
+
+                            <g
+                                stroke="#93a9c4"
+                                stroke-width="3"
+                                stroke-linecap="round"
+                                opacity=".65">
+
+                                <path d="M450 310C406 316 364 331 328 353"/>
+                                <path d="M456 320C410 327 370 340 336 360"/>
+                                <path d="M440 335C402 341 370 351 342 368"/>
+
+                            </g>
+
+
+                            <!-- Book spine -->
+
+                            <path
+                                d="M310 347V418"
+                                stroke="#2563eb"
+                                stroke-width="5"
+                                stroke-linecap="round"/>
+
+
+                            <!-- Subtle dental knowledge symbol -->
+
+                            <g transform="translate(310 230)">
+
+                                <circle
+                                    r="42"
+                                    fill="#0b1f3a"
+                                    stroke="#60a5fa"
+                                    stroke-width="2"
+                                    opacity=".95"/>
+
+
+                                <path
+                                    d="
+                                        M-13 -17
+                                        C-4 -24 4 -24 13 -17
+                                        C21 -10 21 2 16 13
+                                        C12 22 8 25 4 17
+                                        C1 11 -1 11 -4 17
+                                        C-8 25 -12 22 -16 13
+                                        C-21 2 -21 -10 -13 -17Z
+                                    "
+                                    fill="none"
+                                    stroke="#dbeafe"
+                                    stroke-width="3"
+                                    stroke-linejoin="round"/>
+
+
+                                <path
+                                    d="M-8 -5H8M0 -13V3"
+                                    stroke="#60a5fa"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"/>
+
+                            </g>
+
+
+                            <!-- Small particles -->
+
+                            <g fill="#bfdbfe">
+
+                                <circle cx="215" cy="160" r="3"/>
+                                <circle cx="405" cy="160" r="3"/>
+                                <circle cx="235" cy="210" r="2"/>
+                                <circle cx="385" cy="210" r="2"/>
+                                <circle cx="310" cy="120" r="3"/>
+
+                            </g>
+
+                        </svg>
+
+                    </div>
+
+
+                    <div class="student-visual-label">
+
+                        <span class="student-visual-label-line"></span>
+
+                        <span>
+                            KNOWLEDGE · GUIDANCE · CONFIDENCE
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CONSULTATION TYPES
+        ================================================== -->
+
+        <section
+            class="student-types"
+            id="consultation-types"
+            aria-labelledby="typesTitle">
+
+            <div class="student-container">
+
+                <div class="student-section-heading">
+
+                    <span class="student-section-eyebrow">
+                        WHAT CAN WE HELP WITH?
+                    </span>
+
+                    <h2 id="typesTitle">
+                        استشارتك تبدأ من احتياجك.
+                    </h2>
+
+                    <p>
+                        اختر المجال الأقرب إلى ما تحتاجه، وسنطرح عليك
+                        المعلومات التي تساعدنا على فهم طلبك بشكل أفضل.
+                    </p>
+
+                </div>
+
+
+                <div class="student-types-grid">
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            01
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/>
+                                <path d="M8 4v16"/>
+                                <path d="M11 9h5"/>
+                                <path d="M11 13h5"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            اختيار أداة
+                        </h3>
+
+                        <p>
+                            محتار بين أدوات متعددة أو تريد معرفة الأداة
+                            المناسبة لاستخدام معين؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            02
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M4 5h16"/>
+                                <path d="M4 9h10"/>
+                                <path d="M4 13h16"/>
+                                <path d="M4 17h10"/>
+                                <path d="M17 8v8"/>
+                                <path d="M14 13l3 3 3-3"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            مقارنة أدوات
+                        </h3>
+
+                        <p>
+                            تريد معرفة الفروقات بين أداتين أو أكثر
+                            قبل اتخاذ قرار الشراء؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            03
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M6 3h12v18H6z"/>
+                                <path d="M9 7h6"/>
+                                <path d="M9 11h6"/>
+                                <path d="M9 15h4"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            أدوات سنة دراسية
+                        </h3>
+
+                        <p>
+                            تريد معرفة الأدوات والمستلزمات التي قد تحتاجها
+                            خلال سنة أو مرحلة دراسية معينة؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            04
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M4 5h16v14H4z"/>
+                                <path d="M8 9h8"/>
+                                <path d="M8 13h5"/>
+                                <circle cx="17" cy="17" r="3"/>
+                                <path d="M19.2 19.2L21 21"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            استشارة مادة
+                        </h3>
+
+                        <p>
+                            تحتاج إلى مساعدة أو توجيه بخصوص مادة دراسية
+                            أو موضوع محدد ضمنها؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            05
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M12 3v18"/>
+                                <path d="M3 12h18"/>
+                                <circle cx="12" cy="12" r="8"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            موضوع أو Chapter
+                        </h3>
+
+                        <p>
+                            لديك نقطة محددة غير واضحة وتحتاج إلى شرح أو
+                            توجيه قبل الامتحان أو التطبيق العملي؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card">
+
+                        <span class="student-type-number">
+                            06
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <path d="M4 12a8 8 0 1 0 16 0"/>
+                                <path d="M8 12a4 4 0 1 0 8 0"/>
+                                <path d="M12 4v8"/>
+                                <circle cx="12" cy="4" r="1"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            استشارة عملية
+                        </h3>
+
+                        <p>
+                            تستعد لمرحلة عملية أو تدريب جديد وتريد معرفة
+                            ما الذي تحتاجه وكيف تستعد له؟
+                        </p>
+
+                    </article>
+
+
+                    <article class="student-type-card student-type-card-wide">
+
+                        <span class="student-type-number">
+                            07
+                        </span>
+
+                        <div class="student-type-icon">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+
+                                <circle cx="12" cy="12" r="8"/>
+                                <path d="M12 8v4l3 2"/>
+
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            استشارة عامة
+                        </h3>
+
+                        <p>
+                            لديك سؤال آخر متعلق بدراستك أو أدوات طب الأسنان
+                            ولا تجد له تصنيفًا محددًا؟ اشرح لنا ما تحتاجه.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CONSULTATION FORM
+        ================================================== -->
+
+        <section
+            class="student-consultation"
+            id="student-consultation"
+            aria-labelledby="consultationTitle">
+
+            <div class="student-container">
+
+                <div class="student-form-shell">
+
+
+                    <!-- FORM INTRO -->
+
+                    <div class="student-form-intro">
+
+                        <span class="student-section-eyebrow">
+                            LET'S TALK
+                        </span>
+
+
+                        <h2 id="consultationTitle">
+
+                            أخبرنا بما
+
+                            <span>
+                                تحتاج إليه.
+                            </span>
+
+                        </h2>
+
+
+                        <p>
+                            لا تحتاج إلى معرفة السؤال المثالي.
+                            أعطنا المعلومات الأساسية، وسنساعدك على
+                            تحديد الاستشارة الأقرب لاحتياجك.
+                        </p>
+
+
+                        <div class="student-process">
+
+                            <div class="student-process-item">
+
+                                <span>01</span>
+
+                                <p>
+                                    تحدد نوع الاستشارة.
+                                </p>
+
+                            </div>
+
+
+                            <div class="student-process-item">
+
+                                <span>02</span>
+
+                                <p>
+                                    تخبرنا عن وضعك الدراسي.
+                                </p>
+
+                            </div>
+
+
+                            <div class="student-process-item">
+
+                                <span>03</span>
+
+                                <p>
+                                    نجهز لك رسالة واضحة للتواصل.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-info-note">
+
+                            <div class="student-info-note-icon">
+                                ✦
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    الاستشارة تبدأ من التفاصيل.
+                                </strong>
+
+                                <p>
+                                    كلما كانت المعلومات أوضح، استطعنا فهم
+                                    احتياجك بشكل أفضل وتقديم توجيه أكثر فائدة.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- FORM -->
+
+                    <form
+                        class="student-form"
+                        id="studentConsultationForm">
+
+
+                        <!-- BASIC INFORMATION -->
+
+                        <div class="student-form-group">
+
+                            <div class="student-form-group-title">
+
+                                <span>01</span>
+
+                                <div>
+
+                                    <strong>
+                                        المعلومات الدراسية
+                                    </strong>
+
+                                    <small>
+                                        أخبرنا عن مرحلتك الحالية.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="student-fields-grid">
+
+                                <label class="student-field">
+
+                                    <span>
+                                        الاسم
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="student_name"
+                                        autocomplete="name"
+                                        placeholder="اكتب اسمك"
+                                        required>
+
+                                </label>
+
+
+                                <label class="student-field">
+
+                                    <span>
+                                        الجامعة
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="university"
+                                        autocomplete="organization"
+                                        placeholder="اسم الجامعة"
+                                        required>
+
+                                </label>
+
+
+                                <label class="student-field student-field-full">
+
+                                    <span>
+                                        السنة الدراسية
+                                    </span>
+
+                                    <select
+                                        name="academic_year"
+                                        required>
+
+                                        <option
+                                            value=""
+                                            selected
+                                            disabled>
+                                            اختر السنة الدراسية
+                                        </option>
+
+                                        <option value="السنة الأولى">
+                                            السنة الأولى
+                                        </option>
+
+                                        <option value="السنة الثانية">
+                                            السنة الثانية
+                                        </option>
+
+                                        <option value="السنة الثالثة">
+                                            السنة الثالثة
+                                        </option>
+
+                                        <option value="السنة الرابعة">
+                                            السنة الرابعة
+                                        </option>
+
+                                        <option value="السنة الخامسة">
+                                            السنة الخامسة
+                                        </option>
+
+                                        <option value="السنة السادسة">
+                                            السنة السادسة
+                                        </option>
+
+                                        <option value="سنة الامتياز">
+                                            سنة الامتياز
+                                        </option>
+
+                                        <option value="خريج">
+                                            خريج
+                                        </option>
+
+                                    </select>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CONSULTATION TYPE -->
+
+                        <div class="student-form-group">
+
+                            <div class="student-form-group-title">
+
+                                <span>02</span>
+
+                                <div>
+
+                                    <strong>
+                                        نوع الاستشارة
+                                    </strong>
+
+                                    <small>
+                                        اختر المجال الذي تحتاج فيه إلى المساعدة.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="student-consultation-options">
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="اختيار أداة"
+                                        required>
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            01
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                اختيار أداة
+                                            </strong>
+
+                                            <small>
+                                                أحتاج مساعدة في اختيار أداة.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="مقارنة أدوات">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            02
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                مقارنة أدوات
+                                            </strong>
+
+                                            <small>
+                                                أريد مقارنة أدوات قبل الشراء.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="أدوات سنة دراسية">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            03
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                أدوات سنة دراسية
+                                            </strong>
+
+                                            <small>
+                                                أريد معرفة ما أحتاجه لمرحلتي.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="استشارة مادة">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            04
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                استشارة مادة
+                                            </strong>
+
+                                            <small>
+                                                أحتاج مساعدة بخصوص مادة.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="موضوع أو Chapter">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            05
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                موضوع أو Chapter
+                                            </strong>
+
+                                            <small>
+                                                هناك موضوع محدد غير واضح.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="استشارة عملية">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            06
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                استشارة عملية
+                                            </strong>
+
+                                            <small>
+                                                أستعد لمرحلة أو تدريب عملي.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+
+                                <label class="student-consultation-option student-consultation-option-wide">
+
+                                    <input
+                                        type="radio"
+                                        name="consultation_type"
+                                        value="استشارة عامة">
+
+                                    <span class="student-option-box">
+
+                                        <span class="student-option-icon">
+                                            07
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                استشارة عامة
+                                            </strong>
+
+                                            <small>
+                                                لدي سؤال آخر متعلق بدراستي أو أدوات طب الأسنان.
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DYNAMIC DETAILS -->
+
+                        <div
+                            class="student-form-group student-dynamic-group"
+                            id="dynamicConsultationGroup"
+                            hidden>
+
+                            <div class="student-form-group-title">
+
+                                <span>03</span>
+
+                                <div>
+
+                                    <strong id="dynamicTitle">
+                                        تفاصيل الاستشارة
+                                    </strong>
+
+                                    <small id="dynamicDescription">
+                                        أضف التفاصيل المطلوبة.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOOL -->
+
+                            <div
+                                id="toolDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <label class="student-field">
+
+                                    <span>
+                                        اسم الأداة
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        id="toolName"
+                                        name="tool_name"
+                                        placeholder="اكتب اسم الأداة">
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- COMPARISON -->
+
+                            <div
+                                id="comparisonDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <div class="student-fields-grid">
+
+                                    <label class="student-field">
+
+                                        <span>
+                                            الأداة الأولى
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="toolOne"
+                                            name="tool_one"
+                                            placeholder="اسم الأداة الأولى">
+
+                                    </label>
+
+
+                                    <label class="student-field">
+
+                                        <span>
+                                            الأداة الثانية
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="toolTwo"
+                                            name="tool_two"
+                                            placeholder="اسم الأداة الثانية">
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- SUBJECT -->
+
+                            <div
+                                id="subjectDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <label class="student-field">
+
+                                    <span>
+                                        اسم المادة
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        id="subjectName"
+                                        name="subject_name"
+                                        placeholder="اكتب اسم المادة">
+
+                                </label>
+
+                            </div>
+
+
+                            <!-- TOPIC -->
+
+                            <div
+                                id="topicDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <div class="student-fields-grid">
+
+                                    <label class="student-field">
+
+                                        <span>
+                                            اسم المادة
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="topicSubject"
+                                            name="topic_subject"
+                                            placeholder="اسم المادة">
+
+                                    </label>
+
+
+                                    <label class="student-field">
+
+              <span>
+                                            الموضوع / Chapter
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="topicName"
+                                            name="topic_name"
+                                            placeholder="اسم الموضوع أو Chapter">
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- PRACTICAL -->
+
+                            <div
+                                id="practicalDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <div class="student-fields-grid">
+
+                                    <label class="student-field">
+
+                                        <span>
+                                            المرحلة أو التدريب
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="practicalStage"
+                                            name="practical_stage"
+                                            placeholder="مثلاً: Operative / Prosthodontics">
+
+                                    </label>
+
+
+                                    <label class="student-field">
+
+                                        <span>
+                                            ما الذي تحتاجه؟
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            id="practicalNeed"
+                                            name="practical_need"
+                                            placeholder="اكتب ما تريد معرفته">
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- GENERAL -->
+
+                            <div
+                                id="generalDetails"
+                                class="student-dynamic-content"
+                                hidden>
+
+                                <label class="student-field">
+
+                                    <span>
+                                        موضوع الاستشارة
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        id="generalTopic"
+                                        name="general_topic"
+                                        placeholder="اكتب باختصار ما تريد الاستفسار عنه">
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ADDITIONAL DETAILS -->
+
+                        <div class="student-form-group">
+
+                            <div class="student-form-group-title">
+
+                                <span>04</span>
+
+                                <div>
+
+                                    <strong>
+                                        تفاصيل إضافية
+                                    </strong>
+
+                                    <small>
+                                        أي معلومة أخرى تساعدنا على فهم طلبك.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <label class="student-field">
+
+                                <span>
+                                    رسالتك
+                                </span>
+
+                                <textarea
+                                    name="student_note"
+                                    rows="5"
+                                    placeholder="اكتب سؤالك أو أي تفاصيل إضافية تريد توضيحها..."></textarea>
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- CONTACT -->
+
+                        <div class="student-form-group">
+
+                            <div class="student-form-group-title">
+
+                                <span>05</span>
+
+                                <div>
+
+                                    <strong>
+                                        معلومات التواصل
+                                    </strong>
+
+                                    <small>
+                                        لنتمكن من الرد عليك.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <label class="student-field">
+
+                                <span>
+                                    رقم الهاتف
+                                </span>
+
+                                <input
+                                    type="tel"
+                                    name="student_phone"
+                                    autocomplete="tel"
+                                    inputmode="tel"
+                                    placeholder="رقم التواصل"
+                                    required>
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="student-form-actions">
+
+                            <button
+                                type="submit"
+                                class="student-submit-button">
+
+                                <span>
+                                    إرسال الاستشارة عبر واتساب
+                                </span>
+
+                                <span aria-hidden="true">
+                                    ←
+                                </span>
+
+                            </button>
+
+
+                            <a
+                                href="https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg=="
+                                class="student-instagram-button"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                <span>
+                                    التواصل عبر Instagram
+                                </span>
+
+                                <span aria-hidden="true">
+                                    ↗
+                                </span>
+
+                            </a>
+
+                        </div>
+
+
+                        <p class="student-form-disclaimer">
+
+                            عند إرسال الاستشارة عبر واتساب، سيتم تجهيز رسالة
+                            تحتوي على المعلومات التي أدخلتها وفتح المحادثة لإرسالها.
+
+                        </p>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         STUDENT PAGE FOOTER
+    ====================================================== -->
+
+    <footer class="student-footer">
+
+        <div class="student-footer-inner">
+
+            <span class="student-footer-copy">
+                © 2026 AL YOSRA STORE
+            </span>
+
+            <span class="student-footer-reserved">
+                جميع الحقوق محفوظة
+            </span>
+
+            <span class="student-footer-powered">
+
+                powered by
+
+                <a
+                    href="https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg=="
+                    target="_blank"
+                    rel="noopener noreferrer">
+
+                    Mohamad Balwi
+
+                </a>
+
+            </span>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =====================================================
+         NAVBAR JS
+    ====================================================== -->
+
+    <script src="js/navbar.js"></script>
+
+
+    <!-- =====================================================
+         STUDENT CONSULTATION JS
+    ====================================================== -->
+
+    <script>
+        (function () {
+
+            "use strict";
+
+            const form =
+                document.getElementById("studentConsultationForm");
+
+            if (!form) return;
+
+
+            /* ================================================
+               SIDE MENU
+            ================================================= */
+
+            const menuToggle =
+                document.getElementById("menuToggle");
+
+            const sideMenu =
+                document.getElementById("sideMenu");
+
+            const sideMenuOverlay =
+                document.getElementById("sideMenuOverlay");
+
+            const sideMenuClose =
+                document.getElementById("sideMenuClose");
+
+
+            function openMenu() {
+
+                if (!sideMenu) return;
+
+                sideMenu.classList.add("open");
+
+                sideMenuOverlay?.classList.add("open");
+
+                sideMenu.setAttribute(
+                    "aria-hidden",
+                    "false"
+                );
+
+                document.body.classList.add(
+                    "side-menu-open"
+                );
+            }
+
+
+            function closeMenu() {
+
+                if (!sideMenu) return;
+
+                sideMenu.classList.remove("open");
+
+                sideMenuOverlay?.classList.remove("open");
+
+                sideMenu.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+                document.body.classList.remove(
+                    "side-menu-open"
+                );
+            }
+
+
+            menuToggle?.addEventListener(
+                "click",
+                openMenu
+            );
+
+            sideMenuClose?.addEventListener(
+                "click",
+                closeMenu
+            );
+
+            sideMenuOverlay?.addEventListener(
+                "click",
+                closeMenu
+            );
+
+
+            sideMenu
+                ?.querySelectorAll("a")
+                .forEach(function (link) {
+
+                    link.addEventListener(
+                        "click",
+                        closeMenu
+                    );
+
+                });
+
+
+            /* ================================================
+               CONSULTATION TYPES
+            ================================================= */
+
+            const radios =
+                form.querySelectorAll(
+                    'input[name="consultation_type"]'
+                );
+
+
+            const dynamicGroup =
+                document.getElementById(
+                    "dynamicConsultationGroup"
+                );
+
+
+            const dynamicTitle =
+                document.getElementById(
+                    "dynamicTitle"
+                );
+
+
+            const dynamicDescription =
+                document.getElementById(
+                    "dynamicDescription"
+                );
+
+
+            const dynamicItems = {
+
+                "اختيار أداة": {
+                    element:
+                        document.getElementById("toolDetails"),
+
+                    title:
+                        "ما الأداة التي تريد الاستفسار عنها؟",
+
+                    description:
+                        "اكتب اسم الأداة التي تريد معرفة المزيد عنها."
+                },
+
+
+                "مقارنة أدوات": {
+                    element:
+                        document.getElementById("comparisonDetails"),
+
+                    title:
+                        "الأدوات التي تريد مقارنتها",
+
+                    description:
+                        "اكتب الأدوات التي تريد معرفة الفرق بينها."
+                },
+
+
+                "أدوات سنة دراسية": {
+                    element:
+                        document.getElementById("toolDetails"),
+
+                    title:
+                        "الأدوات التي تفكر بها",
+
+                    description:
+                        "يمكنك كتابة أداة معينة أو توضيح طلبك في الرسالة."
+                },
+
+
+                "استشارة مادة": {
+                    element:
+                        document.getElementById("subjectDetails"),
+
+                    title:
+                        "ما المادة التي تحتاج فيها إلى المساعدة؟",
+
+                    description:
+                        "اكتب اسم المادة التي تريد الاستشارة بخصوصها."
+                },
+
+
+                "موضوع أو Chapter": {
+                    element:
+                        document.getElementById("topicDetails"),
+
+                    title:
+                        "حدد الموضوع الذي يشغلك",
+
+                    description:
+                        "تحديد المادة والموضوع يساعدنا على فهم سؤالك."
+                },
+
+
+                "استشارة عملية": {
+                    element:
+                        document.getElementById("practicalDetails"),
+
+                    title:
+                        "أخبرنا عن المرحلة العملية",
+
+                    description:
+                        "اكتب المرحلة أو التدريب وما الذي تحتاج إلى معرفته."
+                },
+
+
+                "استشارة عامة": {
+                    element:
+                        document.getElementById("generalDetails"),
+
+                    title:
+                        "ما موضوع الاستشارة؟",
+
+                    description:
+                        "اكتب باختصار المجال الذي تريد السؤال عنه."
+                }
+
+            };
+
+
+            function clearDynamic() {
+
+                form
+                    .querySelectorAll(
+                        ".student-dynamic-content"
+                    )
+                    .forEach(function (item) {
+
+                        item.hidden = true;
+
+                        item.classList.remove(
+                            "is-visible"
+                        );
+
+                    });
+
+
+                form
+                    .querySelectorAll(
+                        ".student-dynamic-content input"
+                    )
+                    .forEach(function (input) {
+
+                        input.required = false;
+
+                    });
+
+            }
+
+
+            function showDynamic(type) {
+
+                clearDynamic();
+
+                const config =
+                    dynamicItems[type];
+
+
+                if (!config || !config.element) {
+
+                    dynamicGroup.hidden = true;
+
+                    return;
+
+                }
+
+
+                dynamicGroup.hidden = false;
+
+
+                dynamicTitle.textContent =
+                    config.title;
+
+
+                dynamicDescription.textContent =
+                    config.description;
+
+
+                config.element.hidden = false;
+
+
+                requestAnimationFrame(function () {
+
+                    config.element.classList.add(
+                        "is-visible"
+                    );
+
+                });
+
+
+                if (type === "اختيار أداة") {
+
+                    document.getElementById(
+                        "toolName"
+                    ).required = true;
+
+                }
+
+
+                if (type === "مقارنة أدوات") {
+
+                    document.getElementById(
+                        "toolOne"
+                    ).required = true;
+
+                    document.getElementById(
+                        "toolTwo"
+                    ).required = true;
+
+                }
+
+
+                if (type === "استشارة مادة") {
+
+                    document.getElementById(
+                        "subjectName"
+                    ).required = true;
+
+                }
+
+
+                if (type === "موضوع أو Chapter") {
+
+                    document.getElementById(
+                        "topicSubject"
+                    ).required = true;
+
+                    document.getElementById(
+                        "topicName"
+                    ).required = true;
+
+                }
+
+
+                if (type === "استشارة عملية") {
+
+                    document.getElementById(
+                        "practicalStage"
+                    ).required = true;
+
+                    document.getElementById(
+                        "practicalNeed"
+                    ).required = true;
+
+                }
+
+
+                if (type === "استشارة عامة") {
+
+                    document.getElementById(
+                        "generalTopic"
+                    ).required = true;
+
+                }
+
+            }
+
+
+            radios.forEach(function (radio) {
+
+                radio.addEventListener(
+                    "change",
+                    function () {
+
+                        form
+                            .querySelectorAll(
+                                ".student-consultation-option"
+                            )
+                            .forEach(function (option) {
+
+                                option.classList.remove(
+                                    "is-selected"
+                                );
+
+                            });
+
+
+                        const parent =
+                            radio.closest(
+                                ".student-consultation-option"
+                            );
+
+
+                        parent?.classList.add(
+                            "is-selected"
+                        );
+
+
+                        showDynamic(
+                            radio.value
+                        );
+
+                    }
+                );
+
+            });
+
+
+            /* ================================================
+               WHATSAPP
+            ================================================= */
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    if (!form.checkValidity()) {
+
+                        form.reportValidity();
+
+                        return;
+
+                    }
+
+
+                    const data =
+                        new FormData(form);
+
+
+                    const name =
+                        (data.get("student_name") || "")
+                            .trim();
+
+
+                    const university =
+                        (data.get("university") || "")
+                            .trim();
+
+
+                    const year =
+                        (data.get("academic_year") || "")
+                            .trim();
+
+
+                    const phone =
+                        (data.get("student_phone") || "")
+                            .trim();
+
+
+                    const consultation =
+                        (data.get("consultation_type") || "")
+                            .trim();
+
+
+                    const note =
+                        (data.get("student_note") || "")
+                            .trim();
+
+
+                    const messageParts = [
+
+                        "مرحبًا متجر اليُسرى،",
+
+                        "",
+
+                        "أرغب بطلب استشارة طلابية.",
+
+                        "",
+
+                        "الاسم: " + name,
+
+                        "الجامعة: " + university,
+
+                        "السنة الدراسية: " + year,
+
+                        "نوع الاستشارة: " + consultation
+
+                    ];
+
+
+                    if (
+                        consultation ===
+                        "اختيار أداة"
+                    ) {
+
+                        const tool =
+                            (data.get("tool_name") || "")
+                                .trim();
+
+                        if (tool) {
+
+                            messageParts.push(
+                                "اسم الأداة: " + tool
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "مقارنة أدوات"
+                    ) {
+
+                        const toolOne =
+                            (data.get("tool_one") || "")
+                                .trim();
+
+                        const toolTwo =
+                            (data.get("tool_two") || "")
+                                .trim();
+
+
+                        if (toolOne) {
+
+                            messageParts.push(
+                                "الأداة الأولى: " + toolOne
+                            );
+
+                        }
+
+
+                        if (toolTwo) {
+
+                            messageParts.push(
+                                "الأداة الثانية: " + toolTwo
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "أدوات سنة دراسية"
+                    ) {
+
+                        const tool =
+                            (data.get("tool_name") || "")
+                                .trim();
+
+                        if (tool) {
+
+                            messageParts.push(
+                                "الأداة / الاحتياج: " + tool
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "استشارة مادة"
+                    ) {
+
+                        const subject =
+                            (data.get("subject_name") || "")
+                                .trim();
+
+                        if (subject) {
+
+                            messageParts.push(
+                                "اسم المادة: " + subject
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "موضوع أو Chapter"
+                    ) {
+
+                        const subject =
+                            (data.get("topic_subject") || "")
+                                .trim();
+
+                        const topic =
+                            (data.get("topic_name") || "")
+                                .trim();
+
+
+                        if (subject) {
+
+                            messageParts.push(
+                                "المادة: " + subject
+                            );
+
+                        }
+
+
+                        if (topic) {
+
+                            messageParts.push(
+                                "الموضوع / Chapter: " + topic
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "استشارة عملية"
+                    ) {
+
+                        const stage =
+                            (data.get("practical_stage") || "")
+                                .trim();
+
+                        const need =
+                            (data.get("practical_need") || "")
+                                .trim();
+
+
+                        if (stage) {
+
+                            messageParts.push(
+                                "المرحلة / التدريب: " + stage
+                            );
+
+                        }
+
+
+                        if (need) {
+
+                            messageParts.push(
+                                "الاحتياج: " + need
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        consultation ===
+                        "استشارة عامة"
+                    ) {
+
+                        const topic =
+                            (data.get("general_topic") || "")
+                                .trim();
+
+                        if (topic) {
+
+                            messageParts.push(
+                                "موضوع الاستشارة: " + topic
+                            );
+
+                        }
+
+                    }
+
+
+                    if (note) {
+
+                        messageParts.push(
+                            "تفاصيل إضافية: " + note
+                        );
+
+                    }
+
+
+                    messageParts.push(
+                        "رقم التواصل: " + phone
+                    );
+
+
+                    const message =
+                        messageParts.join("\n");
+
+
+                    const whatsappNumber =
+                        "963988902539";
+
+
+                    const whatsappUrl =
+                        "https://wa.me/" +
+                        whatsappNumber +
+                        "?text=" +
+                        encodeURIComponent(message);
+
+
+                    window.open(
+                        whatsappUrl,
+                        "_blank",
+                        "noopener,noreferrer"
+                    );
+
+                }
+            );
+
+        })();
+    </script>
+
+</body>
+
+</html>                          
