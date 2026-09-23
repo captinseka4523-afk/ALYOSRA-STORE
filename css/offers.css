@@ -1089,95 +1089,6 @@
    SEARCH POPOVER
    ========================================================= */
 
-.search-popover {
-    position: fixed;
-
-    z-index: 1000;
-
-    display: none;
-
-    width:
-        min(430px, calc(100vw - 30px));
-
-    padding: 10px;
-
-    border-radius: 12px;
-
-    background: #ffffff;
-
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-
-.search-popover.open {
-    display: block;
-}
-
-
-.search-popover-field {
-    position: relative;
-
-    display: flex;
-
-    align-items: center;
-}
-
-
-.search-popover-icon {
-    position: absolute;
-
-    right: 13px;
-
-    width: 18px;
-    height: 18px;
-
-    color: #697783;
-
-    pointer-events: none;
-}
-
-
-.search-popover input {
-    width: 100%;
-
-    min-height: 44px;
-
-    padding:
-        8px 42px 8px 14px;
-
-    border:
-        1px solid #d9e0e5;
-
-    border-radius: 9px;
-
-    outline: none;
-
-    background: #ffffff;
-
-    color: #172330;
-
-    font-family: inherit;
-
-    font-size: 0.94rem;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-.search-popover input:focus {
-    border-color: #17344d;
-
-    box-shadow:
-        0 0 0 3px rgba(23, 52, 77, 0.09);
-}
-
-
-.search-popover input::placeholder {
-    color: #8a959e;
-}
 
 
 /* =========================================================
@@ -1649,4 +1560,5 @@
         font-size: clamp(0.9rem, 2.5vw, 1.05rem);
     }
 }
+
 

@@ -916,3 +916,28 @@ body {
         transform: translateY(0);
     }
 }
+
+/* ==========================================
+   Pagination (التجزئة)
+========================================== */
+
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 25px;
+    padding: 15px 0;
+}
+
+.admin-pagination-info {
+    font-size: 14px;
+    color: #374151;
+}
+
+.admin-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+}

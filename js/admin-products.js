@@ -1,291 +1,319 @@
 // ==========================================
-// AL YOSRA STORE - Admin Products
+// AL YOSRA STORE - Admin Products (Production-Grade)
 // ==========================================
 
 let adminProducts = [];
 let adminCategories = [];
 let adminProductCosts = {};
 
+// ==========================================
+// State & Protections
+// ==========================================
+let currentPage = 1;
+const ITEMS_PER_PAGE = 50;
+let totalProductsCount = 0;
+let currentSearchTerm = "";
+let searchTimeout = null;
 
-// ==========================================
-// Admin Toast
-// ==========================================
+let isProductSaving = false;
+let isProductDeleting = false;
+let productImageLoadToken = 0;
 
 let adminProductToastTimer;
 
-function showAdminProductToast(
-    message,
-    type = "success"
-) {
+const ADMIN_PRODUCT_COLUMNS = "id, name, description, price, quantity, main_image, target, product_code, category_id";
 
-    let toast =
-        document.getElementById(
-            "adminProductToast"
-        );
+// ==========================================
+// Toast Notifications
+// ==========================================
+function showAdminProductToast(message, type = "success") {
+    let toast = document.getElementById("adminProductToast");
 
     if (!toast) {
-
-        toast =
-            document.createElement("div");
-
-        toast.id =
-            "adminProductToast";
-
-        document.body.appendChild(
-            toast
-        );
-
+        toast = document.createElement("div");
+        toast.id = "adminProductToast";
+        document.body.appendChild(toast);
     }
 
-    toast.textContent =
-        message;
+    clearTimeout(adminProductToastTimer);
 
-    toast.className =
-        `admin-product-toast ${type} show`;
+    toast.textContent = String(message ?? "");
+    toast.className = `admin-product-toast ${type} show`;
 
-    clearTimeout(
-        adminProductToastTimer
-    );
-
-    adminProductToastTimer =
-        setTimeout(
-            () => {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            3500
-        );
-
+    adminProductToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3500);
 }
 
-
 // ==========================================
-// Load Products
+// Security & Validation Helpers
 // ==========================================
-
-async function loadAdminProducts() {
-
-    const table =
-        document.getElementById(
-            "adminProductsTable"
-        );
-
-    const loading =
-        document.getElementById(
-            "productsLoading"
-        );
-
-    const empty =
-        document.getElementById(
-            "productsEmpty"
-        );
-
-    if (loading) {
-        loading.hidden = false;
-    }
-
-    if (empty) {
-        empty.hidden = true;
-    }
+function isSafeImageUrl(url) {
+    if (!url) return false;
 
     try {
+        const parsed = new URL(String(url), window.location.href);
 
-        const {
-            data,
-            error
-        } = await supabaseClient
+        return (
+            parsed.protocol === "https:" ||
+            parsed.protocol === "http:"
+        );
+    } catch {
+        return false;
+    }
+}
+
+function revokeObjectUrl(url) {
+    if (url) {
+        try {
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.warn("Revoke failed:", e);
+        }
+    }
+}
+
+/*
+ * حماية قيمة البحث قبل إدخالها داخل
+ * صيغة PostgREST الخاصة بـ .or()
+ *
+ * لا نغيّر معنى البحث العادي،
+ * وإنما نمنع المحارف الخاصة من كسر الفلتر.
+ */
+function escapePostgrestSearchValue(value) {
+    return String(value ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/,/g, "\\,")
+        .replace(/\(/g, "\\(")
+        .replace(/\)/g, "\\)")
+        .replace(/%/g, "\\%")
+        .replace(/_/g, "\\_");
+}
+
+// ==========================================
+// Load Data (Paginated + Debounced Search)
+// ==========================================
+async function loadAdminProducts() {
+    const table = document.getElementById("adminProductsTable");
+    const loading = document.getElementById("productsLoading");
+    const empty = document.getElementById("productsEmpty");
+    const pagination = document.getElementById("productsPagination");
+
+    if (loading) loading.hidden = false;
+    if (empty) empty.hidden = true;
+    if (pagination) pagination.hidden = true;
+    if (table) table.innerHTML = "";
+
+    try {
+        let query = supabaseClient
             .from("products")
-            .select("*")
-            .order("id", {
-                ascending: true
-            });
+            .select(ADMIN_PRODUCT_COLUMNS, { count: "exact" })
+            .order("id", { ascending: false });
 
-        if (error) {
-            throw error;
+        if (currentSearchTerm) {
+            const safeSearchTerm =
+                escapePostgrestSearchValue(currentSearchTerm);
+
+            query = query.or(
+                `name.ilike.%${safeSearchTerm}%,product_code.ilike.%${safeSearchTerm}%`
+            );
         }
 
-        adminProducts =
-            data || [];
+        const from = (currentPage - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE - 1;
+
+        query = query.range(from, to);
+
+        const { data, count, error } = await query;
+
+        if (error) throw error;
+
+        adminProducts = Array.isArray(data) ? data : [];
+        totalProductsCount = count || 0;
 
         await loadAdminProductCosts();
 
         renderAdminProducts();
-
-        updateProductsCount();
-
+        updatePaginationUI();
+        updateProductsCountDisplay();
     } catch (error) {
-
-        console.error(
-            "Error loading products:",
-            error
-        );
+        console.error("Load products error:", error);
 
         if (loading) {
-
-            loading.textContent =
-                "حدث خطأ أثناء تحميل المنتجات.";
-
+            loading.textContent = "حدث خطأ أثناء تحميل المنتجات.";
         }
 
         showAdminProductToast(
-            "حدث خطأ أثناء تحميل المنتجات.",
+            "تعذر تحميل المنتجات.",
             "error"
         );
-
     }
-
 }
 
-
-// ==========================================
-// Load Product Costs
-// ==========================================
-
 async function loadAdminProductCosts() {
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("product_costs")
-        .select(
-            "product_id, purchase_cost"
-        );
-
-    if (error) {
-        throw error;
+    if (adminProducts.length === 0) {
+        adminProductCosts = {};
+        return;
     }
+
+    const productIds = adminProducts.map(product => product.id);
+
+    const { data, error } = await supabaseClient
+        .from("product_costs")
+        .select("product_id, purchase_cost")
+        .in("product_id", productIds);
+
+    if (error) throw error;
 
     adminProductCosts = {};
 
-    (data || []).forEach(
-        cost => {
-
-            adminProductCosts[
-                String(cost.product_id)
-            ] =
-                cost.purchase_cost;
-
-        }
-    );
-
+    (data || []).forEach(cost => {
+        adminProductCosts[String(cost.product_id)] =
+            cost.purchase_cost;
+    });
 }
-
-
-// ==========================================
-// Load Categories
-// ==========================================
 
 async function loadAdminCategories() {
-
     try {
-
-        const {
-            data,
-            error
-        } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from("categories")
             .select("id, name")
-            .order("id", {
-                ascending: true
-            });
+            .order("id", { ascending: true });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
-        adminCategories =
-            data || [];
+        adminCategories = Array.isArray(data) ? data : [];
 
         renderCategoryOptions();
-
-        updateCategoriesCount();
-
+        updateCategoriesCountDisplay();
     } catch (error) {
-
-        console.error(
-            "Error loading categories:",
-            error
-        );
+        console.error("Categories error:", error);
 
         showAdminProductToast(
-            "حدث خطأ أثناء تحميل التصنيفات.",
+            "تعذر تحميل التصنيفات.",
             "error"
         );
-
     }
-
 }
 
+// ==========================================
+// Pagination UI
+// ==========================================
+function setupPaginationControls() {
+    const nextBtn = document.getElementById("nextPageBtn");
+    const prevBtn = document.getElementById("prevPageBtn");
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            const totalPages =
+                Math.ceil(
+                    totalProductsCount / ITEMS_PER_PAGE
+                ) || 1;
+
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadAdminProducts();
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadAdminProducts();
+            }
+        });
+    }
+}
+
+function updatePaginationUI() {
+    const pagination =
+        document.getElementById("productsPagination");
+
+    const nextBtn =
+        document.getElementById("nextPageBtn");
+
+    const prevBtn =
+        document.getElementById("prevPageBtn");
+
+    const pageNum =
+        document.getElementById("currentPageNum");
+
+    const totalPagesSpan =
+        document.getElementById("totalPagesNum");
+
+    if (!pagination) return;
+
+    if (totalProductsCount === 0) {
+        pagination.hidden = true;
+        return;
+    }
+
+    pagination.hidden = false;
+
+    const totalPages =
+        Math.ceil(
+            totalProductsCount / ITEMS_PER_PAGE
+        ) || 1;
+
+    if (pageNum) {
+        pageNum.textContent = currentPage;
+    }
+
+    if (totalPagesSpan) {
+        totalPagesSpan.textContent = totalPages;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled =
+            currentPage === totalPages;
+    }
+}
 
 // ==========================================
-// Render Categories
+// Render UI
 // ==========================================
-
 function renderCategoryOptions() {
-
     const select =
-        document.getElementById(
-            "productCategory"
-        );
+        document.getElementById("productCategory");
 
     if (!select) return;
 
-    select.innerHTML = `
-        <option value="">
-            اختر التصنيف
-        </option>
-    `;
+    select.innerHTML =
+        '<option value="">اختر التصنيف</option>';
 
-    adminCategories.forEach(
-        category => {
+    const fragment =
+        document.createDocumentFragment();
 
-            const option =
-                document.createElement(
-                    "option"
-                );
+    adminCategories.forEach(category => {
+        if (!category) return;
 
-            option.value =
-                category.id;
+        const option =
+            document.createElement("option");
 
-            option.textContent =
-                category.name;
+        option.value = String(category.id);
+        option.textContent = String(category.name);
 
-            select.appendChild(
-                option
-            );
+        fragment.appendChild(option);
+    });
 
-        }
-    );
-
+    select.appendChild(fragment);
 }
 
-
-// ==========================================
-// Render Products
-// ==========================================
-
-function renderAdminProducts(
-    searchTerm = ""
-) {
-
+function renderAdminProducts() {
     const table =
-        document.getElementById(
-            "adminProductsTable"
-        );
+        document.getElementById("adminProductsTable");
 
     const loading =
-        document.getElementById(
-            "productsLoading"
-        );
+        document.getElementById("productsLoading");
 
     const empty =
-        document.getElementById(
-            "productsEmpty"
-        );
+        document.getElementById("productsEmpty");
 
     if (!table) return;
 
@@ -295,213 +323,125 @@ function renderAdminProducts(
 
     table.innerHTML = "";
 
-    const search =
-        searchTerm
-            .trim()
-            .toLowerCase();
-
-    const filteredProducts =
-        adminProducts.filter(
-            product => {
-
-                const name =
-                    String(
-                        product.name || ""
-                    ).toLowerCase();
-
-                const code =
-                    String(
-                        product.product_code || ""
-                    ).toLowerCase();
-
-                return (
-                    name.includes(search) ||
-                    code.includes(search)
-                );
-
-            }
-        );
-
-    if (
-        filteredProducts.length === 0
-    ) {
-
+    if (adminProducts.length === 0) {
         if (empty) {
             empty.hidden = false;
         }
 
         return;
-
     }
 
     if (empty) {
         empty.hidden = true;
     }
 
-    filteredProducts.forEach(
-        product => {
+    const fragment =
+        document.createDocumentFragment();
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+    adminProducts.forEach(product => {
+        if (!product) return;
 
-            const image =
-                product.main_image ||
-                "";
+        const row =
+            document.createElement("tr");
 
-            const quantity =
-                Number(
-                    product.quantity || 0
-                );
+        const quantity =
+            Number(product.quantity || 0);
 
-            const category =
-                adminCategories.find(
-                    category =>
-                        String(category.id) ===
-                        String(product.category_id)
-                );
+        const imageUrl =
+            String(product.main_image || "").trim();
 
-            const categoryName =
-                category
-                    ? category.name
-                    : "بدون تصنيف";
-
-            row.innerHTML = `
-
-                <td>
-
-                    ${
-                        image
-                        ?
-                        `
-                        <img
-                            class="admin-product-image"
-                            src="${escapeHtml(image)}"
-                            alt="${escapeHtml(
-                                product.name || ""
-                            )}"
-                        >
-                        `
-                        :
-                        `
-                        <div
-                            class="admin-product-image"
-                            style="
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                background:#f3f4f6;
-                            "
-                        >
-                            —
-                        </div>
-                        `
-                    }
-
-                </td>
-
-                <td>
-
-                    <strong>
-                        ${escapeHtml(
-                            product.name || ""
-                        )}
-                    </strong>
-
-                </td>
-
-                <td>
-
-                    ${formatPrice(
-                        product.price
-                    )}
-
-                </td>
-
-                <td>
-
-                    <span
-                        class="${
-                            quantity <= 0
-                                ? "stock-empty"
-                                : "stock-available"
-                        }"
-                    >
-                        ${quantity}
-                    </span>
-
-                </td>
-
-                <td>
-
-                    ${escapeHtml(
-                        categoryName
-                    )}
-
-                </td>
-
-                <td>
-
-                    ${escapeHtml(
-                        product.product_code || ""
-                    )}
-
-                </td>
-
-                <td>
-
-                    <div class="admin-actions">
-
-                        <button
-                            type="button"
-                            class="admin-edit-button"
-                            data-action="edit"
-                            data-id="${product.id}"
-                        >
-                            تعديل
-                        </button>
-
-                        <button
-                            type="button"
-                            class="admin-delete-button"
-                            data-action="delete"
-                            data-id="${product.id}"
-                        >
-                            حذف
-                        </button>
-
-                    </div>
-
-                </td>
-
-            `;
-
-            table.appendChild(
-                row
+        const category =
+            adminCategories.find(
+                category =>
+                    String(category.id) ===
+                    String(product.category_id)
             );
 
-        }
-    );
+        const categoryName =
+            category
+                ? category.name
+                : "بدون تصنيف";
 
+        let imageHTML =
+            `<div class="admin-product-image" style="display:flex; align-items:center; justify-content:center; background:#f3f4f6;">—</div>`;
+
+        if (
+            imageUrl &&
+            isSafeImageUrl(imageUrl)
+        ) {
+            imageHTML =
+                `<img class="admin-product-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name || "")}" loading="lazy" decoding="async">`;
+        }
+
+        row.innerHTML = `
+            <td>${imageHTML}</td>
+
+            <td>
+                <strong>
+                    ${escapeHtml(product.name || "")}
+                </strong>
+            </td>
+
+            <td>
+                ${formatPrice(product.price)}
+            </td>
+
+            <td>
+                <span class="${
+                    quantity <= 0
+                        ? "stock-empty"
+                        : "stock-available"
+                }">
+                    ${quantity}
+                </span>
+            </td>
+
+            <td>
+                ${escapeHtml(categoryName)}
+            </td>
+
+            <td>
+                ${escapeHtml(product.product_code || "")}
+            </td>
+
+            <td>
+                <div class="admin-actions">
+                    <button
+                        type="button"
+                        class="admin-edit-button"
+                        data-action="edit"
+                        data-id="${product.id}">
+                        تعديل
+                    </button>
+
+                    <button
+                        type="button"
+                        class="admin-delete-button"
+                        data-action="delete"
+                        data-id="${product.id}">
+                        حذف
+                    </button>
+                </div>
+            </td>
+        `;
+
+        fragment.appendChild(row);
+    });
+
+    table.appendChild(fragment);
 }
 
-
 // ==========================================
-// Product Image Editor State
+// Image Editor State & Elements
 // ==========================================
-
 let productImageEditorState = {
     file: null,
     image: null,
     objectUrl: null,
-
     scale: 1,
     offsetX: 0,
     offsetY: 0,
-
     baseScale: 1,
-
     dragging: false,
     startX: 0,
     startY: 0,
@@ -509,13 +449,7 @@ let productImageEditorState = {
     startOffsetY: 0
 };
 
-
-// ==========================================
-// Product Image Editor Elements
-// ==========================================
-
 function getProductImageEditorElements() {
-
     return {
         editor:
             document.getElementById(
@@ -542,115 +476,52 @@ function getProductImageEditorElements() {
                 "resetProductImageEditor"
             )
     };
-
 }
 
-
-// ==========================================
-// Reset Product Image Editor State
-// ==========================================
-
 function resetProductImageEditorState() {
+    productImageLoadToken++;
 
-    /*
-     * إلغاء Object URL الخاص بالصورة المحلية
-     * السابقة لمنع بقائها في الذاكرة أو ظهورها
-     * عند فتح منتج آخر.
-     */
-
-    if (
+    revokeObjectUrl(
         productImageEditorState.objectUrl
-    ) {
+    );
 
-        URL.revokeObjectURL(
-            productImageEditorState.objectUrl
-        );
-
-    }
-
-    productImageEditorState.file =
-        null;
-
-    productImageEditorState.image =
-        null;
-
-    productImageEditorState.objectUrl =
-        null;
-
-    productImageEditorState.scale =
-        1;
-
-    productImageEditorState.offsetX =
-        0;
-
-    productImageEditorState.offsetY =
-        0;
-
-    productImageEditorState.baseScale =
-        1;
-
-    productImageEditorState.dragging =
-        false;
-
-    productImageEditorState.startX =
-        0;
-
-    productImageEditorState.startY =
-        0;
-
-    productImageEditorState.startOffsetX =
-        0;
-
-    productImageEditorState.startOffsetY =
-        0;
+    productImageEditorState = {
+        file: null,
+        image: null,
+        objectUrl: null,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        baseScale: 1,
+        dragging: false,
+        startX: 0,
+        startY: 0,
+        startOffsetX: 0,
+        startOffsetY: 0
+    };
 
     const elements =
         getProductImageEditorElements();
 
     if (elements.image) {
-
-        elements.image.removeAttribute(
-            "src"
-        );
-
-        elements.image.style.transform =
-            "";
-
+        elements.image.removeAttribute("src");
+        elements.image.style.transform = "";
     }
 
     if (elements.editor) {
-
-        elements.editor.hidden =
-            true;
-
+        elements.editor.hidden = true;
     }
 
     if (elements.zoom) {
-
-        elements.zoom.value =
-            "1";
-
-        elements.zoom.min =
-            "0.05";
-
-        elements.zoom.max =
-            "3";
-
-        elements.zoom.step =
-            "0.01";
-
+        elements.zoom.min = "0.05";
+        elements.zoom.max = "3";
+        elements.zoom.step = "0.01";
+        elements.zoom.value = "1";
     }
-
 }
 
-
-// ==========================================
-// Reset Complete Product Image State
-// ==========================================
-
 function resetProductImageState() {
-
-    const imageFileInput =
+    const fileInput =
         document.getElementById(
             "productImageFile"
         );
@@ -670,129 +541,36 @@ function resetProductImageState() {
             "productImageStatus"
         );
 
-    if (imageFileInput) {
-
-        imageFileInput.value =
-            "";
-
+    if (fileInput) {
+        fileInput.value = "";
     }
 
-    if (
-        previewImage &&
-        previewImage.dataset.previewUrl
-    ) {
-
-        URL.revokeObjectURL(
+    if (previewImage) {
+        revokeObjectUrl(
             previewImage.dataset.previewUrl
         );
 
         delete previewImage.dataset.previewUrl;
 
-    }
-
-    if (previewImage) {
-
-        previewImage.removeAttribute(
-            "src"
-        );
-
+        previewImage.removeAttribute("src");
     }
 
     if (previewContainer) {
-
-        previewContainer.hidden =
-            true;
-
+        previewContainer.hidden = true;
     }
 
     if (status) {
-
         status.textContent =
             "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.";
-
     }
 
-    /*
-     * مهم جدًا:
-     * تنظيف حالة محرر الصور أيضًا.
-     */
     resetProductImageEditorState();
-
 }
-
-
-// ==========================================
-// Add Product Modal
-// ==========================================
-
-function openAddProductModal() {
-
-    const modal =
-        document.getElementById(
-            "productModal"
-        );
-
-    const form =
-        document.getElementById(
-            "productForm"
-        );
-
-    const title =
-        document.getElementById(
-            "productModalTitle"
-        );
-
-    const id =
-        document.getElementById(
-            "productId"
-        );
-
-    if (!modal) return;
-
-    /*
-     * تنظيف كامل قبل فتح نافذة منتج جديد.
-     * هذا يمنع انتقال صورة المنتج السابق.
-     */
-    resetProductImageState();
-
-    if (form) {
-        form.reset();
-    }
-
-    if (id) {
-        id.value = "";
-    }
-
-    const purchaseCost =
-        document.getElementById(
-            "productPurchaseCost"
-        );
-
-    if (purchaseCost) {
-        purchaseCost.value = "";
-    }
-
-    if (title) {
-        title.textContent =
-            "إضافة منتج";
-    }
-
-    clearFormMessage();
-
-    modal.hidden = false;
-
-}
-
-
-// ==========================================
-// Edit Product Modal
-// ==========================================
 
 function setProductImagePreview(
     imageUrl,
     statusText = ""
 ) {
-
     const previewContainer =
         document.getElementById(
             "productImagePreview"
@@ -812,57 +590,77 @@ function setProductImagePreview(
         return;
     }
 
-    if (
+    revokeObjectUrl(
         previewImage.dataset.previewUrl
-    ) {
+    );
 
-        URL.revokeObjectURL(
-            previewImage.dataset.previewUrl
-        );
+    delete previewImage.dataset.previewUrl;
 
-        delete previewImage.dataset.previewUrl;
+    const validUrl =
+        imageUrl &&
+        isSafeImageUrl(imageUrl);
 
-    }
+    if (!validUrl) {
+        previewImage.removeAttribute("src");
+        previewContainer.hidden = true;
 
-    if (!imageUrl) {
-
-        previewImage.removeAttribute(
-            "src"
-        );
-
-        previewContainer.hidden =
-            true;
-
-        if (status && statusText) {
-
-            status.textContent =
-                statusText;
-
+        if (status) {
+            status.textContent = statusText;
         }
 
         return;
-
     }
 
-    previewImage.src =
-        imageUrl;
+    previewImage.src = imageUrl;
+    previewContainer.hidden = false;
 
-    previewContainer.hidden =
-        false;
-
-    if (status && statusText) {
-
-        status.textContent =
-            statusText;
-
+    if (status) {
+        status.textContent = statusText;
     }
-
 }
 
+// ==========================================
+// Modals
+// ==========================================
+function openAddProductModal() {
+    if (isProductSaving) return;
 
-function openEditProductModal(
-    id
-) {
+    const modal =
+        document.getElementById("productModal");
+
+    const form =
+        document.getElementById("productForm");
+
+    const title =
+        document.getElementById(
+            "productModalTitle"
+        );
+
+    resetProductImageState();
+
+    if (form) {
+        form.reset();
+    }
+
+    document.getElementById("productId").value = "";
+
+    document.getElementById(
+        "productPurchaseCost"
+    ).value = "";
+
+    if (title) {
+        title.textContent = "إضافة منتج";
+    }
+
+    clearFormMessage();
+
+    if (modal) {
+        modal.hidden = false;
+    }
+}
+
+function openEditProductModal(id) {
+    if (isProductSaving) return;
 
     const product =
         adminProducts.find(
@@ -872,24 +670,23 @@ function openEditProductModal(
         );
 
     if (!product) {
+        showAdminProductToast(
+            "المنتج غير موجود.",
+            "error"
+        );
+
         return;
     }
 
-    /*
-     * تنظيف حالة محرر الصور أولًا.
-     * مهم عند الانتقال مباشرة من منتج إلى منتج آخر.
-     */
     resetProductImageState();
 
     document.getElementById(
         "productId"
-    ).value =
-        product.id;
+    ).value = product.id;
 
     document.getElementById(
         "productName"
-    ).value =
-        product.name || "";
+    ).value = product.name || "";
 
     document.getElementById(
         "productCode"
@@ -921,160 +718,103 @@ function openEditProductModal(
     ).value =
         product.description || "";
 
-    const imageFileInput =
-        document.getElementById(
-            "productImageFile"
+    document.getElementById(
+        "productPurchaseCost"
+    ).value =
+        adminProductCosts[
+            String(product.id)
+        ] ?? "";
+
+    if (product.main_image) {
+        setProductImagePreview(
+            String(product.main_image),
+            "الصورة الحالية للمنتج."
         );
-
-    if (imageFileInput) {
-        imageFileInput.value = "";
-    }
-
-    setProductImagePreview(
-        product.main_image || null,
-        product.main_image
-            ? "الصورة الحالية للمنتج. اختر صورة جديدة لاستبدالها."
-            : "لا توجد صورة حالية لهذا المنتج."
-    );
-
-    const purchaseCost =
-        document.getElementById(
-            "productPurchaseCost"
-        );
-
-    if (purchaseCost) {
-
-        const currentCost =
-            adminProductCosts[
-                String(product.id)
-            ];
-
-        purchaseCost.value =
-            currentCost ?? "";
-
     }
 
     document.getElementById(
         "productModalTitle"
-    ).textContent =
-        "تعديل المنتج";
+    ).textContent = "تعديل المنتج";
 
     clearFormMessage();
 
     document.getElementById(
         "productModal"
     ).hidden = false;
-
 }
-
-
-// ==========================================
-// Close Modal
-// ==========================================
 
 function closeProductModalWindow() {
+    if (isProductSaving) return;
 
     const modal =
-        document.getElementById(
-            "productModal"
-        );
+        document.getElementById("productModal");
 
     if (modal) {
-
-        modal.hidden =
-            true;
-
+        modal.hidden = true;
     }
 
-    /*
-     * تنظيف كامل لمحرر الصور عند الإغلاق.
-     */
     resetProductImageState();
-
     clearFormMessage();
-
 }
 
-
 // ==========================================
-// Product Image Editor
+// Image Editor Engine (Smart Crop & Drag)
 // ==========================================
-
 function resetProductImageEditor() {
-
-    const elements =
-        getProductImageEditorElements();
-
     productImageEditorState.scale =
         productImageEditorState.baseScale || 1;
 
-    productImageEditorState.offsetX =
-        0;
+    productImageEditorState.offsetX = 0;
+    productImageEditorState.offsetY = 0;
 
-    productImageEditorState.offsetY =
-        0;
+    const { zoom } =
+        getProductImageEditorElements();
 
-    if (elements.zoom) {
-
-        elements.zoom.value =
+    if (zoom) {
+        zoom.value =
             productImageEditorState.scale;
-
     }
 
     updateProductImageEditor();
-
 }
 
-
 function updateProductImageEditor() {
-
-    const elements =
+    const { image } =
         getProductImageEditorElements();
 
     if (
-        !elements.image ||
+        !image ||
         !productImageEditorState.image
     ) {
         return;
     }
 
-    const scale =
-        productImageEditorState.scale;
+    const {
+        scale,
+        offsetX,
+        offsetY
+    } = productImageEditorState;
 
-    elements.image.style.transform =
-        `
-        translate(
-            calc(-50% + ${productImageEditorState.offsetX}px),
-            calc(-50% + ${productImageEditorState.offsetY}px)
-        )
-        scale(${scale})
-        `;
-
+    image.style.transform =
+        `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
 }
 
-
 function setupProductImageEditor() {
-
     const elements =
         getProductImageEditorElements();
 
-    if (!elements.stage) {
-        return;
-    }
-
-    // ======================================
-    // Dragging
-    // ======================================
+    if (!elements.stage) return;
 
     elements.stage.addEventListener(
         "pointerdown",
         event => {
-
             if (
                 !productImageEditorState.image
             ) {
                 return;
             }
+
+            event.preventDefault();
 
             productImageEditorState.dragging =
                 true;
@@ -1091,218 +831,173 @@ function setupProductImageEditor() {
             productImageEditorState.startOffsetY =
                 productImageEditorState.offsetY;
 
-            elements.stage.setPointerCapture(
-                event.pointerId
-            );
-
+            try {
+                elements.stage.setPointerCapture(
+                    event.pointerId
+                );
+            } catch {}
         }
     );
 
     elements.stage.addEventListener(
         "pointermove",
         event => {
-
             if (
                 !productImageEditorState.dragging
             ) {
                 return;
             }
 
-            const deltaX =
-                event.clientX -
-                productImageEditorState.startX;
-
-            const deltaY =
-                event.clientY -
-                productImageEditorState.startY;
-
             productImageEditorState.offsetX =
                 productImageEditorState.startOffsetX +
-                deltaX;
+                (
+                    event.clientX -
+                    productImageEditorState.startX
+                );
 
             productImageEditorState.offsetY =
                 productImageEditorState.startOffsetY +
-                deltaY;
+                (
+                    event.clientY -
+                    productImageEditorState.startY
+                );
 
             updateProductImageEditor();
-
         }
     );
 
+    const stopDragging = event => {
+        productImageEditorState.dragging =
+            false;
+
+        try {
+            elements.stage.releasePointerCapture(
+                event.pointerId
+            );
+        } catch {}
+    };
+
     elements.stage.addEventListener(
         "pointerup",
-        event => {
-
-            productImageEditorState.dragging =
-                false;
-
-            try {
-
-                elements.stage.releasePointerCapture(
-                    event.pointerId
-                );
-
-            } catch {}
-
-        }
+        stopDragging
     );
 
     elements.stage.addEventListener(
         "pointercancel",
-        event => {
-
-            productImageEditorState.dragging =
-                false;
-
-            try {
-
-                elements.stage.releasePointerCapture(
-                    event.pointerId
-                );
-
-            } catch {}
-
-        }
+        stopDragging
     );
 
-    // ======================================
-    // Zoom
-    // ======================================
-
     if (elements.zoom) {
-
         elements.zoom.addEventListener(
             "input",
-            function() {
-
-                productImageEditorState.scale =
+            function () {
+                const value =
                     Number(this.value);
 
-                updateProductImageEditor();
+                if (!Number.isFinite(value)) {
+                    return;
+                }
 
+                productImageEditorState.scale =
+                    value;
+
+                updateProductImageEditor();
             }
         );
-
     }
 
-    // ======================================
-    // Reset
-    // ======================================
-
     if (elements.reset) {
-
         elements.reset.addEventListener(
             "click",
             resetProductImageEditor
         );
-
     }
-
 }
 
-
-// ==========================================
-// Load Image Into Editor
-// ==========================================
-
 async function loadProductImageIntoEditor(file) {
+    if (
+        !file ||
+        !file.type.startsWith("image/")
+    ) {
+        throw new Error(
+            "الملف المحدد ليس صورة صالحة."
+        );
+    }
+
+    const currentToken =
+        ++productImageLoadToken;
+
+    revokeObjectUrl(
+        productImageEditorState.objectUrl
+    );
+
+    const objectUrl =
+        URL.createObjectURL(file);
+
+    productImageEditorState.file = file;
+    productImageEditorState.objectUrl =
+        objectUrl;
+
+    const image = new Image();
+
+    await new Promise(
+        (resolve, reject) => {
+            image.onload = resolve;
+
+            image.onerror = () =>
+                reject(
+                    new Error(
+                        "تعذر قراءة الصورة."
+                    )
+                );
+
+            image.src = objectUrl;
+        }
+    );
+
+    if (
+        currentToken !==
+        productImageLoadToken
+    ) {
+        image.removeAttribute("src");
+        revokeObjectUrl(objectUrl);
+        return;
+    }
+
+    /*
+     * حماية الذاكرة من الصور الضخمة جدًا.
+     */
+    if (
+        image.naturalWidth <= 0 ||
+        image.naturalHeight <= 0 ||
+        image.naturalWidth > 6000 ||
+        image.naturalHeight > 6000
+    ) {
+        throw new Error(
+            "أبعاد الصورة غير صالحة أو ضخمة جدًا للحماية."
+        );
+    }
 
     const elements =
         getProductImageEditorElements();
 
     if (
+        !elements.image ||
         !elements.editor ||
-        !elements.stage ||
-        !elements.image
+        !elements.stage
     ) {
-        return;
-    }
-
-
-    // ======================================
-    // تنظيف الصورة المحلية السابقة
-    // ======================================
-
-    if (
-        productImageEditorState.objectUrl
-    ) {
-
-        URL.revokeObjectURL(
-            productImageEditorState.objectUrl
+        throw new Error(
+            "تعذر تجهيز محرر الصورة."
         );
-
     }
-
-
-    productImageEditorState.file =
-        null;
-
-    productImageEditorState.image =
-        null;
-
-    productImageEditorState.objectUrl =
-        null;
-
-
-    // ======================================
-    // إنشاء Object URL للصورة الجديدة
-    // ======================================
-
-    const objectUrl =
-        URL.createObjectURL(file);
-
-
-    productImageEditorState.objectUrl =
-        objectUrl;
-
-
-    const image =
-        new Image();
-
-
-    await new Promise(
-        (resolve, reject) => {
-
-            image.onload =
-                resolve;
-
-            image.onerror =
-                reject;
-
-            image.src =
-                objectUrl;
-
-        }
-    );
-
-
-    // ======================================
-    // حفظ الصورة في حالة المحرر
-    // ======================================
-
-    productImageEditorState.file =
-        file;
 
     productImageEditorState.image =
         image;
 
-
     elements.image.src =
         objectUrl;
 
-
-    // ======================================
-    // مهم جدًا:
-    // إظهار المحرر قبل قياس الـ stage
-    // ======================================
-
-    elements.editor.hidden =
-        false;
-
-
-    // ======================================
-    // الآن يمكن الحصول على الحجم الحقيقي
-    // ======================================
+    elements.editor.hidden = false;
 
     const stageWidth =
         elements.stage.clientWidth;
@@ -1310,40 +1005,23 @@ async function loadProductImageIntoEditor(file) {
     const stageHeight =
         elements.stage.clientHeight;
 
-
     if (
         stageWidth <= 0 ||
         stageHeight <= 0
     ) {
-
         throw new Error(
             "تعذر تحديد حجم محرر الصورة."
         );
-
     }
-
-
-    // ======================================
-    // حساب الحجم الابتدائي
-    // بحيث تملأ الصورة المربع
-    // دون تشويه أبعادها
-    // ======================================
-
-    const scaleX =
-        stageWidth /
-        image.naturalWidth;
-
-    const scaleY =
-        stageHeight /
-        image.naturalHeight;
-
 
     const baseScale =
         Math.max(
-            scaleX,
-            scaleY
-        );
+            stageWidth /
+                image.naturalWidth,
 
+            stageHeight /
+                image.naturalHeight
+        );
 
     productImageEditorState.baseScale =
         baseScale;
@@ -1357,16 +1035,7 @@ async function loadProductImageIntoEditor(file) {
     productImageEditorState.offsetY =
         0;
 
-    productImageEditorState.dragging =
-        false;
-
-
-    // ======================================
-    // إعداد شريط التحكم بالحجم
-    // ======================================
-
     if (elements.zoom) {
-
         const minZoom =
             Math.max(
                 0.05,
@@ -1379,13 +1048,6 @@ async function loadProductImageIntoEditor(file) {
                 baseScale * 3
             );
 
-        const step =
-            Math.max(
-                0.001,
-                baseScale / 100
-            );
-
-
         elements.zoom.min =
             String(minZoom);
 
@@ -1393,289 +1055,530 @@ async function loadProductImageIntoEditor(file) {
             String(maxZoom);
 
         elements.zoom.step =
-            String(step);
+            String(
+                Math.max(
+                    0.001,
+                    baseScale / 100
+                )
+            );
 
         elements.zoom.value =
             String(baseScale);
-
     }
-
-
-    // ======================================
-    // عرض الصورة
-    // ======================================
 
     updateProductImageEditor();
-
 }
 
-
-async function prepareProductImage(
-    file
-) {
-
-    if (!file) {
-        return null;
-    }
-
-    if (!file.type.startsWith("image/")) {
-
-        throw new Error(
-            "الملف المحدد ليس صورة."
-        );
-
-    }
-
-    const image =
-        await createImageBitmap(file);
-
-    try {
-
-        const width =
-            image.width;
-
-        const height =
-            image.height;
-
-        const canvas =
-            document.createElement(
-                "canvas"
-            );
-
-        canvas.width =
-            width;
-
-        canvas.height =
-            height;
-
-        const context =
-            canvas.getContext(
-                "2d"
-            );
-
-        if (!context) {
-
-            throw new Error(
-                "تعذر تجهيز الصورة."
-            );
-
-        }
-
-        context.drawImage(
-            image,
-            0,
-            0,
-            width,
-            height
-        );
-
-        const blob =
-            await new Promise(
-                (resolve, reject) => {
-
-                    canvas.toBlob(
-                        result => {
-
-                            if (result) {
-
-                                resolve(
-                                    result
-                                );
-
-                            } else {
-
-                                reject(
-                                    new Error(
-                                        "تعذر تحويل الصورة إلى WebP."
-                                    )
-                                );
-
-                            }
-
-                        },
-                        "image/webp",
-                        0.82
-                    );
-
-                }
-            );
-
-        return blob;
-
-    } finally {
-
-        image.close();
-
-    }
-
-}
-
-
 // ==========================================
-// Export Edited Product Image
+// Image Export & Smart Compression
 // ==========================================
-
 async function exportEditedProductImage() {
-
-    const elements =
+    const { stage } =
         getProductImageEditorElements();
 
     const state =
         productImageEditorState;
 
-    if (
-        !elements.stage ||
-        !state.image
-    ) {
-
+    if (!stage || !state.image) {
         throw new Error(
             "لم يتم اختيار صورة."
         );
-
     }
 
-    const outputSize =
-        1200;
+    const sourceWidth =
+        state.image.naturalWidth;
 
-    const canvas =
-        document.createElement(
-            "canvas"
+    const sourceHeight =
+        state.image.naturalHeight;
+
+    const originalFileSize =
+        Number(state.file?.size) || 0;
+
+    if (
+        !sourceWidth ||
+        !sourceHeight
+    ) {
+        throw new Error(
+            "تعذر قراءة أبعاد الصورة."
+        );
+    }
+
+    const TARGET_SIZE =
+        50 * 1024;
+
+    const MAX_OUTPUT_SIZE =
+        Math.min(
+            1200,
+            sourceWidth,
+            sourceHeight
         );
 
-    canvas.width =
-        outputSize;
-
-    canvas.height =
-        outputSize;
-
-    const context =
-        canvas.getContext(
-            "2d"
+    const MIN_OUTPUT_SIZE =
+        Math.min(
+            MAX_OUTPUT_SIZE,
+            640
         );
 
-    if (!context) {
+    const MIN_QUALITY = 0.45;
+    const MAX_QUALITY = 0.85;
 
+    const stageWidth =
+        stage.clientWidth;
+
+    const stageHeight =
+        stage.clientHeight;
+
+    if (
+        !stageWidth ||
+        !stageHeight
+    ) {
+        throw new Error(
+            "تعذر تحديد مساحة الصورة."
+        );
+    }
+
+    /*
+     * نحافظ على نفس الـcrop والموضع
+     * والتكبير المستخدم في المحرر.
+     */
+    const renderedWidth =
+        sourceWidth * state.scale;
+
+    const renderedHeight =
+        sourceHeight * state.scale;
+
+    const renderedLeft =
+        (stageWidth - renderedWidth) / 2 +
+        state.offsetX;
+
+    const renderedTop =
+        (stageHeight - renderedHeight) / 2 +
+        state.offsetY;
+
+    /*
+     * إنشاء WebP بالحجم والجودة المطلوبين.
+     */
+    const createWebP =
+        (outputSize, quality) => {
+            return new Promise(
+                (resolve, reject) => {
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
+
+                    const finalSize =
+                        Math.max(
+                            1,
+                            Math.round(
+                                outputSize
+                            )
+                        );
+
+                    canvas.width =
+                        finalSize;
+
+                    canvas.height =
+                        finalSize;
+
+                    const context =
+                        canvas.getContext(
+                            "2d"
+                        );
+
+                    if (!context) {
+                        reject(
+                            new Error(
+                                "تعذر تجهيز الصورة."
+                            )
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * لا نحتاج إلى رسم خلفية.
+                     * WebP الناتج سيحافظ على
+                     * نفس crop الموجود حاليًا.
+                     */
+                    context.clearRect(
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
+
+                    /*
+                     * تحويل إحداثيات محرر الصورة
+                     * إلى إحداثيات الـcanvas.
+                     */
+                    const cropScale =
+                        finalSize /
+                        stageWidth;
+
+                    context.drawImage(
+                        state.image,
+
+                        renderedLeft *
+                            cropScale,
+
+                        renderedTop *
+                            cropScale,
+
+                        renderedWidth *
+                            cropScale,
+
+                        renderedHeight *
+                            cropScale
+                    );
+
+                    canvas.toBlob(
+                        blob => {
+                            if (!blob) {
+                                reject(
+                                    new Error(
+                                        "تعذر استخراج الصورة."
+                                    )
+                                );
+
+                                return;
+                            }
+
+                            resolve(blob);
+                        },
+
+                        "image/webp",
+                        quality
+                    );
+                }
+            );
+        };
+
+    /*
+     * إنتاج عدد محدود من النتائج فقط
+     * للحفاظ على سرعة الرفع.
+     *
+     * النتيجة المرجعة دائمًا Blob.
+     */
+    const findBestResult =
+        async (
+            outputSize,
+            maximumSize = TARGET_SIZE
+        ) => {
+            const qualities = [
+                MAX_QUALITY,
+                0.70,
+                0.55,
+                MIN_QUALITY
+            ];
+
+            let smallestResult =
+                null;
+
+            let bestUnderLimit =
+                null;
+
+            for (
+                const quality of qualities
+            ) {
+                const blob =
+                    await createWebP(
+                        outputSize,
+                        quality
+                    );
+
+                const result = {
+                    blob,
+                    quality,
+                    size: blob.size,
+                    outputSize
+                };
+
+                if (
+                    !smallestResult ||
+                    result.size <
+                        smallestResult.size
+                ) {
+                    smallestResult =
+                        result;
+                }
+
+                /*
+                 * نحافظ على أعلى جودة
+                 * تحقق الحجم المطلوب.
+                 */
+                if (
+                    result.size <=
+                    maximumSize
+                ) {
+                    bestUnderLimit =
+                        result;
+
+                    break;
+                }
+            }
+
+            return (
+                bestUnderLimit ||
+                smallestResult
+            );
+        };
+
+    /*
+     * ---------------------------------------------------------
+     * المسار الخاص بالصور الأصلية الصغيرة
+     * ---------------------------------------------------------
+     *
+     * الهدف هنا عدم تكبير الملف الأصلي بلا داعٍ.
+     *
+     * لكن يجب تطبيق crop المستخدم أولًا،
+     * لذلك لا يمكن ببساطة إعادة الملف الأصلي
+     * إذا كان المستخدم قد اختار crop مختلفًا.
+     */
+    if (
+        originalFileSize > 0 &&
+        originalFileSize <= TARGET_SIZE
+    ) {
+        /*
+         * المحاولة الأولى:
+         * أعلى جودة مع الأبعاد الحالية.
+         */
+        let bestSmallResult =
+            await findBestResult(
+                MAX_OUTPUT_SIZE,
+                originalFileSize
+            );
+
+        if (
+            bestSmallResult &&
+            bestSmallResult.size <=
+                originalFileSize
+        ) {
+            return bestSmallResult.blob;
+        }
+
+        /*
+         * محاولة ثانية بجودة أقل.
+         */
+        const secondResult =
+            await createWebP(
+                MAX_OUTPUT_SIZE,
+                0.55
+            );
+
+        if (
+            secondResult.size <=
+            originalFileSize
+        ) {
+            return secondResult;
+        }
+
+        if (
+            secondResult.size <
+            bestSmallResult.size
+        ) {
+            bestSmallResult = {
+                blob: secondResult,
+                quality: 0.55,
+                size: secondResult.size,
+                outputSize:
+                    MAX_OUTPUT_SIZE
+            };
+        }
+
+        /*
+         * إذا بقي الناتج أكبر من الأصل،
+         * نقلل الأبعاد تدريجيًا.
+         *
+         * هذا يحافظ على crop بدل التضحية به.
+         */
+        if (
+            MAX_OUTPUT_SIZE >
+            MIN_OUTPUT_SIZE
+        ) {
+            const reducedSizes = [
+                Math.round(
+                    MAX_OUTPUT_SIZE * 0.80
+                ),
+                Math.round(
+                    MAX_OUTPUT_SIZE * 0.65
+                )
+            ];
+
+            for (
+                const outputSize
+                of reducedSizes
+            ) {
+                const safeOutputSize =
+                    Math.max(
+                        MIN_OUTPUT_SIZE,
+                        Math.min(
+                            MAX_OUTPUT_SIZE,
+                            outputSize
+                        )
+                    );
+
+                if (
+                    safeOutputSize >=
+                    bestSmallResult.outputSize
+                ) {
+                    continue;
+                }
+
+                const candidate =
+                    await findBestResult(
+                        safeOutputSize,
+                        originalFileSize
+                    );
+
+                if (!candidate) {
+                    continue;
+                }
+
+                if (
+                    candidate.size <=
+                    originalFileSize
+                ) {
+                    return candidate.blob;
+                }
+
+                if (
+                    candidate.size <
+                    bestSmallResult.size
+                ) {
+                    bestSmallResult =
+                        candidate;
+                }
+            }
+        }
+
+        /*
+         * إذا تعذر الوصول إلى حجم <= الأصل
+         * بعد المعالجة، لا نفشل العملية.
+         *
+         * نعيد أصغر نتيجة معالجة وصلنا إليها.
+         */
+        return bestSmallResult.blob;
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * الصور الأكبر من 50 KB
+     * ---------------------------------------------------------
+     */
+
+    let bestResult =
+        await findBestResult(
+            MAX_OUTPUT_SIZE,
+            TARGET_SIZE
+        );
+
+    if (!bestResult) {
         throw new Error(
             "تعذر تجهيز الصورة."
         );
-
     }
 
     /*
-     * لا نضع أي لون للخلفية.
-     *
-     * هذا مهم جدًا للحفاظ على
-     * الشفافية الموجودة في الصورة.
+     * وصلنا إلى 50 KB أو أقل.
      */
-
-    context.clearRect(
-        0,
-        0,
-        outputSize,
-        outputSize
-    );
-
-    const stageWidth =
-        elements.stage.clientWidth;
-
-    const stageHeight =
-        elements.stage.clientHeight;
-
-    const renderedWidth =
-        state.image.naturalWidth *
-        state.scale;
-
-    const renderedHeight =
-        state.image.naturalHeight *
-        state.scale;
+    if (
+        bestResult.size <=
+        TARGET_SIZE
+    ) {
+        return bestResult.blob;
+    }
 
     /*
-     * تحويل إحداثيات السحب من
-     * حجم الشاشة إلى 1200×1200.
+     * لم نصل إلى 50 KB.
+     *
+     * نقلل الأبعاد مرة أو مرتين فقط.
+     * لا توجد عشرات عمليات الضغط.
      */
+    if (
+        MAX_OUTPUT_SIZE >
+        MIN_OUTPUT_SIZE
+    ) {
+        const reducedSizes = [
+            Math.round(
+                MAX_OUTPUT_SIZE * 0.80
+            ),
 
-    const ratio =
-        outputSize /
-        stageWidth;
+            Math.round(
+                MAX_OUTPUT_SIZE * 0.65
+            )
+        ];
 
-    const drawWidth =
-        renderedWidth *
-        ratio;
-
-    const drawHeight =
-        renderedHeight *
-        ratio;
-
-    const drawX =
-        (
-            stageWidth / 2 +
-            state.offsetX
-        ) *
-        ratio -
-        drawWidth / 2;
-
-    const drawY =
-        (
-            stageHeight / 2 +
-            state.offsetY
-        ) *
-        ratio -
-        drawHeight / 2;
-
-    context.drawImage(
-        state.image,
-        drawX,
-        drawY,
-        drawWidth,
-        drawHeight
-    );
-
-    const blob =
-        await new Promise(
-            (resolve, reject) => {
-
-                canvas.toBlob(
-                    result => {
-
-                        if (result) {
-
-                            resolve(
-                                result
-                            );
-
-                        } else {
-
-                            reject(
-                                new Error(
-                                    "تعذر استخراج الصورة."
-                                )
-                            );
-
-                        }
-
-                    },
-                    "image/webp",
-                    0.82
+        for (
+            const outputSize
+            of reducedSizes
+        ) {
+            const safeOutputSize =
+                Math.max(
+                    MIN_OUTPUT_SIZE,
+                    Math.min(
+                        MAX_OUTPUT_SIZE,
+                        outputSize
+                    )
                 );
 
+            if (
+                safeOutputSize >=
+                bestResult.outputSize
+            ) {
+                continue;
             }
-        );
 
-    return blob;
+            const candidate =
+                await findBestResult(
+                    safeOutputSize,
+                    TARGET_SIZE
+                );
 
+            if (!candidate) {
+                continue;
+            }
+
+            /*
+             * وصلنا للهدف.
+             */
+            if (
+                candidate.size <=
+                TARGET_SIZE
+            ) {
+                return candidate.blob;
+            }
+
+            /*
+             * نحتفظ بأصغر نتيجة عملية.
+             */
+            if (
+                candidate.size <
+                bestResult.size
+            ) {
+                bestResult =
+                    candidate;
+            }
+        }
+    }
+
+    /*
+     * تجاوز 50 KB ليس خطأ.
+     *
+     * مثلًا إذا كانت أفضل نتيجة 57 KB،
+     * يتم استخدامها بدل فشل حفظ المنتج.
+     */
+    return bestResult.blob;
 }
 
-
 // ==========================================
-// Product Image File Change
+// Image File Selection
 // ==========================================
-
 document
     .getElementById("productImageFile")
     ?.addEventListener(
         "change",
         async function () {
-
             const file =
                 this.files?.[0];
 
@@ -1695,11 +1598,8 @@ document
                 );
 
             if (!file) {
-
                 resetProductImageState();
-
                 return;
-
             }
 
             if (
@@ -1707,69 +1607,61 @@ document
                     "image/"
                 )
             ) {
+                this.value = "";
+
+                resetProductImageState();
 
                 showAdminProductToast(
                     "يرجى اختيار ملف صورة صالح.",
                     "error"
                 );
 
-                this.value = "";
-
-                resetProductImageState();
-
                 return;
-
             }
 
+            /*
+             * loadProductImageIntoEditor()
+             * هي المسؤولة عن إدارة
+             * productImageLoadToken.
+             *
+             * لا ننشئ token ثاني هنا،
+             * حتى لا يصبح token قديمًا
+             * قبل انتهاء تحميل الصورة.
+             */
+            resetProductImageEditorState();
+
             try {
-
                 if (status) {
-
                     status.textContent =
                         "جاري تجهيز محرر الصورة...";
-
                 }
-
-                /*
-                 * قبل تحميل الصورة الجديدة، يتم
-                 * تنظيف أي صورة محلية سابقة.
-                 */
-                resetProductImageEditorState();
 
                 await loadProductImageIntoEditor(
                     file
                 );
 
                 /*
-                 * نخفي المعاينة النهائية مؤقتًا.
+                 * إذا انتهت عملية تحميل الصورة
+                 * بنجاح، نعرض حالة المحرر.
                  */
-
                 if (previewContainer) {
-
                     previewContainer.hidden =
                         true;
-
                 }
 
                 if (previewImage) {
-
                     previewImage.removeAttribute(
                         "src"
                     );
-
                 }
 
                 if (status) {
-
                     status.textContent =
-                        "حرّك الصورة داخل المربع أو غيّر حجمها، ثم احفظ المنتج.";
-
+                        "حرّك الصورة لاختيار الجزء المناسب.";
                 }
-
             } catch (error) {
-
                 console.error(
-                    "Product image editor error:",
+                    "Image loading error:",
                     error
                 );
 
@@ -1778,49 +1670,43 @@ document
                 resetProductImageState();
 
                 showAdminProductToast(
-                    "تعذر فتح الصورة للتحرير.",
+                    error.message ||
+                        "تعذر تجهيز الصورة.",
                     "error"
                 );
-
             }
-
         }
     );
 
-
 // ==========================================
-// Upload Product Image
+// Upload & Clean Storage
 // ==========================================
-
 async function uploadProductImage(file) {
+    if (!file) return null;
 
-    if (!file) {
-        return null;
-    }
-
+    /*
+     * exportEditedProductImage()
+     * تعيد Blob دائمًا.
+     */
     const optimizedImage =
         await exportEditedProductImage();
 
-    if (!optimizedImage) {
-
+    if (
+        !optimizedImage ||
+        !(optimizedImage instanceof Blob)
+    ) {
         throw new Error(
-            "تعذر تجهيز الصورة."
+            "تعذر تجهيز الصورة للرفع."
         );
-
     }
-
-    const maxFileSize =
-        3 * 1024 * 1024;
 
     if (
         optimizedImage.size >
-        maxFileSize
+        3 * 1024 * 1024
     ) {
-
         throw new Error(
-            "حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت."
+            "حجم الصورة بعد التجهيز أكبر من 3 ميغابايت."
         );
-
     }
 
     const filePath =
@@ -1841,8 +1727,7 @@ async function uploadProductImage(file) {
                     cacheControl:
                         "31536000",
 
-                    upsert:
-                        false
+                    upsert: false
                 }
             );
 
@@ -1850,64 +1735,54 @@ async function uploadProductImage(file) {
         throw uploadError;
     }
 
-    const {
-        data: publicUrlData
-    } =
+    const { data } =
         supabaseClient.storage
             .from("product-images")
             .getPublicUrl(
                 filePath
             );
 
-    if (
-        !publicUrlData?.publicUrl
-    ) {
+    const url =
+        String(
+            data?.publicUrl ?? ""
+        ).trim();
 
+    if (
+        !url ||
+        !isSafeImageUrl(url)
+    ) {
         await supabaseClient.storage
             .from("product-images")
-            .remove([
-                filePath
-            ]);
+            .remove([filePath])
+            .catch(e =>
+                console.warn(e)
+            );
 
         throw new Error(
             "تعذر الحصول على رابط الصورة."
         );
-
     }
 
     return {
-        path:
-            filePath,
-
-        url:
-            publicUrlData.publicUrl
+        path: filePath,
+        url
     };
-
 }
-
-
-// ==========================================
-// Get Product Image Path
-// ==========================================
 
 function getProductImagePath(
     imageUrl
 ) {
+    if (!imageUrl) return null;
 
-    if (!imageUrl) {
-        return null;
-    }
+    const marker =
+        "/storage/v1/object/public/product-images/";
 
     try {
-
-        const url =
-            new URL(imageUrl);
-
-        const marker =
-            "/storage/v1/object/public/product-images/";
+        const parsedUrl =
+            new URL(String(imageUrl));
 
         const index =
-            url.pathname.indexOf(
+            parsedUrl.pathname.indexOf(
                 marker
             );
 
@@ -1915,46 +1790,48 @@ function getProductImagePath(
             return null;
         }
 
-        return decodeURIComponent(
-            url.pathname.slice(
-                index +
-                marker.length
-            )
-        );
+        const encodedPath =
+            parsedUrl.pathname.slice(
+                index + marker.length
+            );
 
+        return encodedPath
+            ? decodeURIComponent(
+                  encodedPath
+              )
+            : null;
     } catch {
-
         return null;
-
     }
-
 }
-
 
 // ==========================================
 // Save Product
 // ==========================================
-
 async function saveProduct(event) {
-
     event.preventDefault();
+
+    if (isProductSaving) return;
 
     clearFormMessage();
 
-    const id =
-        document.getElementById(
-            "productId"
-        ).value.trim();
+    const idValue =
+        document
+            .getElementById("productId")
+            .value
+            .trim();
 
     const name =
-        document.getElementById(
-            "productName"
-        ).value.trim();
+        document
+            .getElementById("productName")
+            .value
+            .trim();
 
-    const code =
-        document.getElementById(
-            "productCode"
-        ).value.trim();
+    const productCode =
+        document
+            .getElementById("productCode")
+            .value
+            .trim();
 
     const price =
         Number(
@@ -1978,249 +1855,223 @@ async function saveProduct(event) {
         );
 
     const categoryId =
-        document.getElementById(
-            "productCategory"
-        ).value;
+        Number(
+            document.getElementById(
+                "productCategory"
+            ).value
+        );
 
     const target =
-        document.getElementById(
-            "productTarget"
-        ).value.trim();
-
-    const imageFile =
-        document.getElementById(
-            "productImageFile"
-        )?.files?.[0] || null;
+        document
+            .getElementById("productTarget")
+            .value
+            .trim();
 
     const description =
-        document.getElementById(
-            "productDescription"
-        ).value.trim();
+        document
+            .getElementById(
+                "productDescription"
+            )
+            .value
+            .trim();
 
-    // ======================================
-    // Validation
-    // ======================================
-
-    if (!name) {
-
-        showFormMessage(
-            "يرجى إدخال اسم المنتج.",
-            "error"
-        );
-
-        return;
-
-    }
-
-    if (!code) {
-
-        showFormMessage(
-            "يرجى إدخال Product Code.",
-            "error"
-        );
-
-        return;
-
-    }
-
-    if (
-        !Number.isFinite(price) ||
-        price < 0
-    ) {
-
-        showFormMessage(
-            "يرجى إدخال سعر صحيح.",
-            "error"
-        );
-
-        return;
-
-    }
-
-    if (
-        !Number.isInteger(quantity) ||
-        quantity < 0
-    ) {
-
-        showFormMessage(
-            "يرجى إدخال كمية صحيحة.",
-            "error"
-        );
-
-        return;
-
-    }
-
-    if (
-        !Number.isFinite(purchaseCost) ||
-        purchaseCost <= 0
-    ) {
-
-        showFormMessage(
-            "يرجى إدخال تكلفة شراء صحيحة أكبر من صفر.",
-            "error"
-        );
-
-        return;
-
-    }
-
-    if (!categoryId) {
-
-        showFormMessage(
-            "يرجى اختيار التصنيف.",
-            "error"
-        );
-
-        return;
-
-    }
+    const imageFile =
+        document
+            .getElementById(
+                "productImageFile"
+            )
+            ?.files?.[0] || null;
 
     const saveButton =
         document.getElementById(
             "saveProductButton"
         );
 
-    if (saveButton) {
+    // ======================================
+    // Validations
+    // ======================================
+    if (!name) {
+        return showFormMessage(
+            "يرجى إدخال اسم المنتج.",
+            "error"
+        );
+    }
 
-        saveButton.disabled =
-            true;
+    if (!productCode) {
+        return showFormMessage(
+            "يرجى إدخال كود المنتج.",
+            "error"
+        );
+    }
+
+    if (
+        !Number.isFinite(price) ||
+        price < 0
+    ) {
+        return showFormMessage(
+            "سعر المنتج غير صالح.",
+            "error"
+        );
+    }
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity < 0
+    ) {
+        return showFormMessage(
+            "الكمية غير صالحة.",
+            "error"
+        );
+    }
+
+    if (
+        !Number.isFinite(
+            purchaseCost
+        ) ||
+        purchaseCost <= 0
+    ) {
+        return showFormMessage(
+            "تكلفة الشراء يجب أن تكون أكبر من صفر.",
+            "error"
+        );
+    }
+
+    if (
+        !Number.isInteger(categoryId) ||
+        categoryId <= 0
+    ) {
+        return showFormMessage(
+            "يرجى اختيار التصنيف.",
+            "error"
+        );
+    }
+
+    isProductSaving = true;
+
+    if (saveButton) {
+        saveButton.disabled = true;
+
+        saveButton.dataset.originalText =
+            saveButton.textContent;
 
         saveButton.textContent =
             "جاري الحفظ...";
-
     }
 
-    let uploadedImagePath =
-        null;
+    let uploadedImagePath = null;
 
     try {
-
-        // ==================================
-        // Existing Product Data
-        // ==================================
+        const isEdit =
+            Boolean(idValue);
 
         const oldProduct =
-            id
+            isEdit
                 ? adminProducts.find(
-                    item =>
-                        String(item.id) ===
-                        String(id)
-                )
+                      item =>
+                          String(item.id) ===
+                          idValue
+                  )
                 : null;
 
         const oldProductData =
             oldProduct
                 ? {
-                    name:
-                        oldProduct.name,
+                      name:
+                          oldProduct.name,
 
-                    description:
-                        oldProduct.description,
+                      description:
+                          oldProduct.description,
 
-                    price:
-                        oldProduct.price,
+                      price:
+                          oldProduct.price,
 
-                    quantity:
-                        oldProduct.quantity,
+                      quantity:
+                          oldProduct.quantity,
 
-                    main_image:
-                        oldProduct.main_image,
+                      main_image:
+                          oldProduct.main_image,
 
-                    target:
-                        oldProduct.target,
+                      target:
+                          oldProduct.target,
 
-                    product_code:
-                        oldProduct.product_code,
+                      product_code:
+                          oldProduct.product_code,
 
-                    category_id:
-                        oldProduct.category_id
-                }
+                      category_id:
+                          oldProduct.category_id
+                  }
                 : null;
 
         const oldPurchaseCost =
-            id
+            isEdit
                 ? adminProductCosts[
-                    String(id)
-                ]
-                : null;
+                      idValue
+                  ]
+                : undefined;
 
         const oldImageUrl =
-            oldProduct?.main_image ||
-            null;
+            String(
+                oldProduct?.main_image ??
+                    ""
+            ).trim();
+
+        let mainImage =
+            oldImageUrl || null;
 
         // ==================================
-        // Upload New Image
+        // Upload new image first
         // ==================================
-
-        let imageUrl =
-            oldImageUrl;
-
         if (imageFile) {
-
-            const uploadedImage =
+            const uploaded =
                 await uploadProductImage(
                     imageFile
                 );
 
-            imageUrl =
-                uploadedImage.url;
-
             uploadedImagePath =
-                uploadedImage.path;
+                uploaded.path;
 
+            mainImage =
+                uploaded.url;
         }
 
-        // ==================================
-        // Product Data
-        // ==================================
-
         const productData = {
-
             name,
-
-            description:
-                description || null,
-
+            description,
             price,
-
             quantity,
-
-            main_image:
-                imageUrl,
-
-            target:
-                target || null,
-
-            product_code:
-                code,
-
-            category_id:
-                Number(categoryId)
-
+            main_image: mainImage,
+            target,
+            product_code: productCode,
+            category_id: categoryId
         };
 
-        // ==================================
-        // Add Product
-        // ==================================
+        let savedProductId =
+            idValue;
 
-        if (!id) {
-
+        // ==================================
+        // Insert
+        // ==================================
+        if (!isEdit) {
             const {
-                data: newProduct,
-                error: productError
+                data: insertedProduct,
+                error: insertError
             } =
                 await supabaseClient
                     .from("products")
                     .insert(
                         productData
                     )
-                    .select()
+                    .select("id")
                     .single();
 
-            if (productError) {
-                throw productError;
+            if (insertError) {
+                throw insertError;
             }
+
+            savedProductId =
+                String(
+                    insertedProduct.id
+                );
 
             const {
                 error: costError
@@ -2228,44 +2079,42 @@ async function saveProduct(event) {
                 await supabaseClient
                     .from("product_costs")
                     .insert({
-
                         product_id:
-                            newProduct.id,
+                            insertedProduct.id,
 
                         purchase_cost:
                             purchaseCost
-
                     });
 
             if (costError) {
-
-                console.error(
-                    "Product cost save error:",
-                    costError
-                );
-
+                /*
+                 * Rollback product
+                 * إذا فشل حفظ التكلفة.
+                 */
                 await supabaseClient
                     .from("products")
                     .delete()
                     .eq(
                         "id",
-                        newProduct.id
+                        insertedProduct.id
+                    )
+                    .catch(e =>
+                        console.error(
+                            "Rollback failed:",
+                            e
+                        )
                     );
 
                 throw costError;
-
             }
-
         }
 
         // ==================================
-        // Update Product
+        // Update
         // ==================================
-
         else {
-
             const {
-                error: productError
+                error: updateError
             } =
                 await supabaseClient
                     .from("products")
@@ -2274,11 +2123,11 @@ async function saveProduct(event) {
                     )
                     .eq(
                         "id",
-                        id
+                        idValue
                     );
 
-            if (productError) {
-                throw productError;
+            if (updateError) {
+                throw updateError;
             }
 
             const {
@@ -2289,7 +2138,9 @@ async function saveProduct(event) {
                     .upsert(
                         {
                             product_id:
-                                Number(id),
+                                Number(
+                                    idValue
+                                ),
 
                             purchase_cost:
                                 purchaseCost
@@ -2301,39 +2152,39 @@ async function saveProduct(event) {
                     );
 
             if (costError) {
+                /*
+                 * Restore old product data.
+                 */
+                await supabaseClient
+                    .from("products")
+                    .update(
+                        oldProductData
+                    )
+                    .eq(
+                        "id",
+                        idValue
+                    )
+                    .catch(e =>
+                        console.error(e)
+                    );
 
-                console.error(
-                    "Product cost update error:",
-                    costError
-                );
-
-                if (oldProductData) {
-
-                    await supabaseClient
-                        .from("products")
-                        .update(
-                            oldProductData
-                        )
-                        .eq(
-                            "id",
-                            id
-                        );
-
-                }
-
+                /*
+                 * Restore old cost.
+                 */
                 if (
                     oldPurchaseCost !==
-                        undefined &&
-                    oldPurchaseCost !==
-                        null
+                    undefined
                 ) {
-
                     await supabaseClient
-                        .from("product_costs")
+                        .from(
+                            "product_costs"
+                        )
                         .upsert(
                             {
                                 product_id:
-                                    Number(id),
+                                    Number(
+                                        idValue
+                                    ),
 
                                 purchase_cost:
                                     oldPurchaseCost
@@ -2342,54 +2193,51 @@ async function saveProduct(event) {
                                 onConflict:
                                     "product_id"
                             }
+                        )
+                        .catch(e =>
+                            console.error(
+                                e
+                            )
                         );
-
                 }
 
                 throw costError;
-
             }
-
         }
 
         // ==================================
-        // Delete Old Image After Successful Save
+        // Remove old image after success
         // ==================================
-
         if (
             imageFile &&
-            oldImageUrl &&
-            uploadedImagePath
+            uploadedImagePath &&
+            oldImageUrl
         ) {
-
-            try {
-
-                const oldImagePath =
-                    getProductImagePath(
-                        oldImageUrl
-                    );
-
-                if (oldImagePath) {
-
-                    await supabaseClient.storage
-                        .from("product-images")
-                        .remove([
-                            oldImagePath
-                        ]);
-
-                }
-
-            } catch (
-                imageDeleteError
-            ) {
-
-                console.warn(
-                    "Old product image could not be deleted:",
-                    imageDeleteError
+            const oldImagePath =
+                getProductImagePath(
+                    oldImageUrl
                 );
 
+            if (
+                oldImagePath &&
+                oldImagePath !==
+                    uploadedImagePath
+            ) {
+                await supabaseClient
+                    .storage
+                    .from(
+                        "product-images"
+                    )
+                    .remove([
+                        oldImagePath
+                    ])
+                    .catch(e =>
+                        console.warn(
+                            "Old image cleanup failed:",
+                            e
+                        )
+                    );
             }
-
         }
 
         closeProductModalWindow();
@@ -2397,104 +2245,84 @@ async function saveProduct(event) {
         await loadAdminProducts();
 
         showAdminProductToast(
-            id
-                ? "تم تعديل المنتج وتكلفة الشراء بنجاح."
-                : "تمت إضافة المنتج وتكلفة الشراء بنجاح.",
+            isEdit
+                ? "تم تعديل المنتج بنجاح."
+                : "تمت إضافة المنتج بنجاح.",
             "success"
         );
-
     } catch (error) {
-
         console.error(
             "Save product error:",
             error
         );
 
-        // ==================================
-        // Cleanup Newly Uploaded Image
-        // ==================================
-
+        /*
+         * إذا تم رفع صورة جديدة ثم فشل
+         * أي جزء من عملية الحفظ،
+         * نحذف الصورة الجديدة حتى لا تبقى
+         * في Storage بدون ارتباط بمنتج.
+         */
         if (uploadedImagePath) {
-
-            try {
-
-                await supabaseClient.storage
-                    .from("product-images")
-                    .remove([
-                        uploadedImagePath
-                    ]);
-
-            } catch (
-                cleanupError
-            ) {
-
-                console.warn(
-                    "Uploaded image cleanup failed:",
-                    cleanupError
+            await supabaseClient
+                .storage
+                .from("product-images")
+                .remove([
+                    uploadedImagePath
+                ])
+                .catch(e =>
+                    console.warn(e)
                 );
-
-            }
-
         }
 
-        if (
-            error.code ===
-            "23505"
-        ) {
-
-            showFormMessage(
-                "Product Code مستخدم مسبقًا. يجب اختيار كود مختلف.",
-                "error"
+        const code =
+            String(
+                error?.code || ""
             );
 
-        }
-
-        else if (
-            error.code ===
-            "42501"
-        ) {
-
+        if (code === "23505") {
             showFormMessage(
-                "ليس لديك صلاحية لتنفيذ هذه العملية.",
+                "كود المنتج مستخدم مسبقاً. يرجى اختيار كود آخر.",
                 "error"
             );
-
-        }
-
-        else {
-
+        } else if (
+            code === "42501"
+        ) {
+            showFormMessage(
+                "لا توجد صلاحية كافية لتنفيذ هذه العملية.",
+                "error"
+            );
+        } else {
             showFormMessage(
                 error.message ||
-                "حدث خطأ أثناء حفظ المنتج وتكلفة الشراء.",
+                    "تعذر حفظ المنتج.",
                 "error"
             );
-
         }
-
     } finally {
+        isProductSaving = false;
 
         if (saveButton) {
-
             saveButton.disabled =
                 false;
 
             saveButton.textContent =
+                saveButton.dataset
+                    .originalText ||
                 "حفظ المنتج";
-
         }
-
     }
-
 }
-
 
 // ==========================================
 // Delete Product
 // ==========================================
-
-async function deleteProduct(
-    id
-) {
+async function deleteProduct(id) {
+    if (
+        isProductDeleting ||
+        isProductSaving
+    ) {
+        return;
+    }
 
     const product =
         adminProducts.find(
@@ -2503,81 +2331,79 @@ async function deleteProduct(
                 String(id)
         );
 
-    if (!product) {
+    if (!product) return;
+
+    if (
+        !confirm(
+            `هل أنت متأكد من حذف المنتج "${product.name ?? ""}"؟`
+        )
+    ) {
         return;
     }
 
-    const confirmed =
-        confirm(
-            `هل أنت متأكد من حذف المنتج "${product.name}"؟`
-        );
-
-    if (!confirmed) {
-        return;
-    }
+    isProductDeleting = true;
 
     try {
-
+        /*
+         * نقرأ الصورة الحالية من قاعدة البيانات
+         * قبل الحذف حتى لا نعتمد فقط على
+         * النسخة الموجودة في الواجهة.
+         */
         const {
-            data: productToDelete,
-            error: productFetchError
+            data: latestProduct,
+            error: fetchError
         } =
             await supabaseClient
                 .from("products")
-                .select(
-                    "main_image"
-                )
-                .eq(
-                    "id",
-                    id
-                )
-                .single();
+                .select("main_image")
+                .eq("id", id)
+                .maybeSingle();
 
-        if (productFetchError) {
-            throw productFetchError;
+        if (fetchError) {
+            throw fetchError;
         }
 
+        const imageUrl =
+            String(
+                latestProduct?.main_image ??
+                    product.main_image ??
+                    ""
+            ).trim();
+
         const {
-            error
+            error: deleteError
         } =
             await supabaseClient
                 .from("products")
                 .delete()
-                .eq(
-                    "id",
-                    id
-                );
+                .eq("id", id);
 
-        if (error) {
-            throw error;
+        if (deleteError) {
+            throw deleteError;
         }
 
-        // حذف صورة المنتج القديمة من Storage
-        const oldImagePath =
+        /*
+         * حذف صورة المنتج من Storage
+         * بعد نجاح حذف المنتج.
+         */
+        const imagePath =
             getProductImagePath(
-                productToDelete?.main_image
+                imageUrl
             );
 
-        if (oldImagePath) {
-
-            const {
-                error: imageDeleteError
-            } =
-                await supabaseClient.storage
-                    .from("product-images")
-                    .remove([
-                        oldImagePath
-                    ]);
-
-            if (imageDeleteError) {
-
-                console.error(
-                    "Product image delete error:",
-                    imageDeleteError
+        if (imagePath) {
+            await supabaseClient
+                .storage
+                .from("product-images")
+                .remove([
+                    imagePath
+                ])
+                .catch(e =>
+                    console.warn(
+                        "Image cleanup failed:",
+                        e
+                    )
                 );
-
-            }
-
         }
 
         await loadAdminProducts();
@@ -2586,143 +2412,129 @@ async function deleteProduct(
             "تم حذف المنتج بنجاح.",
             "success"
         );
-
     } catch (error) {
-
         console.error(
-            "Delete product error:",
+            "Delete error:",
             error
         );
 
-        if (
-            error.code ===
-            "42501"
-        ) {
-
-            showAdminProductToast(
-                "ليس لديك صلاحية لحذف المنتجات.",
-                "error"
+        const code =
+            String(
+                error?.code || ""
             );
 
-        }
-
-        else {
-
+        if (code === "42501") {
+            showAdminProductToast(
+                "لا توجد صلاحية كافية لحذف المنتج.",
+                "error"
+            );
+        } else if (
+            code === "23503"
+        ) {
+            showAdminProductToast(
+                "لا يمكن حذف المنتج لوجود بيانات مرتبطة به.",
+                "error"
+            );
+        } else {
             showAdminProductToast(
                 "تعذر حذف المنتج.",
                 "error"
             );
-
         }
-
+    } finally {
+        isProductDeleting = false;
     }
-
 }
-
 
 // ==========================================
 // Form Messages
 // ==========================================
-
 function showFormMessage(
     message,
-    type
+    type = "error"
 ) {
-
     const element =
         document.getElementById(
             "productFormMessage"
         );
 
-    if (!element) {
-        return;
-    }
+    if (!element) return;
 
     element.textContent =
-        message;
+        String(message ?? "");
 
     element.className =
         `admin-form-message ${type}`;
-
 }
 
-
 function clearFormMessage() {
-
     const element =
         document.getElementById(
             "productFormMessage"
         );
 
-    if (!element) {
-        return;
-    }
+    if (!element) return;
 
-    element.textContent =
-        "";
+    element.textContent = "";
 
     element.className =
         "admin-form-message";
-
 }
 
-
 // ==========================================
-// Search
+// Debounced Server-Side Search
 // ==========================================
-
 function setupProductSearch() {
-
-    const search =
+    const searchInput =
         document.getElementById(
             "productSearch"
         );
 
-    if (!search) {
-        return;
-    }
+    if (!searchInput) return;
 
-    search.addEventListener(
+    searchInput.addEventListener(
         "input",
-        function() {
+        () => {
+            const val =
+                searchInput.value.trim();
 
-            renderAdminProducts(
-                this.value
+            clearTimeout(
+                searchTimeout
             );
 
+            searchTimeout =
+                setTimeout(() => {
+                    currentSearchTerm =
+                        val;
+
+                    currentPage = 1;
+
+                    loadAdminProducts();
+                }, 800);
         }
     );
-
 }
 
-
 // ==========================================
-// Product Table Actions
+// Events & Navigation
 // ==========================================
-
 function setupProductTableActions() {
-
     const table =
         document.getElementById(
             "adminProductsTable"
         );
 
-    if (!table) {
-        return;
-    }
+    if (!table) return;
 
     table.addEventListener(
         "click",
-        function(event) {
-
+        event => {
             const button =
                 event.target.closest(
                     "button[data-action]"
                 );
 
-            if (!button) {
-                return;
-            }
+            if (!button) return;
 
             const action =
                 button.dataset.action;
@@ -2730,167 +2542,126 @@ function setupProductTableActions() {
             const id =
                 button.dataset.id;
 
+            if (!id) return;
+
             if (
                 action === "edit"
             ) {
-
                 openEditProductModal(
                     id
                 );
-
-            }
-
-            if (
+            } else if (
                 action === "delete"
             ) {
-
-                deleteProduct(
-                    id
-                );
-
+                deleteProduct(id);
             }
-
         }
     );
-
 }
 
-
-// ==========================================
-// Dashboard Navigation
-// ==========================================
-
 function setupAdminNavigation() {
-
     const buttons =
         document.querySelectorAll(
             ".admin-nav-item"
         );
 
-    buttons.forEach(
-        button => {
+    buttons.forEach(button => {
+        button.addEventListener(
+            "click",
+            function () {
+                if (
+                    this.id ===
+                        "offersButton" ||
+                    this.getAttribute(
+                        "href"
+                    )
+                ) {
+                    return;
+                }
 
-            button.addEventListener(
-                "click",
-                function() {
+                const sectionName =
+                    this.dataset.section;
 
-                    const sectionName =
-                        this.dataset.section;
+                buttons.forEach(
+                    item =>
+                        item.classList.remove(
+                            "active"
+                        )
+                );
 
-                    buttons.forEach(
-                        item => {
+                this.classList.add(
+                    "active"
+                );
 
-                            item.classList.remove(
+                document
+                    .querySelectorAll(
+                        ".admin-section"
+                    )
+                    .forEach(
+                        section =>
+                            section.classList.remove(
                                 "active"
-                            );
-
-                        }
+                            )
                     );
 
-                    this.classList.add(
+                const target =
+                    document.getElementById(
+                        `${sectionName}Section`
+                    );
+
+                if (target) {
+                    target.classList.add(
                         "active"
                     );
-
-                    document
-                        .querySelectorAll(
-                            ".admin-section"
-                        )
-                        .forEach(
-                            section => {
-
-                                section.classList.remove(
-                                    "active"
-                                );
-
-                            }
-                        );
-
-                    const target =
-                        document.getElementById(
-                            `${sectionName}Section`
-                        );
-
-                    if (target) {
-
-                        target.classList.add(
-                            "active"
-                        );
-
-                    }
-
                 }
-            );
-
-        }
-    );
-
+            }
+        );
+    });
 }
 
-
-// ==========================================
-// Dashboard Counts
-// ==========================================
-
-function updateProductsCount() {
-
+function updateProductsCountDisplay() {
     const element =
         document.getElementById(
             "productsCount"
         );
 
     if (element) {
-
         element.textContent =
-            adminProducts.length;
-
+            String(
+                totalProductsCount
+            );
     }
-
 }
 
-
-function updateCategoriesCount() {
-
+function updateCategoriesCountDisplay() {
     const element =
         document.getElementById(
             "categoriesCount"
         );
 
     if (element) {
-
         element.textContent =
-            adminCategories.length;
-
+            String(
+                adminCategories.length
+            );
     }
-
 }
-
 
 // ==========================================
 // Formatting
 // ==========================================
-
-function formatPrice(
-    price
-) {
-
+function formatPrice(price) {
     const number =
         Number(price);
 
-    if (!Number.isFinite(number)) {
-
-        return "0 $";
-
-    }
-
-    return `${number} $`;
-
+    return Number.isFinite(
+        number
+    )
+        ? `${number} $`
+        : "0 $";
 }
 
-
-function escapeHtml(
-    value
-) {
-
+function escapeHtml(value) {
     return String(
         value ?? ""
     )
@@ -2914,16 +2685,12 @@ function escapeHtml(
             /'/g,
             "&#039;"
         );
-
 }
 
-
 // ==========================================
-// Modal Buttons
+// Initialization
 // ==========================================
-
 function setupModalEvents() {
-
     const addButton =
         document.getElementById(
             "addProductButton"
@@ -2945,65 +2712,45 @@ function setupModalEvents() {
         );
 
     if (addButton) {
-
         addButton.addEventListener(
             "click",
             openAddProductModal
         );
-
     }
 
     if (closeButton) {
-
         closeButton.addEventListener(
             "click",
             closeProductModalWindow
         );
-
     }
 
     if (cancelButton) {
-
         cancelButton.addEventListener(
             "click",
             closeProductModalWindow
         );
-
     }
 
     if (form) {
-
         form.addEventListener(
             "submit",
             saveProduct
         );
-
     }
-
 }
-
-
-// ==========================================
-// Start
-// ==========================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function() {
-
+    async () => {
         setupProductSearch();
-
         setupProductTableActions();
-
         setupAdminNavigation();
-
         setupModalEvents();
-
         setupProductImageEditor();
+        setupPaginationControls();
 
         await loadAdminCategories();
-
         await loadAdminProducts();
-
     }
 );

@@ -325,7 +325,7 @@
             </div>
 
 
-            <div
+           <div
                 id="productsEmpty"
                 class="admin-empty"
                 hidden
@@ -333,8 +333,16 @@
                 لا توجد منتجات.
             </div>
 
-
-        </section>
+            <!-- ================================= -->
+            <!-- Pagination Controls (إضافة جديدة) -->
+            <!-- ================================= -->
+            <div class="admin-pagination" id="productsPagination" hidden>
+                <button type="button" id="prevPageBtn" class="admin-secondary-button" disabled>السابق</button>
+                <span class="admin-pagination-info">
+                    صفحة <strong id="currentPageNum">1</strong> من <strong id="totalPagesNum">1</strong>
+                </span>
+                <button type="button" id="nextPageBtn" class="admin-secondary-button" disabled>التالي</button>
+            </div>
 
 
 

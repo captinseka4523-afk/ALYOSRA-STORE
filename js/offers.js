@@ -1695,7 +1695,16 @@ function searchOffers(
    SEARCH UI
    ========================================================= */
 
+/* =========================================================
+   SEARCH UI
+   ========================================================= */
+
 function setupOfferSearch() {
+    // جلب العناصر بشكل آمن لضمان عدم حدوث أخطاء
+    const offerSearchToggle = document.getElementById("offerSearchToggle");
+    const offerSearchPopover = document.getElementById("offerSearchPopover");
+    const offerSearchInput = document.getElementById("offerSearchInput");
+
     if (
         !offerSearchToggle ||
         !offerSearchPopover ||
@@ -1709,6 +1718,12 @@ function setupOfferSearch() {
             "open"
         );
 
+        // حل مشكلة الكونسول: إخبار المتصفح أن العنصر لم يعد مخفياً
+        offerSearchPopover.setAttribute(
+            "aria-hidden", 
+            "false"
+        );
+
         requestAnimationFrame(
             function () {
                 offerSearchInput.focus();
@@ -1719,6 +1734,12 @@ function setupOfferSearch() {
     function closeSearch() {
         offerSearchPopover.classList.remove(
             "open"
+        );
+
+        // إعادة إخفاء العنصر عن قارئات الشاشة بعد الإغلاق
+        offerSearchPopover.setAttribute(
+            "aria-hidden", 
+            "true"
         );
     }
 
