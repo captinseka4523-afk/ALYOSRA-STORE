@@ -595,19 +595,17 @@ function displayProducts(
    إضافة دفعة جديدة بدون مسح القديمة
 ========================================================= */
 
-function appendProducts(
-    productsToAppend
-) {
-
+/* =========================================================
+   إضافة دفعة جديدة بدون مسح القديمة (مع مراعاة التصنيف)
+========================================================= */
+function appendProducts(productsToAppend) {
     if (
         !productsContainer ||
         !Array.isArray(productsToAppend) ||
         productsToAppend.length === 0
     ) {
-
         return;
     }
-
 
     /*
      * أثناء البحث لا نضيف دفعات جديدة.
@@ -616,49 +614,38 @@ function appendProducts(
         productSearchInput &&
         productSearchInput.value.trim()
     ) {
-
         return;
     }
 
+    /*
+     * فلترة الدفعة الجديدة بأمان تام قبل إضافتها للشاشة
+     * لضمان عدم ظهور منتجات من تصنيفات أخرى عند النزول للأسفل
+     */
+    const filteredToAppend = productsToAppend.filter(product => {
+        const productCat = String(product.category || "").trim();
+        return currentActiveCategory === "all" || productCat === String(currentActiveCategory).trim();
+    });
 
     /*
      * إزالة Sentinel مؤقتًا.
      */
     if (productsSentinel) {
-
         productsSentinel.remove();
-
         productsSentinel = null;
     }
 
+    const fragment = document.createDocumentFragment();
 
-    const fragment =
-        document.createDocumentFragment();
-
-
-    productsToAppend.forEach(product => {
-
+    filteredToAppend.forEach(product => {
         fragment.appendChild(
             createProductCard(product)
         );
-
     });
 
-
-    productsContainer.appendChild(
-        fragment
-    );
-
+    productsContainer.appendChild(fragment);
 
     observeProductImages();
-
-
     setupProductsSentinel();
-
-
-    /*
-     * إعادة تجهيز مراقب الدفعات.
-     */
     setupProductBatchSyncObserver();
 }
 
@@ -1928,47 +1915,26 @@ function normalizeSearchText(value) {
 }
 
 
+/* =========================================================
+   البحث المحلي والفلترة بالتصنيف
+========================================================= */
 function filterProductsLocally() {
+    const searchValue = productSearchInput ? normalizeSearchText(productSearchInput.value) : "";
 
-    if (!productSearchInput) {
-        return;
-    }
+    const filteredProducts = window.products.filter(product => {
+        // 1. فحص مطابقة البحث النصي
+        const matchSearch = normalizeSearchText(product.name).includes(searchValue);
+        
+        // 2. فحص مطابقة التصنيف
+        // هنا أضفنا دالة String() لتحويل الرقم إلى نص بأمان ومنع انهيار الكود
+        const productCat = String(product.category || "").trim();
+        const matchCategory = currentActiveCategory === "all" || productCat === String(currentActiveCategory).trim();
 
+        // 3. إرجاع المنتج إذا طابق البحث والتصنيف معاً
+        return matchSearch && matchCategory;
+    });
 
-    const searchValue =
-        normalizeSearchText(
-            productSearchInput.value
-        );
-
-
-    if (!searchValue) {
-
-        displayProducts(
-            window.products
-        );
-
-        return;
-    }
-
-
-    /*
-     * البحث محلي بالكامل.
-     * لا يوجد طلب Supabase أثناء الكتابة.
-     */
-    const filteredProducts =
-        window.products.filter(
-            product =>
-                normalizeSearchText(
-                    product.name
-                ).includes(
-                    searchValue
-                )
-        );
-
-
-    displayProducts(
-        filteredProducts
-    );
+    displayProducts(filteredProducts);
 }
 
 
@@ -2389,10 +2355,102 @@ document.addEventListener(
 
 
 /* =========================================================
-   تشغيل تحميل المنتجات
+   متغير التصنيف المختار
 ========================================================= */
+let currentActiveCategory = "all";
 
-document.addEventListener(
-    "DOMContentLoaded",
-    loadProducts
-);
+
+/* =========================================================
+   1. جلب التصنيفات ديناميكياً من قاعدة البيانات
+========================================================= */
+async function loadAndRenderCategories() {
+    const container = document.getElementById("categoriesScrollContainer");
+    if (!container) return;
+
+    try {
+        const { data: categories, error } = await supabaseClient
+            .from("categories")
+            .select("id, name")
+            .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        // إضافة الأزرار القادمة من قاعدة البيانات إلى الواجهة
+        (categories || []).forEach(cat => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "category-pill";
+            btn.dataset.category = String(cat.id);
+            btn.textContent = cat.name;
+            container.appendChild(btn);
+        });
+
+        // تفعيل النقر على الأزرار بعد بنائها
+        const categoryPills = document.querySelectorAll(".category-pill");
+        categoryPills.forEach(pill => {
+            pill.addEventListener("click", function() {
+                categoryPills.forEach(p => p.classList.remove("active"));
+                this.classList.add("active");
+                
+                currentActiveCategory = this.dataset.category;
+                filterProductsLocally();
+            });
+        });
+
+    } catch (err) {
+        console.error("تعذر جلب التصنيفات:", err);
+    }
+}
+
+
+/* =========================================================
+   2. تفعيل السحب بالماوس للكمبيوتر (Drag to Scroll)
+========================================================= */
+function setupDragToScroll() {
+    const slider = document.getElementById("categoriesScrollContainer");
+    if (!slider) return;
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    slider.addEventListener("mousedown", (e) => {
+        isDown = true;
+        slider.style.cursor = "grabbing"; // تغيير شكل الماوس ليد تقبض
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener("mouseleave", () => {
+        isDown = false;
+        slider.style.cursor = "pointer";
+    });
+
+    slider.addEventListener("mouseup", () => {
+        isDown = false;
+        slider.style.cursor = "pointer";
+    });
+
+    slider.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2.5; // سرعة السحب
+        slider.scrollLeft = scrollLeft - walk;
+    });
+}
+
+
+/* =========================================================
+   3. تشغيل المتجر (التسلسل الدقيق للعمليات)
+========================================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. تفعيل السحب بالماوس لشريط الكبسولات
+    setupDragToScroll();
+    
+    // 2. جلب التصنيفات الحقيقية من السيرفر أولاً
+    await loadAndRenderCategories();
+    
+    // 3. جلب وعرض المنتجات
+    loadProducts();
+});

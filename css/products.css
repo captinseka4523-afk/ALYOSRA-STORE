@@ -488,6 +488,52 @@ text-align:
     right;
 }
 
+
+/* =========================================================
+CATEGORY PILLS
+========================================================= */
+.products-categories-wrapper {
+    width: 100%;
+    margin-bottom: 30px;
+    overflow: hidden;
+    direction: rtl;
+}
+
+.products-categories-scroll {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none; /* إخفاء شريط التمرير في فايرفوكس */
+    -ms-overflow-style: none;  /* إخفاء في Edge */
+}
+
+.products-categories-scroll::-webkit-scrollbar {
+    display: none; /* إخفاء شريط التمرير في كروم وسفاري */
+}
+
+.category-pill {
+    flex-shrink: 0;
+    padding: 10px 22px;
+    background: #ffffff;
+    color: #64748b;
+    border: 1px solid #d7e0ea;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.category-pill.active {
+    background: #071426; /* اللون الكحلي الفاخر الخاص بالهيرو */
+    color: #ffffff;
+    border-color: #071426;
+}
+
+
 /* =========================================================
 PRODUCTS CONTAINER
 ========================================================= */
