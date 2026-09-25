@@ -141,7 +141,9 @@
     <aside
         class="side-menu"
         id="sideMenu"
-        aria-hidden="true">
+        aria-hidden="true"
+        inert>
+        
 
         <div class="side-menu-header">
 
@@ -1854,6 +1856,7 @@
                 if (!sideMenu) return;
 
                 sideMenu.classList.add("open");
+sideMenu.removeAttribute("inert");
 
                 sideMenuOverlay?.classList.add("open");
 
@@ -1873,6 +1876,7 @@
                 if (!sideMenu) return;
 
                 sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
 
                 sideMenuOverlay?.classList.remove("open");
 

@@ -189,6 +189,7 @@
     class="side-menu"
     id="sideMenu"
     aria-hidden="true"
+    inert
 >
 
     <div class="side-menu-header">
@@ -1706,6 +1707,7 @@
         }
 
         sideMenu.classList.add("open");
+sideMenu.removeAttribute("inert");
 
         sideMenuOverlay.classList.add("open");
 
@@ -1728,6 +1730,7 @@
         }
 
         sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
 
         sideMenuOverlay.classList.remove("open");
 

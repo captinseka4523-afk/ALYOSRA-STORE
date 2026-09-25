@@ -193,6 +193,7 @@
     class="side-menu"
     id="sideMenu"
     aria-hidden="true"
+    inert
 >
 
     <div class="side-menu-header">
@@ -975,6 +976,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         sideMenu.classList.add("open");
+sideMenu.removeAttribute("inert");
 
         sideMenuOverlay.classList.add("open");
 
@@ -997,6 +999,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
 
         sideMenuOverlay.classList.remove("open");
 

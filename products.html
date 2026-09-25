@@ -214,7 +214,10 @@
 <aside
     class="side-menu"
     id="sideMenu"
-><div class="side-menu-header">
+    aria-hidden="true"
+    inert
+>
+<div class="side-menu-header">
 
     <span>
        الأقسام
@@ -484,6 +487,7 @@
             () => {
 
                 sideMenu.classList.add("open");
+sideMenu.removeAttribute("inert");
 
                 sideMenuOverlay.classList.add("open");
 
@@ -504,6 +508,7 @@
             () => {
 
                 sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
 
                 sideMenuOverlay.classList.remove("open");
 
@@ -520,6 +525,7 @@
             () => {
 
                 sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
 
                 sideMenuOverlay.classList.remove("open");
 
