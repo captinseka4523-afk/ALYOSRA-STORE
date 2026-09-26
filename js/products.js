@@ -37,6 +37,14 @@ let productsInitialized = false;
 
 let productsSyncRunning = false;
 
+/*
+ * IDs المنتجات التي تحتوي على Variants نشطة.
+ *
+ * يتم تحميلها بطلب واحد فقط من Supabase
+ * عند فتح صفحة المنتجات.
+ */
+let variantProductIds = new Set();
+
 let imageObserver = null;
 
 let infiniteScrollObserver = null;
@@ -255,10 +263,70 @@ function normalizeProduct(product) {
 
         updatedAt:
             product.updated_at ||
-            ""
+            "",
+
+            variantsUpdatedAt:
+    product.variants_updated_at ||
+    ""
     };
 }
 
+/* =========================================================
+   معرفة المنتجات التي تحتوي على Variants
+========================================================= */
+
+async function loadVariantProductIds() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("product_variants")
+                .select("product_id")
+                .eq("active", true);
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        variantProductIds =
+            new Set(
+                (data || [])
+                    .map(
+                        variant =>
+                            String(
+                                variant.product_id
+                            )
+                    )
+            );
+
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "تعذر معرفة المنتجات التي تحتوي على Variants:",
+            error
+        );
+
+
+        /*
+         * في حال فشل الطلب، نعيد الحالة
+         * إلى Set فارغ بدل الاحتفاظ ببيانات قديمة.
+         */
+        variantProductIds =
+            new Set();
+
+
+        return false;
+    }
+}
 
 /* =========================================================
    أدوات مشتركة لجلب المنتجات
@@ -275,6 +343,7 @@ function getProductsSelectFields() {
         main_image,
         created_at,
         updated_at,
+        variants_updated_at,
         target,
         category_id,
         product_code
@@ -439,7 +508,21 @@ function observeProductImages() {
 
 function createProductCard(product) {
 
+    const hasVariants =
+        variantProductIds.has(
+            String(product.id)
+        );
+
+
+    /*
+     * مهم:
+     *
+     * منتجات الـVariants لا تعتمد على
+     * products.quantity لتحديد حالة البطاقة،
+     * لأن المخزون الحقيقي موجود على مستوى الـVariant.
+     */
     const outOfStock =
+        !hasVariants &&
         product.quantity <= 0;
 
 
@@ -472,7 +555,17 @@ function createProductCard(product) {
         </span>
 
         ${
-            outOfStock
+            hasVariants
+            ? `
+                <button
+                    class="choose-options"
+                    data-id="${product.id}"
+                    type="button"
+                >
+                    اختر الخيارات
+                </button>
+              `
+            : outOfStock
             ? `
                 <span class="out-of-stock">
                     غير متوفر حاليًا
@@ -482,6 +575,7 @@ function createProductCard(product) {
                 <button
                     class="add-cart"
                     data-id="${product.id}"
+                    type="button"
                 >
                     أضف إلى السلة
                 </button>
@@ -1253,9 +1347,9 @@ async function syncProductBatch(
         } =
             await supabaseClient
                 .from("products")
-                .select(
-                    "id, updated_at"
-                )
+              .select(
+    "id, updated_at, variants_updated_at"
+)
                 .in(
                     "id",
                     batchIds
@@ -1271,15 +1365,21 @@ async function syncProductBatch(
             metadata || [];
 
 
-        const remoteMap =
-            new Map(
-                remoteProducts.map(
-                    product => [
-                        String(product.id),
-                        product.updated_at || ""
-                    ]
-                )
-            );
+      const remoteMap =
+    new Map(
+        remoteProducts.map(
+            product => [
+                String(product.id),
+                {
+                    updatedAt:
+                        product.updated_at || "",
+
+                    variantsUpdatedAt:
+                        product.variants_updated_at || ""
+                }
+            ]
+        )
+    );
 
 
         /*
@@ -1304,23 +1404,30 @@ async function syncProductBatch(
          * المنتجات التي تغير updated_at
          * داخل هذه الدفعة فقط.
          */
-        const changedIds =
-            batchProducts
-                .filter(product => {
+       const changedIds =
+    batchProducts
+        .filter(product => {
 
-                    const remoteUpdatedAt =
-                        remoteMap.get(
-                            product.id
-                        );
+            const remoteMeta =
+                remoteMap.get(
+                    product.id
+                );
 
 
-                    return (
-                        remoteUpdatedAt !== undefined &&
-                        remoteUpdatedAt !==
-                        product.updatedAt
-                    );
+            if (!remoteMeta) {
+                return true;
+            }
 
-                })
+
+            return (
+                remoteMeta.updatedAt !==
+                    product.updatedAt ||
+
+                remoteMeta.variantsUpdatedAt !==
+                    product.variantsUpdatedAt
+            );
+
+        })
                 .map(
                     product =>
                         product.id
@@ -1768,6 +1875,13 @@ async function syncProductsCache() {
 async function loadProducts() {
 
     try {
+
+        /*
+         * معرفة المنتجات التي تحتوي على Variants
+         * قبل بناء أي بطاقة.
+         */
+        await loadVariantProductIds();
+
 
         const hasCache =
             loadProductsFromCache();

@@ -782,7 +782,200 @@
                 </div>
 
 
-            </div>
+        </div>
+
+
+            <!-- ================================= -->
+            <!-- Product Variants -->
+            <!-- ================================= -->
+
+            <section
+                id="productVariantsSection"
+                class="admin-product-variants-section"
+                aria-labelledby="productVariantsTitle"
+            >
+
+                <div class="admin-product-variants-header">
+
+                    <div>
+
+                        <h3 id="productVariantsTitle">
+                            خيارات المنتج
+                        </h3>
+
+                        <p class="admin-form-help">
+                            استخدم الخيارات عندما يختلف المنتج حسب اللون أو المقاس أو أي صفة أخرى.
+                        </p>
+
+                    </div>
+
+                    <label
+                        class="admin-product-variants-toggle"
+                        for="productVariantsEnabled"
+                    >
+
+                        <input
+                            id="productVariantsEnabled"
+                            type="checkbox"
+                        >
+
+                        <span>
+                            هذا المنتج لديه خيارات متعددة
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div
+                    id="productVariantsEditor"
+                    class="admin-product-variants-editor"
+                    hidden
+                >
+
+                    <!-- Option Groups -->
+
+                    <div class="admin-product-variants-subsection">
+
+                        <div class="admin-product-variants-subsection-header">
+
+                            <div>
+
+                                <h4>
+                                    مجموعات الخيارات
+                                </h4>
+
+                                <p class="admin-form-help">
+                                    مثال: اللون، المقاس، النوع.
+                                </p>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                id="addOptionGroupButton"
+                                class="admin-secondary-button"
+                            >
+                                + إضافة مجموعة
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="productOptionGroups"
+                            class="admin-product-option-groups"
+                        ></div>
+
+
+                        <div
+                            id="productOptionGroupsEmpty"
+                            class="admin-product-variants-empty"
+                        >
+                            لم تتم إضافة أي مجموعة خيارات بعد.
+                        </div>
+
+                    </div>
+
+
+                    <!-- Generated Variants -->
+
+                    <div class="admin-product-variants-subsection">
+
+                        <div class="admin-product-variants-subsection-header">
+
+                            <div>
+
+                                <h4>
+                                    التركيبات والـ Variants
+                                </h4>
+
+                                <p class="admin-form-help">
+                                    سيتم إنشاء تركيبة لكل مجموعة من القيم التي تمت إضافتها.
+                                </p>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                id="regenerateProductVariantsButton"
+                                class="admin-secondary-button"
+                            >
+                                تحديث التركيبات
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="productVariantsStatus"
+                            class="admin-form-message"
+                            aria-live="polite"
+                        ></div>
+
+
+                        <div
+                            id="productVariantsTableContainer"
+                            class="admin-table-wrapper admin-product-variants-table-wrapper"
+                        >
+
+                            <table class="admin-table admin-product-variants-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            الخيارات
+                                        </th>
+
+                                        <th>
+                                            SKU
+                                        </th>
+
+                                        <th>
+                                            السعر
+                                        </th>
+
+                                        <th>
+                                            المخزون
+                                        </th>
+
+                                        <th>
+                                            تكلفة الشراء
+                                        </th>
+
+                                        <th>
+                                            فعال
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody
+                                    id="productVariantsTable"
+                                ></tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div
+                            id="productVariantsEmpty"
+                            class="admin-product-variants-empty"
+                        >
+                            أضف مجموعات وقيمًا لإنشاء التركيبات.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
 

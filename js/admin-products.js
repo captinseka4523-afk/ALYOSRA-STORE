@@ -21,13 +21,40 @@ let productImageLoadToken = 0;
 
 let adminProductToastTimer;
 
-const ADMIN_PRODUCT_COLUMNS = "id, name, description, price, quantity, main_image, target, product_code, category_id";
+const ADMIN_PRODUCT_COLUMNS =
+    "id, name, description, price, quantity, main_image, target, product_code, category_id";
+
+// ==========================================
+// Product Variants State
+// ==========================================
+
+/*
+ * clientKey:
+ * معرف مؤقت للواجهة.
+ *
+ * السجلات الموجودة تستخدم ID قاعدة البيانات
+ * للحفاظ على هويتها.
+ *
+ * السجلات الجديدة تستخدم crypto.randomUUID().
+ */
+let productVariantsState = {
+    enabled: false,
+    groups: [],
+    variants: []
+};
+
+let productVariantsLoaded = true;
+let productVariantsDirty = false;
+let productVariantsLoadToken = 0;
 
 // ==========================================
 // Toast Notifications
 // ==========================================
 function showAdminProductToast(message, type = "success") {
-    let toast = document.getElementById("adminProductToast");
+    let toast =
+        document.getElementById(
+            "adminProductToast"
+        );
 
     if (!toast) {
         toast = document.createElement("div");
@@ -38,7 +65,8 @@ function showAdminProductToast(message, type = "success") {
     clearTimeout(adminProductToastTimer);
 
     toast.textContent = String(message ?? "");
-    toast.className = `admin-product-toast ${type} show`;
+    toast.className =
+        `admin-product-toast ${type} show`;
 
     adminProductToastTimer = setTimeout(() => {
         toast.classList.remove("show");
@@ -52,7 +80,11 @@ function isSafeImageUrl(url) {
     if (!url) return false;
 
     try {
-        const parsed = new URL(String(url), window.location.href);
+        const parsed =
+            new URL(
+                String(url),
+                window.location.href
+            );
 
         return (
             parsed.protocol === "https:" ||
@@ -68,7 +100,10 @@ function revokeObjectUrl(url) {
         try {
             URL.revokeObjectURL(url);
         } catch (e) {
-            console.warn("Revoke failed:", e);
+            console.warn(
+                "Revoke failed:",
+                e
+            );
         }
     }
 }
@@ -76,9 +111,6 @@ function revokeObjectUrl(url) {
 /*
  * حماية قيمة البحث قبل إدخالها داخل
  * صيغة PostgREST الخاصة بـ .or()
- *
- * لا نغيّر معنى البحث العادي،
- * وإنما نمنع المحارف الخاصة من كسر الفلتر.
  */
 function escapePostgrestSearchValue(value) {
     return String(value ?? "")
@@ -91,239 +123,645 @@ function escapePostgrestSearchValue(value) {
 }
 
 // ==========================================
-// Load Data (Paginated + Debounced Search)
+// Variant Helpers
 // ==========================================
-async function loadAdminProducts() {
-    const table = document.getElementById("adminProductsTable");
-    const loading = document.getElementById("productsLoading");
-    const empty = document.getElementById("productsEmpty");
-    const pagination = document.getElementById("productsPagination");
 
-    if (loading) loading.hidden = false;
-    if (empty) empty.hidden = true;
-    if (pagination) pagination.hidden = true;
-    if (table) table.innerHTML = "";
+function createClientKey(prefix) {
+    return `${prefix}:new:${crypto.randomUUID()}`;
+}
 
-    try {
-        let query = supabaseClient
-            .from("products")
-            .select(ADMIN_PRODUCT_COLUMNS, { count: "exact" })
-            .order("id", { ascending: false });
+function getExistingClientKey(prefix, id) {
+    return `${prefix}:${id}`;
+}
 
-        if (currentSearchTerm) {
-            const safeSearchTerm =
-                escapePostgrestSearchValue(currentSearchTerm);
+function resetProductVariantsState() {
+    productVariantsLoadToken++;
 
-            query = query.or(
-                `name.ilike.%${safeSearchTerm}%,product_code.ilike.%${safeSearchTerm}%`
+    productVariantsState = {
+        enabled: false,
+        groups: [],
+        variants: []
+    };
+
+    productVariantsLoaded = true;
+    productVariantsDirty = false;
+
+    renderProductVariantsUI();
+    updateProductVariantsSaveAvailability();
+}
+
+function markProductVariantsDirty() {
+    productVariantsDirty = true;
+}
+
+function setProductVariantsStatus(
+    message = "",
+    type = ""
+) {
+    const element =
+        document.getElementById(
+            "productVariantsStatus"
+        );
+
+    if (!element) return;
+
+    element.textContent =
+        String(message ?? "");
+
+    element.className =
+        type
+            ? `admin-form-message ${type}`
+            : "admin-form-message";
+}
+
+function updateProductVariantsSaveAvailability() {
+    const saveButton =
+        document.getElementById(
+            "saveProductButton"
+        );
+
+    if (!saveButton) return;
+
+    /*
+     * أثناء تحميل Variants أو بعد فشل تحميلها
+     * لا نسمح بالحفظ حتى لا يحدث حفظ للمنتج
+     * مع احتمال فقدان حالة الـVariants.
+     */
+    if (!productVariantsLoaded) {
+        saveButton.disabled = true;
+        return;
+    }
+
+    /*
+     * لا نغيّر حالة الزر هنا إذا كان الحفظ
+     * قيد التنفيذ؛ saveProduct() يدير ذلك.
+     */
+    if (!isProductSaving) {
+        saveButton.disabled = false;
+    }
+}
+
+function showProductVariantsEditor(
+    visible
+) {
+    const editor =
+        document.getElementById(
+            "productVariantsEditor"
+        );
+
+    if (editor) {
+        editor.hidden = !visible;
+    }
+}
+
+function updateProductVariantsToggleUI() {
+    const toggle =
+        document.getElementById(
+            "productVariantsEnabled"
+        );
+
+    if (toggle) {
+        toggle.checked =
+            Boolean(
+                productVariantsState.enabled
             );
-        }
-
-        const from = (currentPage - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-
-        query = query.range(from, to);
-
-        const { data, count, error } = await query;
-
-        if (error) throw error;
-
-        adminProducts = Array.isArray(data) ? data : [];
-        totalProductsCount = count || 0;
-
-        await loadAdminProductCosts();
-
-        renderAdminProducts();
-        updatePaginationUI();
-        updateProductsCountDisplay();
-    } catch (error) {
-        console.error("Load products error:", error);
-
-        if (loading) {
-            loading.textContent = "حدث خطأ أثناء تحميل المنتجات.";
-        }
-
-        showAdminProductToast(
-            "تعذر تحميل المنتجات.",
-            "error"
-        );
-    }
-}
-
-async function loadAdminProductCosts() {
-    if (adminProducts.length === 0) {
-        adminProductCosts = {};
-        return;
     }
 
-    const productIds = adminProducts.map(product => product.id);
-
-    const { data, error } = await supabaseClient
-        .from("product_costs")
-        .select("product_id, purchase_cost")
-        .in("product_id", productIds);
-
-    if (error) throw error;
-
-    adminProductCosts = {};
-
-    (data || []).forEach(cost => {
-        adminProductCosts[String(cost.product_id)] =
-            cost.purchase_cost;
-    });
+    showProductVariantsEditor(
+        Boolean(
+            productVariantsState.enabled
+        )
+    );
 }
 
-async function loadAdminCategories() {
+function normalizeVariantNumber(
+    value,
+    fallback = null
+) {
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return fallback;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : fallback;
+}
+
+function getVariantCombinationKey(
+    optionValueKeys
+) {
+    return [...optionValueKeys]
+        .map(key => String(key))
+        .sort()
+        .join("|");
+}
+
+function getVariantCombinationFromIds(
+    optionValueIds
+) {
+    if (!Array.isArray(optionValueIds)) {
+        return [];
+    }
+
+    const valueKeyById = new Map();
+
+    productVariantsState.groups.forEach(
+        group => {
+            group.values.forEach(value => {
+                if (
+                    value.id !== null &&
+                    value.id !== undefined
+                ) {
+                    valueKeyById.set(
+                        String(value.id),
+                        value.clientKey
+                    );
+                }
+            });
+        }
+    );
+
+    return optionValueIds
+        .map(id =>
+            valueKeyById.get(
+                String(id)
+            )
+        )
+        .filter(Boolean);
+}
+
+// ==========================================
+// Load Product Variants
+// ==========================================
+
+async function loadProductVariants(
+    productId
+) {
+    const token =
+        ++productVariantsLoadToken;
+
+    productVariantsLoaded = false;
+    productVariantsDirty = false;
+
+    setProductVariantsStatus(
+        "جاري تحميل خيارات المنتج..."
+    );
+
+    updateProductVariantsSaveAvailability();
+
     try {
-        const { data, error } = await supabaseClient
-            .from("categories")
-            .select("id, name")
-            .order("id", { ascending: true });
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                "admin_get_product_variants",
+                {
+                    p_product_id:
+                        Number(productId)
+                }
+            );
 
-        if (error) throw error;
+        if (error) {
+            throw error;
+        }
 
-        adminCategories = Array.isArray(data) ? data : [];
+        if (
+            token !==
+            productVariantsLoadToken
+        ) {
+            return;
+        }
 
-        renderCategoryOptions();
-        updateCategoriesCountDisplay();
+        const result =
+            data &&
+            typeof data === "object"
+                ? data
+                : {};
+
+        const rawGroups =
+            Array.isArray(result.groups)
+                ? result.groups
+                : [];
+
+        const rawVariants =
+            Array.isArray(result.variants)
+                ? result.variants
+                : [];
+
+        const groups =
+            rawGroups.map(
+                group => ({
+                    id:
+                        group.id ??
+                        null,
+
+                    clientKey:
+                        getExistingClientKey(
+                            "g",
+                            group.id
+                        ),
+
+                    name:
+                        String(
+                            group.name ?? ""
+                        ),
+
+                    sortOrder:
+                        Number.isInteger(
+                            Number(
+                                group.sort_order
+                            )
+                        )
+                            ? Number(
+                                  group.sort_order
+                              )
+                            : 0,
+
+                    values:
+                        Array.isArray(
+                            group.values
+                        )
+                            ? group.values.map(
+                                  value => ({
+                                      id:
+                                          value.id ??
+                                          null,
+
+                                      clientKey:
+                                          getExistingClientKey(
+                                              "v",
+                                              value.id
+                                          ),
+
+                                      value:
+                                          String(
+                                              value.value ??
+                                                  ""
+                                          ),
+
+                                      sortOrder:
+                                          Number.isInteger(
+                                              Number(
+                                                  value.sort_order
+                                              )
+                                          )
+                                              ? Number(
+                                                    value.sort_order
+                                                )
+                                              : 0
+                                  })
+                              )
+                            : []
+                })
+            );
+
+        productVariantsState.groups =
+            groups;
+
+        productVariantsState.variants =
+            rawVariants.map(
+                variant => ({
+                    id:
+                        variant.id ??
+                        null,
+
+                    clientKey:
+                        getExistingClientKey(
+                            "var",
+                            variant.id
+                        ),
+
+                    sku:
+                        String(
+                            variant.sku ?? ""
+                        ),
+
+                    price:
+                        normalizeVariantNumber(
+                            variant.price,
+                            null
+                        ),
+
+                    quantity:
+                        Number.isInteger(
+                            Number(
+                                variant.quantity
+                            )
+                        )
+                            ? Number(
+                                  variant.quantity
+                              )
+                            : 0,
+
+                    purchaseCost:
+                        normalizeVariantNumber(
+                            variant.purchase_cost,
+                            null
+                        ),
+
+                    active:
+                        variant.active !==
+                        false,
+
+                    optionValueKeys:
+                        getVariantCombinationFromIds(
+                            variant.option_value_ids
+                        )
+                })
+            );
+
+        productVariantsState.enabled =
+            groups.length > 0;
+
+        productVariantsLoaded = true;
+        productVariantsDirty = false;
+
+        updateProductVariantsToggleUI();
+        renderProductVariantsUI();
+
+        if (groups.length > 0) {
+            setProductVariantsStatus(
+                rawVariants.length > 0
+                    ? `تم تحميل ${rawVariants.length} تركيبة.`
+                    : "تم تحميل مجموعات الخيارات، ولا توجد تركيبات مكتملة بعد.",
+                rawVariants.length > 0
+                    ? "success"
+                    : ""
+            );
+        } else {
+            setProductVariantsStatus("");
+        }
+
+        updateProductVariantsSaveAvailability();
     } catch (error) {
-        console.error("Categories error:", error);
+        console.error(
+            "Load product variants error:",
+            error
+        );
 
-        showAdminProductToast(
-            "تعذر تحميل التصنيفات.",
+        if (
+            token !==
+            productVariantsLoadToken
+        ) {
+            return;
+        }
+
+        productVariantsLoaded = false;
+        productVariantsDirty = false;
+
+        productVariantsState = {
+            enabled: false,
+            groups: [],
+            variants: []
+        };
+
+        updateProductVariantsToggleUI();
+
+        setProductVariantsStatus(
+            "تعذر تحميل خيارات المنتج. لن يتم السماح بحفظ المنتج حتى ينجح التحميل.",
             "error"
         );
+
+        updateProductVariantsSaveAvailability();
+
+        throw error;
     }
 }
 
 // ==========================================
-// Pagination UI
+// Variant Combination Generation
 // ==========================================
-function setupPaginationControls() {
-    const nextBtn = document.getElementById("nextPageBtn");
-    const prevBtn = document.getElementById("prevPageBtn");
 
-    if (nextBtn) {
-        nextBtn.addEventListener("click", () => {
-            const totalPages =
-                Math.ceil(
-                    totalProductsCount / ITEMS_PER_PAGE
-                ) || 1;
-
-            if (currentPage < totalPages) {
-                currentPage++;
-                loadAdminProducts();
-            }
-        });
-    }
-
-    if (prevBtn) {
-        prevBtn.addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                loadAdminProducts();
-            }
-        });
-    }
-}
-
-function updatePaginationUI() {
-    const pagination =
-        document.getElementById("productsPagination");
-
-    const nextBtn =
-        document.getElementById("nextPageBtn");
-
-    const prevBtn =
-        document.getElementById("prevPageBtn");
-
-    const pageNum =
-        document.getElementById("currentPageNum");
-
-    const totalPagesSpan =
-        document.getElementById("totalPagesNum");
-
-    if (!pagination) return;
-
-    if (totalProductsCount === 0) {
-        pagination.hidden = true;
+function generateProductVariantCombinations() {
+    if (
+        !productVariantsState.enabled
+    ) {
+        productVariantsState.variants = [];
+        renderProductVariantsTable();
         return;
     }
 
-    pagination.hidden = false;
+    const groups =
+        productVariantsState.groups;
 
-    const totalPages =
-        Math.ceil(
-            totalProductsCount / ITEMS_PER_PAGE
-        ) || 1;
+    if (groups.length === 0) {
+        productVariantsState.variants = [];
 
-    if (pageNum) {
-        pageNum.textContent = currentPage;
+        renderProductVariantsTable();
+
+        setProductVariantsStatus(
+            "أضف مجموعة خيارات واحدة على الأقل.",
+            "error"
+        );
+
+        return;
     }
 
-    if (totalPagesSpan) {
-        totalPagesSpan.textContent = totalPages;
+    const groupsWithValues =
+        groups.map(group => ({
+            ...group,
+            values:
+                Array.isArray(
+                    group.values
+                )
+                    ? group.values.filter(
+                          value =>
+                              String(
+                                  value.value ??
+                                      ""
+                              ).trim()
+                      )
+                    : []
+        }));
+
+    const emptyGroup =
+        groupsWithValues.find(
+            group =>
+                group.values.length ===
+                0
+        );
+
+    if (emptyGroup) {
+        productVariantsState.variants =
+            [];
+
+        renderProductVariantsTable();
+
+        setProductVariantsStatus(
+            `مجموعة "${emptyGroup.name || "بدون اسم"}" لا تحتوي على أي قيمة.`,
+            "error"
+        );
+
+        return;
     }
 
-    if (prevBtn) {
-        prevBtn.disabled = currentPage === 1;
-    }
+    /*
+     * حفظ حالة Variants الحالية حسب
+     * تركيبتها حتى لا نخسر:
+     * SKU / السعر / الكمية / التكلفة / active
+     */
+    const existingByCombination =
+        new Map();
 
-    if (nextBtn) {
-        nextBtn.disabled =
-            currentPage === totalPages;
-    }
+    productVariantsState.variants.forEach(
+        variant => {
+            const key =
+                getVariantCombinationKey(
+                    variant.optionValueKeys
+                );
+
+            if (key) {
+                existingByCombination.set(
+                    key,
+                    variant
+                );
+            }
+        }
+    );
+
+    /*
+     * Cartesian Product
+     */
+    let combinations = [[]];
+
+    groupsWithValues.forEach(
+        group => {
+            const next = [];
+
+            combinations.forEach(
+                combination => {
+                    group.values.forEach(
+                        value => {
+                            next.push([
+                                ...combination,
+                                value.clientKey
+                            ]);
+                        }
+                    );
+                }
+            );
+
+            combinations = next;
+        }
+    );
+
+    const basePurchaseCost =
+        Number(
+            document.getElementById(
+                "productPurchaseCost"
+            )?.value
+        );
+
+    const safeBaseCost =
+        Number.isFinite(
+            basePurchaseCost
+        ) &&
+        basePurchaseCost > 0
+            ? basePurchaseCost
+            : null;
+
+    productVariantsState.variants =
+        combinations.map(
+            optionValueKeys => {
+                const combinationKey =
+                    getVariantCombinationKey(
+                        optionValueKeys
+                    );
+
+                const existing =
+                    existingByCombination.get(
+                        combinationKey
+                    );
+
+                if (existing) {
+                    return {
+                        ...existing,
+                        optionValueKeys: [
+                            ...optionValueKeys
+                        ]
+                    };
+                }
+
+                return {
+                    id: null,
+
+                    clientKey:
+                        createClientKey(
+                            "var"
+                        ),
+
+                    sku:
+                        `VAR-${crypto.randomUUID()
+                            .replaceAll(
+                                "-",
+                                ""
+                            )
+                            .slice(
+                                0,
+                                12
+                            )
+                            .toUpperCase()}`,
+
+                    price: null,
+
+                    quantity: 0,
+
+                    purchaseCost:
+                        safeBaseCost,
+
+                    active: true,
+
+                    optionValueKeys: [
+                        ...optionValueKeys
+                    ]
+                };
+            }
+        );
+
+    renderProductVariantsTable();
+
+    setProductVariantsStatus(
+        `تم إنشاء ${productVariantsState.variants.length} تركيبة.`,
+        "success"
+    );
 }
 
 // ==========================================
-// Render UI
+// Variant UI Rendering
 // ==========================================
-function renderCategoryOptions() {
-    const select =
-        document.getElementById("productCategory");
 
-    if (!select) return;
-
-    select.innerHTML =
-        '<option value="">اختر التصنيف</option>';
-
-    const fragment =
-        document.createDocumentFragment();
-
-    adminCategories.forEach(category => {
-        if (!category) return;
-
-        const option =
-            document.createElement("option");
-
-        option.value = String(category.id);
-        option.textContent = String(category.name);
-
-        fragment.appendChild(option);
-    });
-
-    select.appendChild(fragment);
+function renderProductVariantsUI() {
+    updateProductVariantsToggleUI();
+    renderProductOptionGroups();
+    renderProductVariantsTable();
 }
 
-function renderAdminProducts() {
-    const table =
-        document.getElementById("adminProductsTable");
-
-    const loading =
-        document.getElementById("productsLoading");
+function renderProductOptionGroups() {
+    const container =
+        document.getElementById(
+            "productOptionGroups"
+        );
 
     const empty =
-        document.getElementById("productsEmpty");
+        document.getElementById(
+            "productOptionGroupsEmpty"
+        );
 
-    if (!table) return;
+    if (!container) return;
 
-    if (loading) {
-        loading.hidden = true;
-    }
+    container.innerHTML = "";
 
-    table.innerHTML = "";
-
-    if (adminProducts.length === 0) {
+    if (
+        productVariantsState.groups
+            .length === 0
+    ) {
         if (empty) {
             empty.hidden = false;
         }
@@ -338,97 +776,1748 @@ function renderAdminProducts() {
     const fragment =
         document.createDocumentFragment();
 
-    adminProducts.forEach(product => {
-        if (!product) return;
+    productVariantsState.groups.forEach(
+        (group, groupIndex) => {
+            const groupElement =
+                document.createElement(
+                    "div"
+                );
 
-        const row =
-            document.createElement("tr");
+            groupElement.className =
+                "admin-product-option-group";
 
-        const quantity =
-            Number(product.quantity || 0);
+            groupElement.dataset.groupKey =
+                group.clientKey;
 
-        const imageUrl =
-            String(product.main_image || "").trim();
+            const header =
+                document.createElement(
+                    "div"
+                );
 
-        const category =
-            adminCategories.find(
-                category =>
-                    String(category.id) ===
-                    String(product.category_id)
+            header.className =
+                "admin-product-option-group-header";
+
+            const field =
+                document.createElement(
+                    "label"
+                );
+
+            field.className =
+                "admin-product-option-group-field";
+
+            const label =
+                document.createElement(
+                    "span"
+                );
+
+            label.textContent =
+                "اسم المجموعة";
+
+            const input =
+                document.createElement(
+                    "input"
+                );
+
+            input.type = "text";
+            input.className =
+                "admin-form-input";
+            input.placeholder =
+                "مثال: اللون";
+            input.value =
+                group.name;
+
+            input.dataset.groupName =
+                group.clientKey;
+
+            input.addEventListener(
+                "change",
+                () => {
+                    group.name =
+                        input.value.trim();
+
+                    markProductVariantsDirty();
+
+                    renderProductVariantsTable();
+                }
             );
 
-        const categoryName =
-            category
-                ? category.name
-                : "بدون تصنيف";
+            field.append(
+                label,
+                input
+            );
 
-        let imageHTML =
-            `<div class="admin-product-image" style="display:flex; align-items:center; justify-content:center; background:#f3f4f6;">—</div>`;
+            header.appendChild(field);
 
-        if (
-            imageUrl &&
-            isSafeImageUrl(imageUrl)
-        ) {
-            imageHTML =
-                `<img class="admin-product-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name || "")}" loading="lazy" decoding="async">`;
+            const removeGroupButton =
+                document.createElement(
+                    "button"
+                );
+
+            removeGroupButton.type =
+                "button";
+
+            removeGroupButton.className =
+                "admin-product-option-action danger";
+
+            removeGroupButton.textContent =
+                "حذف المجموعة";
+
+            removeGroupButton.addEventListener(
+                "click",
+                () => {
+                    const hasData =
+                        productVariantsState.groups.length >
+                            0 ||
+                        productVariantsState.variants.length >
+                            0;
+
+                    if (
+                        hasData &&
+                        !confirm(
+                            "حذف هذه المجموعة سيغيّر تركيبات الـVariants المرتبطة بها. هل تريد المتابعة؟"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    productVariantsState.groups =
+                        productVariantsState.groups.filter(
+                            item =>
+                                item.clientKey !==
+                                group.clientKey
+                        );
+
+                    markProductVariantsDirty();
+
+                    generateProductVariantCombinations();
+                    renderProductOptionGroups();
+                }
+            );
+
+            header.appendChild(
+                removeGroupButton
+            );
+
+            groupElement.appendChild(
+                header
+            );
+
+            const valuesContainer =
+                document.createElement(
+                    "div"
+                );
+
+            valuesContainer.className =
+                "admin-product-option-values";
+
+            const values =
+                Array.isArray(
+                    group.values
+                )
+                    ? group.values
+                    : [];
+
+            values.forEach(
+                (value, valueIndex) => {
+                    const valueRow =
+                        document.createElement(
+                            "div"
+                        );
+
+                    valueRow.className =
+                        "admin-product-option-value";
+
+                    valueRow.dataset.valueKey =
+                        value.clientKey;
+
+                    const valueInput =
+                        document.createElement(
+                            "input"
+                        );
+
+                    valueInput.type =
+                        "text";
+
+                    valueInput.className =
+                        "admin-form-input";
+
+                    valueInput.placeholder =
+                        "مثال: أسود";
+
+                    valueInput.value =
+                        value.value;
+
+                    valueInput.addEventListener(
+                        "change",
+                        () => {
+                            value.value =
+                                valueInput.value.trim();
+
+                            markProductVariantsDirty();
+
+                            generateProductVariantCombinations();
+                        }
+                    );
+
+                    const actions =
+                        document.createElement(
+                            "div"
+                        );
+
+                    actions.className =
+                        "admin-product-option-value-actions";
+
+                    const removeValueButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    removeValueButton.type =
+                        "button";
+
+                    removeValueButton.className =
+                        "admin-product-option-action danger";
+
+                    removeValueButton.textContent =
+                        "حذف";
+
+                    removeValueButton.addEventListener(
+                        "click",
+                        () => {
+                            if (
+                                !confirm(
+                                    "حذف هذه القيمة سيزيل التركيبات التي تعتمد عليها عند الحفظ. هل تريد المتابعة؟"
+                                )
+                            ) {
+                                return;
+                            }
+
+                            group.values =
+                                group.values.filter(
+                                    item =>
+                                        item.clientKey !==
+                                        value.clientKey
+                                );
+
+                            markProductVariantsDirty();
+
+                            generateProductVariantCombinations();
+                            renderProductOptionGroups();
+                        }
+                    );
+
+                    actions.appendChild(
+                        removeValueButton
+                    );
+
+                    valueRow.append(
+                        valueInput,
+                        actions
+                    );
+
+                    valuesContainer.appendChild(
+                        valueRow
+                    );
+                }
+            );
+
+            groupElement.appendChild(
+                valuesContainer
+            );
+
+            const footer =
+                document.createElement(
+                    "div"
+                );
+
+            footer.className =
+                "admin-product-option-group-footer";
+
+            const addValueButton =
+                document.createElement(
+                    "button"
+                );
+
+            addValueButton.type =
+                "button";
+
+            addValueButton.className =
+                "admin-secondary-button";
+
+            addValueButton.textContent =
+                "+ إضافة قيمة";
+
+            addValueButton.addEventListener(
+                "click",
+                () => {
+                    group.values.push({
+                        id: null,
+
+                        clientKey:
+                            createClientKey(
+                                "v"
+                            ),
+
+                        value: "",
+
+                        sortOrder:
+                            group.values
+                                .length
+                    });
+
+                    markProductVariantsDirty();
+
+                    renderProductOptionGroups();
+
+                    /*
+                     * لا نعيد توليد التركيبات
+                     * قبل إدخال قيمة حقيقية.
+                     */
+                    renderProductVariantsTable();
+                }
+            );
+
+            footer.appendChild(
+                addValueButton
+            );
+
+            groupElement.appendChild(
+                footer
+            );
+
+            fragment.appendChild(
+                groupElement
+            );
+        }
+    );
+
+    container.appendChild(fragment);
+}
+
+function getVariantOptionLabels(
+    variant
+) {
+    const labels = [];
+
+    productVariantsState.groups.forEach(
+        group => {
+            const valueKey =
+                variant.optionValueKeys.find(
+                    key =>
+                        group.values.some(
+                            value =>
+                                value.clientKey ===
+                                key
+                        )
+                );
+
+            if (!valueKey) return;
+
+            const value =
+                group.values.find(
+                    item =>
+                        item.clientKey ===
+                        valueKey
+                );
+
+            if (!value) return;
+
+            labels.push({
+                groupName:
+                    group.name ||
+                    "خيار",
+
+                value:
+                    value.value ||
+                    "—"
+            });
+        }
+    );
+
+    return labels;
+}
+
+function renderProductVariantsTable() {
+    const table =
+        document.getElementById(
+            "productVariantsTable"
+        );
+
+    const empty =
+        document.getElementById(
+            "productVariantsEmpty"
+        );
+
+    if (!table) return;
+
+    table.innerHTML = "";
+
+    const variants =
+        Array.isArray(
+            productVariantsState.variants
+        )
+            ? productVariantsState.variants
+            : [];
+
+    if (
+        !productVariantsState.enabled ||
+        variants.length === 0
+    ) {
+        if (empty) {
+            empty.hidden = false;
         }
 
-        row.innerHTML = `
-            <td>${imageHTML}</td>
+        return;
+    }
 
-            <td>
-                <strong>
-                    ${escapeHtml(product.name || "")}
-                </strong>
-            </td>
+    if (empty) {
+        empty.hidden = true;
+    }
 
-            <td>
-                ${formatPrice(product.price)}
-            </td>
+    const fragment =
+        document.createDocumentFragment();
 
-            <td>
-                <span class="${
-                    quantity <= 0
-                        ? "stock-empty"
-                        : "stock-available"
-                }">
-                    ${quantity}
-                </span>
-            </td>
+    variants.forEach(
+        variant => {
+            const row =
+                document.createElement(
+                    "tr"
+                );
 
-            <td>
-                ${escapeHtml(categoryName)}
-            </td>
+            row.dataset.variantKey =
+                variant.clientKey;
 
-            <td>
-                ${escapeHtml(product.product_code || "")}
-            </td>
+            // ------------------------------
+            // Options
+            // ------------------------------
+            const optionsCell =
+                document.createElement(
+                    "td"
+                );
 
-            <td>
-                <div class="admin-actions">
-                    <button
-                        type="button"
-                        class="admin-edit-button"
-                        data-action="edit"
-                        data-id="${product.id}">
-                        تعديل
-                    </button>
+            const optionsWrapper =
+                document.createElement(
+                    "div"
+                );
 
-                    <button
-                        type="button"
-                        class="admin-delete-button"
-                        data-action="delete"
-                        data-id="${product.id}">
-                        حذف
-                    </button>
-                </div>
-            </td>
-        `;
+            optionsWrapper.className =
+                "admin-product-variant-options";
 
-        fragment.appendChild(row);
-    });
+            const labels =
+                getVariantOptionLabels(
+                    variant
+                );
+
+            labels.forEach(
+                item => {
+                    const chip =
+                        document.createElement(
+                            "span"
+                        );
+
+                    chip.className =
+                        "admin-product-variant-option";
+
+                    chip.textContent =
+                        `${item.groupName}: ${item.value}`;
+
+                    optionsWrapper.appendChild(
+                        chip
+                    );
+                }
+            );
+
+            optionsCell.appendChild(
+                optionsWrapper
+            );
+
+            // ------------------------------
+            // SKU
+            // ------------------------------
+            const skuCell =
+                document.createElement(
+                    "td"
+                );
+
+            const skuInput =
+                document.createElement(
+                    "input"
+                );
+
+            skuInput.type = "text";
+            skuInput.className =
+                "admin-product-variant-input sku";
+            skuInput.value =
+                variant.sku || "";
+            skuInput.autocomplete =
+                "off";
+            skuInput.spellcheck = false;
+
+            skuInput.addEventListener(
+                "input",
+                () => {
+                    variant.sku =
+                        skuInput.value.trim();
+
+                    markProductVariantsDirty();
+                }
+            );
+
+            skuCell.appendChild(
+                skuInput
+            );
+
+            // ------------------------------
+            // Price
+            // ------------------------------
+            const priceCell =
+                document.createElement(
+                    "td"
+                );
+
+            const priceInput =
+                document.createElement(
+                    "input"
+                );
+
+            priceInput.type =
+                "number";
+
+            priceInput.className =
+                "admin-product-variant-input";
+
+            priceInput.min = "0";
+            priceInput.step = "0.01";
+
+            priceInput.placeholder =
+                "سعر المنتج الأساسي";
+
+            priceInput.value =
+                variant.price === null ||
+                variant.price === undefined
+                    ? ""
+                    : String(
+                          variant.price
+                      );
+
+            priceInput.addEventListener(
+                "input",
+                () => {
+                    const value =
+                        priceInput.value.trim();
+
+                    variant.price =
+                        value === ""
+                            ? null
+                            : Number(
+                                  value
+                              );
+
+                    markProductVariantsDirty();
+                }
+            );
+
+            priceCell.appendChild(
+                priceInput
+            );
+
+            // ------------------------------
+            // Quantity
+            // ------------------------------
+            const quantityCell =
+                document.createElement(
+                    "td"
+                );
+
+            const quantityInput =
+                document.createElement(
+                    "input"
+                );
+
+            quantityInput.type =
+                "number";
+
+            quantityInput.className =
+                "admin-product-variant-input";
+
+            quantityInput.min = "0";
+            quantityInput.step = "1";
+
+            quantityInput.value =
+                String(
+                    Number.isInteger(
+                        Number(
+                            variant.quantity
+                        )
+                    )
+                        ? variant.quantity
+                        : 0
+                );
+
+            quantityInput.addEventListener(
+                "input",
+                () => {
+                    variant.quantity =
+                        Number(
+                            quantityInput.value
+                        );
+
+                    markProductVariantsDirty();
+                }
+            );
+
+            quantityCell.appendChild(
+                quantityInput
+            );
+
+            // ------------------------------
+            // Purchase Cost
+            // ------------------------------
+            const costCell =
+                document.createElement(
+                    "td"
+                );
+
+            const costInput =
+                document.createElement(
+                    "input"
+                );
+
+            costInput.type =
+                "number";
+
+            costInput.className =
+                "admin-product-variant-input";
+
+            costInput.min = "0.01";
+            costInput.step = "0.01";
+
+            costInput.value =
+                variant.purchaseCost ===
+                    null ||
+                variant.purchaseCost ===
+                    undefined
+                    ? ""
+                    : String(
+                          variant.purchaseCost
+                      );
+
+            costInput.addEventListener(
+                "input",
+                () => {
+                    variant.purchaseCost =
+                        Number(
+                            costInput.value
+                        );
+
+                    markProductVariantsDirty();
+                }
+            );
+
+            costCell.appendChild(
+                costInput
+            );
+
+            // ------------------------------
+            // Active
+            // ------------------------------
+            const activeCell =
+                document.createElement(
+                    "td"
+                );
+
+            activeCell.className =
+                "admin-product-variant-active";
+
+            const activeInput =
+                document.createElement(
+                    "input"
+                );
+
+            activeInput.type =
+                "checkbox";
+
+            activeInput.checked =
+                variant.active !== false;
+
+            activeInput.addEventListener(
+                "change",
+                () => {
+                    variant.active =
+                        activeInput.checked;
+
+                    markProductVariantsDirty();
+                }
+            );
+
+            activeCell.appendChild(
+                activeInput
+            );
+
+            row.append(
+                optionsCell,
+                skuCell,
+                priceCell,
+                quantityCell,
+                costCell,
+                activeCell
+            );
+
+            fragment.appendChild(row);
+        }
+    );
 
     table.appendChild(fragment);
+}
+
+// ==========================================
+// Variant Validation & Payload
+// ==========================================
+
+function validateProductVariants() {
+    if (
+        !productVariantsState.enabled
+    ) {
+        return {
+            valid: true,
+            groups: [],
+            variants: []
+        };
+    }
+
+    const groups =
+        productVariantsState.groups;
+
+    if (groups.length === 0) {
+        return {
+            valid: false,
+            message:
+                "تم تفعيل خيارات المنتج، لكن لم تتم إضافة أي مجموعة خيارات."
+        };
+    }
+
+    const normalizedGroups =
+        groups.map(
+            (group, groupIndex) => ({
+                ...group,
+                name:
+                    String(
+                        group.name ?? ""
+                    ).trim(),
+                sortOrder:
+                    groupIndex
+            })
+        );
+
+    const groupNames =
+        new Set();
+
+    for (
+        const group of normalizedGroups
+    ) {
+        if (!group.name) {
+            return {
+                valid: false,
+                message:
+                    "يرجى إدخال اسم لكل مجموعة خيارات."
+            };
+        }
+
+        const normalizedName =
+            group.name.toLocaleLowerCase();
+
+        if (
+            groupNames.has(
+                normalizedName
+            )
+        ) {
+            return {
+                valid: false,
+                message:
+                    "لا يمكن تكرار اسم مجموعة الخيارات."
+            };
+        }
+
+        groupNames.add(
+            normalizedName
+        );
+
+        if (
+            !Array.isArray(
+                group.values
+            ) ||
+            group.values.length === 0
+        ) {
+            return {
+                valid: false,
+                message:
+                    `مجموعة "${group.name}" يجب أن تحتوي على قيمة واحدة على الأقل.`
+            };
+        }
+
+        const valueNames =
+            new Set();
+
+        for (
+            const value of group.values
+        ) {
+            const valueText =
+                String(
+                    value.value ?? ""
+                ).trim();
+
+            if (!valueText) {
+                return {
+                    valid: false,
+                    message:
+                        `يوجد خيار فارغ داخل مجموعة "${group.name}".`
+                };
+            }
+
+            const normalizedValue =
+                valueText.toLocaleLowerCase();
+
+            if (
+                valueNames.has(
+                    normalizedValue
+                )
+            ) {
+                return {
+                    valid: false,
+                    message:
+                        `لا يمكن تكرار القيمة "${valueText}" داخل مجموعة "${group.name}".`
+                };
+            }
+
+            valueNames.add(
+                normalizedValue
+            );
+        }
+    }
+
+    const variants =
+        productVariantsState.variants;
+
+    if (
+        variants.length === 0
+    ) {
+        return {
+            valid: false,
+            message:
+                "لم يتم إنشاء أي تركيبة. اضغط «تحديث التركيبات»."
+        };
+    }
+
+    const groupKeySet =
+        new Set(
+            normalizedGroups.map(
+                group =>
+                    group.clientKey
+            )
+        );
+
+    const combinationKeys =
+        new Set();
+
+    for (
+        const variant of variants
+    ) {
+        const sku =
+            String(
+                variant.sku ?? ""
+            ).trim();
+
+        if (!sku) {
+            return {
+                valid: false,
+                message:
+                    "كل Variant يجب أن يحتوي على SKU."
+            };
+        }
+
+        const quantity =
+            Number(
+                variant.quantity
+            );
+
+        if (
+            !Number.isInteger(
+                quantity
+            ) ||
+            quantity < 0
+        ) {
+            return {
+                valid: false,
+                message:
+                    `الكمية غير صالحة للـVariant "${sku}".`
+            };
+        }
+
+        const purchaseCost =
+            Number(
+                variant.purchaseCost
+            );
+
+        if (
+            !Number.isFinite(
+                purchaseCost
+            ) ||
+            purchaseCost <= 0
+        ) {
+            return {
+                valid: false,
+                message:
+                    `تكلفة الشراء يجب أن تكون أكبر من صفر للـVariant "${sku}".`
+            };
+        }
+
+        if (
+            variant.price !== null &&
+            variant.price !== undefined &&
+            variant.price !== ""
+        ) {
+            const variantPrice =
+                Number(
+                    variant.price
+                );
+
+            if (
+                !Number.isFinite(
+                    variantPrice
+                ) ||
+                variantPrice < 0
+            ) {
+                return {
+                    valid: false,
+                    message:
+                        `السعر غير صالح للـVariant "${sku}".`
+                };
+            }
+        }
+
+        const optionValueKeys =
+            Array.isArray(
+                variant.optionValueKeys
+            )
+                ? variant.optionValueKeys
+                : [];
+
+        if (
+            optionValueKeys.length !==
+            normalizedGroups.length
+        ) {
+            return {
+                valid: false,
+                message:
+                    `تركيبة الـVariant "${sku}" غير مكتملة.`
+            };
+        }
+
+        const usedGroupKeys =
+            new Set();
+
+        for (
+            const valueKey
+            of optionValueKeys
+        ) {
+            let foundGroup =
+                null;
+
+            normalizedGroups.some(
+                group => {
+                    const found =
+                        group.values.some(
+                            value =>
+                                value.clientKey ===
+                                valueKey
+                        );
+
+                    if (found) {
+                        foundGroup =
+                            group;
+                        return true;
+                    }
+
+                    return false;
+                }
+            );
+
+            if (
+                !foundGroup
+            ) {
+                return {
+                    valid: false,
+                    message:
+                        `تركيبة الـVariant "${sku}" تحتوي على قيمة غير موجودة.`
+                };
+            }
+
+            if (
+                usedGroupKeys.has(
+                    foundGroup.clientKey
+                )
+            ) {
+                return {
+                    valid: false,
+                    message:
+                        `تركيبة الـVariant "${sku}" تحتوي على أكثر من قيمة من نفس المجموعة.`
+                };
+            }
+
+            usedGroupKeys.add(
+                foundGroup.clientKey
+            );
+        }
+
+        if (
+            usedGroupKeys.size !==
+            groupKeySet.size
+        ) {
+            return {
+                valid: false,
+                message:
+                    `تركيبة الـVariant "${sku}" لا تحتوي على خيار من كل مجموعة.`
+            };
+        }
+
+        const combinationKey =
+            getVariantCombinationKey(
+                optionValueKeys
+            );
+
+        if (
+            combinationKeys.has(
+                combinationKey
+            )
+        ) {
+            return {
+                valid: false,
+                message:
+                    `تم تكرار نفس تركيبة الخيارات أكثر من مرة.`
+            };
+        }
+
+        combinationKeys.add(
+            combinationKey
+        );
+    }
+
+    /*
+     * SKU uniqueness داخل الحالة الحالية.
+     */
+    const skuSet =
+        new Set();
+
+    for (
+        const variant of variants
+    ) {
+        const sku =
+            String(
+                variant.sku ?? ""
+            ).trim();
+
+        const normalizedSku =
+            sku.toLocaleLowerCase();
+
+        if (
+            skuSet.has(
+                normalizedSku
+            )
+        ) {
+            return {
+                valid: false,
+                message:
+                    `SKU "${sku}" مكرر داخل Variants.`
+            };
+        }
+
+        skuSet.add(
+            normalizedSku
+        );
+    }
+
+    return {
+        valid: true,
+        groups: normalizedGroups,
+        variants
+    };
+}
+
+function buildProductVariantsPayload() {
+    const validation =
+        validateProductVariants();
+
+    if (!validation.valid) {
+        throw new Error(
+            validation.message
+        );
+    }
+
+    const groups =
+        validation.groups.map(
+            group => ({
+                client_key:
+                    group.clientKey,
+
+                id:
+                    group.id ??
+                    null,
+
+                name:
+                    group.name,
+
+                sort_order:
+                    group.sortOrder,
+
+                values:
+                    group.values.map(
+                        (
+                            value,
+                            index
+                        ) => ({
+                            client_key:
+                                value.clientKey,
+
+                            id:
+                                value.id ??
+                                null,
+
+                            value:
+                                String(
+                                    value.value ??
+                                        ""
+                                ).trim(),
+
+                            sort_order:
+                                index
+                        })
+                    )
+            })
+        );
+
+    const variants =
+        validation.variants.map(
+            variant => ({
+                client_key:
+                    variant.clientKey,
+
+                id:
+                    variant.id ??
+                    null,
+
+                sku:
+                    String(
+                        variant.sku ?? ""
+                    ).trim(),
+
+                price:
+                    variant.price ===
+                        null ||
+                    variant.price ===
+                        undefined ||
+                    variant.price ===
+                        ""
+                        ? null
+                        : Number(
+                              variant.price
+                          ),
+
+                quantity:
+                    Number(
+                        variant.quantity
+                    ),
+
+                purchase_cost:
+                    Number(
+                        variant.purchaseCost
+                    ),
+
+                active:
+                    variant.active !==
+                    false,
+
+                option_value_keys:
+                    Array.isArray(
+                        variant.optionValueKeys
+                    )
+                        ? [
+                              ...variant.optionValueKeys
+                          ]
+                        : []
+            })
+        );
+
+    return {
+        groups,
+        variants
+    };
+}
+
+async function saveProductVariants(productId) {
+    const payload = buildProductVariantsPayload();
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "admin_save_product_variants",
+        {
+            p_product_id: Number(productId),
+            p_groups: payload.groups,
+            p_variants: payload.variants
+        }
+    );
+
+    if (error) throw error;
+
+    return data;
+}
+
+// ==========================================
+// Load Data (Paginated + Debounced Search)
+// ==========================================
+async function loadAdminProducts() {
+    const table =
+        document.getElementById(
+            "adminProductsTable"
+        );
+
+    const loading =
+        document.getElementById(
+            "productsLoading"
+        );
+
+    const empty =
+        document.getElementById(
+            "productsEmpty"
+        );
+
+    const pagination =
+        document.getElementById(
+            "productsPagination"
+        );
+
+    if (loading) {
+        loading.hidden = false;
+    }
+
+    if (empty) {
+        empty.hidden = true;
+    }
+
+    if (pagination) {
+        pagination.hidden = true;
+    }
+
+    if (table) {
+        table.innerHTML = "";
+    }
+
+    try {
+        let query =
+            supabaseClient
+                .from("products")
+                .select(
+                    ADMIN_PRODUCT_COLUMNS,
+                    {
+                        count: "exact"
+                    }
+                )
+                .order(
+                    "id",
+                    {
+                        ascending:
+                            false
+                    }
+                );
+
+        if (currentSearchTerm) {
+            const safeSearchTerm =
+                escapePostgrestSearchValue(
+                    currentSearchTerm
+                );
+
+            query =
+                query.or(
+                    `name.ilike.%${safeSearchTerm}%,product_code.ilike.%${safeSearchTerm}%`
+                );
+        }
+
+        const from =
+            (currentPage - 1) *
+            ITEMS_PER_PAGE;
+
+        const to =
+            from +
+            ITEMS_PER_PAGE -
+            1;
+
+        query =
+            query.range(
+                from,
+                to
+            );
+
+        const {
+            data,
+            count,
+            error
+        } =
+            await query;
+
+        if (error) {
+            throw error;
+        }
+
+        adminProducts =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        totalProductsCount =
+            count || 0;
+
+        await loadAdminProductCosts();
+
+        renderAdminProducts();
+        updatePaginationUI();
+        updateProductsCountDisplay();
+    } catch (error) {
+        console.error(
+            "Load products error:",
+            error
+        );
+
+        if (loading) {
+            loading.textContent =
+                "حدث خطأ أثناء تحميل المنتجات.";
+        }
+
+        showAdminProductToast(
+            "تعذر تحميل المنتجات.",
+            "error"
+        );
+    }
+}
+
+async function loadAdminProductCosts() {
+    if (
+        adminProducts.length ===
+        0
+    ) {
+        adminProductCosts = {};
+        return;
+    }
+
+    const productIds =
+        adminProducts.map(
+            product =>
+                product.id
+        );
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("product_costs")
+            .select(
+                "product_id, purchase_cost"
+            )
+            .in(
+                "product_id",
+                productIds
+            );
+
+    if (error) {
+        throw error;
+    }
+
+    adminProductCosts = {};
+
+    (data || []).forEach(
+        cost => {
+            adminProductCosts[
+                String(
+                    cost.product_id
+                )
+            ] =
+                cost.purchase_cost;
+        }
+    );
+}
+
+async function loadAdminCategories() {
+    try {
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("categories")
+                .select(
+                    "id, name"
+                )
+                .order(
+                    "id",
+                    {
+                        ascending:
+                            true
+                    }
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        adminCategories =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        renderCategoryOptions();
+        updateCategoriesCountDisplay();
+    } catch (error) {
+        console.error(
+            "Categories error:",
+            error
+        );
+
+        showAdminProductToast(
+            "تعذر تحميل التصنيفات.",
+            "error"
+        );
+    }
+}
+
+// ==========================================
+// Pagination UI
+// ==========================================
+function setupPaginationControls() {
+    const nextBtn =
+        document.getElementById(
+            "nextPageBtn"
+        );
+
+    const prevBtn =
+        document.getElementById(
+            "prevPageBtn"
+        );
+
+    if (nextBtn) {
+        nextBtn.addEventListener(
+            "click",
+            () => {
+                const totalPages =
+                    Math.ceil(
+                        totalProductsCount /
+                            ITEMS_PER_PAGE
+                    ) || 1;
+
+                if (
+                    currentPage <
+                    totalPages
+                ) {
+                    currentPage++;
+                    loadAdminProducts();
+                }
+            }
+        );
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener(
+            "click",
+            () => {
+                if (
+                    currentPage >
+                    1
+                ) {
+                    currentPage--;
+                    loadAdminProducts();
+                }
+            }
+        );
+    }
+}
+
+function updatePaginationUI() {
+    const pagination =
+        document.getElementById(
+            "productsPagination"
+        );
+
+    const nextBtn =
+        document.getElementById(
+            "nextPageBtn"
+        );
+
+    const prevBtn =
+        document.getElementById(
+            "prevPageBtn"
+        );
+
+    const pageNum =
+        document.getElementById(
+            "currentPageNum"
+        );
+
+    const totalPagesSpan =
+        document.getElementById(
+            "totalPagesNum"
+        );
+
+    if (!pagination) return;
+
+    if (
+        totalProductsCount ===
+        0
+    ) {
+        pagination.hidden = true;
+        return;
+    }
+
+    pagination.hidden = false;
+
+    const totalPages =
+        Math.ceil(
+            totalProductsCount /
+                ITEMS_PER_PAGE
+        ) || 1;
+
+    if (pageNum) {
+        pageNum.textContent =
+            currentPage;
+    }
+
+    if (totalPagesSpan) {
+        totalPagesSpan.textContent =
+            totalPages;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled =
+            currentPage === 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled =
+            currentPage ===
+            totalPages;
+    }
+}
+
+// ==========================================
+// Render UI
+// ==========================================
+function renderCategoryOptions() {
+    const select =
+        document.getElementById(
+            "productCategory"
+        );
+
+    if (!select) return;
+
+    select.innerHTML =
+        '<option value="">اختر التصنيف</option>';
+
+    const fragment =
+        document.createDocumentFragment();
+
+    adminCategories.forEach(
+        category => {
+            if (!category) return;
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                String(
+                    category.id
+                );
+
+            option.textContent =
+                String(
+                    category.name
+                );
+
+            fragment.appendChild(
+                option
+            );
+        }
+    );
+
+    select.appendChild(
+        fragment
+    );
+}
+
+function renderAdminProducts() {
+    const table =
+        document.getElementById(
+            "adminProductsTable"
+        );
+
+    const loading =
+        document.getElementById(
+            "productsLoading"
+        );
+
+    const empty =
+        document.getElementById(
+            "productsEmpty"
+        );
+
+    if (!table) return;
+
+    if (loading) {
+        loading.hidden = true;
+    }
+
+    table.innerHTML = "";
+
+    if (
+        adminProducts.length ===
+        0
+    ) {
+        if (empty) {
+            empty.hidden = false;
+        }
+
+        return;
+    }
+
+    if (empty) {
+        empty.hidden = true;
+    }
+
+    const fragment =
+        document.createDocumentFragment();
+
+    adminProducts.forEach(
+        product => {
+            if (!product) return;
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            const quantity =
+                Number(
+                    product.quantity ||
+                        0
+                );
+
+            const imageUrl =
+                String(
+                    product.main_image ||
+                        ""
+                ).trim();
+
+            const category =
+                adminCategories.find(
+                    category =>
+                        String(
+                            category.id
+                        ) ===
+                        String(
+                            product.category_id
+                        )
+                );
+
+            const categoryName =
+                category
+                    ? category.name
+                    : "بدون تصنيف";
+
+            let imageHTML =
+                `<div class="admin-product-image" style="display:flex; align-items:center; justify-content:center; background:#f3f4f6;">—</div>`;
+
+            if (
+                imageUrl &&
+                isSafeImageUrl(
+                    imageUrl
+                )
+            ) {
+                imageHTML =
+                    `<img class="admin-product-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name || "")}" loading="lazy" decoding="async">`;
+            }
+
+            row.innerHTML = `
+                <td>${imageHTML}</td>
+
+                <td>
+                    <strong>
+                        ${escapeHtml(
+                            product.name ||
+                                ""
+                        )}
+                    </strong>
+                </td>
+
+                <td>
+                    ${formatPrice(
+                        product.price
+                    )}
+                </td>
+
+                <td>
+                    <span class="${
+                        quantity <=
+                        0
+                            ? "stock-empty"
+                            : "stock-available"
+                    }">
+                        ${quantity}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        categoryName
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        product.product_code ||
+                            ""
+                    )}
+                </td>
+
+                <td>
+                    <div class="admin-actions">
+                        <button
+                            type="button"
+                            class="admin-edit-button"
+                            data-action="edit"
+                            data-id="${product.id}">
+                            تعديل
+                        </button>
+
+                        <button
+                            type="button"
+                            class="admin-delete-button"
+                            data-action="delete"
+                            data-id="${product.id}">
+                            حذف
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            fragment.appendChild(
+                row
+            );
+        }
+    );
+
+    table.appendChild(
+        fragment
+    );
 }
 
 // ==========================================
@@ -504,8 +2593,12 @@ function resetProductImageEditorState() {
         getProductImageEditorElements();
 
     if (elements.image) {
-        elements.image.removeAttribute("src");
-        elements.image.style.transform = "";
+        elements.image.removeAttribute(
+            "src"
+        );
+
+        elements.image.style.transform =
+            "";
     }
 
     if (elements.editor) {
@@ -547,16 +2640,21 @@ function resetProductImageState() {
 
     if (previewImage) {
         revokeObjectUrl(
-            previewImage.dataset.previewUrl
+            previewImage.dataset
+                .previewUrl
         );
 
-        delete previewImage.dataset.previewUrl;
+        delete previewImage.dataset
+            .previewUrl;
 
-        previewImage.removeAttribute("src");
+        previewImage.removeAttribute(
+            "src"
+        );
     }
 
     if (previewContainer) {
-        previewContainer.hidden = true;
+        previewContainer.hidden =
+            true;
     }
 
     if (status) {
@@ -586,36 +2684,52 @@ function setProductImagePreview(
             "productImageStatus"
         );
 
-    if (!previewContainer || !previewImage) {
+    if (
+        !previewContainer ||
+        !previewImage
+    ) {
         return;
     }
 
     revokeObjectUrl(
-        previewImage.dataset.previewUrl
+        previewImage.dataset
+            .previewUrl
     );
 
-    delete previewImage.dataset.previewUrl;
+    delete previewImage.dataset
+        .previewUrl;
 
     const validUrl =
         imageUrl &&
-        isSafeImageUrl(imageUrl);
+        isSafeImageUrl(
+            imageUrl
+        );
 
     if (!validUrl) {
-        previewImage.removeAttribute("src");
-        previewContainer.hidden = true;
+        previewImage.removeAttribute(
+            "src"
+        );
+
+        previewContainer.hidden =
+            true;
 
         if (status) {
-            status.textContent = statusText;
+            status.textContent =
+                statusText;
         }
 
         return;
     }
 
-    previewImage.src = imageUrl;
-    previewContainer.hidden = false;
+    previewImage.src =
+        imageUrl;
+
+    previewContainer.hidden =
+        false;
 
     if (status) {
-        status.textContent = statusText;
+        status.textContent =
+            statusText;
     }
 }
 
@@ -626,10 +2740,14 @@ function openAddProductModal() {
     if (isProductSaving) return;
 
     const modal =
-        document.getElementById("productModal");
+        document.getElementById(
+            "productModal"
+        );
 
     const form =
-        document.getElementById("productForm");
+        document.getElementById(
+            "productForm"
+        );
 
     const title =
         document.getElementById(
@@ -642,24 +2760,47 @@ function openAddProductModal() {
         form.reset();
     }
 
-    document.getElementById("productId").value = "";
+    document.getElementById(
+        "productId"
+    ).value = "";
 
     document.getElementById(
         "productPurchaseCost"
     ).value = "";
 
     if (title) {
-        title.textContent = "إضافة منتج";
+        title.textContent =
+            "إضافة منتج";
     }
 
     clearFormMessage();
 
+    /*
+     * المنتج الجديد يبدأ بدون Variants.
+     * لا توجد حاجة لطلب RPC.
+     */
+    productVariantsState = {
+        enabled: false,
+        groups: [],
+        variants: []
+    };
+
+    productVariantsLoaded = true;
+    productVariantsDirty = false;
+
+    renderProductVariantsUI();
+    setProductVariantsStatus("");
+
     if (modal) {
         modal.hidden = false;
     }
+
+    updateProductVariantsSaveAvailability();
 }
 
-function openEditProductModal(id) {
+async function openEditProductModal(
+    id
+) {
     if (isProductSaving) return;
 
     const product =
@@ -678,20 +2819,32 @@ function openEditProductModal(id) {
         return;
     }
 
+    /*
+     * إلغاء أي عملية تحميل Variants
+     * سابقة تخص منتجًا آخر.
+     */
+    productVariantsLoadToken++;
+
+    productVariantsLoaded = false;
+    productVariantsDirty = false;
+
     resetProductImageState();
 
     document.getElementById(
         "productId"
-    ).value = product.id;
+    ).value =
+        product.id;
 
     document.getElementById(
         "productName"
-    ).value = product.name || "";
+    ).value =
+        product.name || "";
 
     document.getElementById(
         "productCode"
     ).value =
-        product.product_code || "";
+        product.product_code ||
+        "";
 
     document.getElementById(
         "productPrice"
@@ -706,7 +2859,8 @@ function openEditProductModal(id) {
     document.getElementById(
         "productCategory"
     ).value =
-        product.category_id || "";
+        product.category_id ||
+        "";
 
     document.getElementById(
         "productTarget"
@@ -716,7 +2870,8 @@ function openEditProductModal(id) {
     document.getElementById(
         "productDescription"
     ).value =
-        product.description || "";
+        product.description ||
+        "";
 
     document.getElementById(
         "productPurchaseCost"
@@ -727,27 +2882,70 @@ function openEditProductModal(id) {
 
     if (product.main_image) {
         setProductImagePreview(
-            String(product.main_image),
+            String(
+                product.main_image
+            ),
             "الصورة الحالية للمنتج."
         );
     }
 
     document.getElementById(
         "productModalTitle"
-    ).textContent = "تعديل المنتج";
+    ).textContent =
+        "تعديل المنتج";
 
     clearFormMessage();
 
-    document.getElementById(
-        "productModal"
-    ).hidden = false;
+    /*
+     * حالة مؤقتة إلى أن يصل RPC.
+     */
+    productVariantsState = {
+        enabled: false,
+        groups: [],
+        variants: []
+    };
+
+    updateProductVariantsToggleUI();
+
+    setProductVariantsStatus(
+        "جاري تحميل خيارات المنتج..."
+    );
+
+    const modal =
+        document.getElementById(
+            "productModal"
+        );
+
+    if (modal) {
+        modal.hidden = false;
+    }
+
+    updateProductVariantsSaveAvailability();
+
+    try {
+        await loadProductVariants(
+            product.id
+        );
+    } catch {
+        /*
+         * الخطأ عُرض داخل قسم Variants.
+         * نترك الحفظ معطلاً.
+         */
+    }
 }
 
 function closeProductModalWindow() {
     if (isProductSaving) return;
 
+    /*
+     * إلغاء أي RPC تحميل قديم.
+     */
+    productVariantsLoadToken++;
+
     const modal =
-        document.getElementById("productModal");
+        document.getElementById(
+            "productModal"
+        );
 
     if (modal) {
         modal.hidden = true;
@@ -755,6 +2953,18 @@ function closeProductModalWindow() {
 
     resetProductImageState();
     clearFormMessage();
+
+    productVariantsState = {
+        enabled: false,
+        groups: [],
+        variants: []
+    };
+
+    productVariantsLoaded = true;
+    productVariantsDirty = false;
+
+    renderProductVariantsUI();
+    setProductVariantsStatus("");
 }
 
 // ==========================================
@@ -762,10 +2972,14 @@ function closeProductModalWindow() {
 // ==========================================
 function resetProductImageEditor() {
     productImageEditorState.scale =
-        productImageEditorState.baseScale || 1;
+        productImageEditorState.baseScale ||
+        1;
 
-    productImageEditorState.offsetX = 0;
-    productImageEditorState.offsetY = 0;
+    productImageEditorState.offsetX =
+        0;
+
+    productImageEditorState.offsetY =
+        0;
 
     const { zoom } =
         getProductImageEditorElements();
@@ -793,7 +3007,8 @@ function updateProductImageEditor() {
         scale,
         offsetX,
         offsetY
-    } = productImageEditorState;
+    } =
+        productImageEditorState;
 
     image.style.transform =
         `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
@@ -866,16 +3081,17 @@ function setupProductImageEditor() {
         }
     );
 
-    const stopDragging = event => {
-        productImageEditorState.dragging =
-            false;
+    const stopDragging =
+        event => {
+            productImageEditorState.dragging =
+                false;
 
-        try {
-            elements.stage.releasePointerCapture(
-                event.pointerId
-            );
-        } catch {}
-    };
+            try {
+                elements.stage.releasePointerCapture(
+                    event.pointerId
+                );
+            } catch {}
+        };
 
     elements.stage.addEventListener(
         "pointerup",
@@ -892,9 +3108,15 @@ function setupProductImageEditor() {
             "input",
             function () {
                 const value =
-                    Number(this.value);
+                    Number(
+                        this.value
+                    );
 
-                if (!Number.isFinite(value)) {
+                if (
+                    !Number.isFinite(
+                        value
+                    )
+                ) {
                     return;
                 }
 
@@ -914,10 +3136,14 @@ function setupProductImageEditor() {
     }
 }
 
-async function loadProductImageIntoEditor(file) {
+async function loadProductImageIntoEditor(
+    file
+) {
     if (
         !file ||
-        !file.type.startsWith("image/")
+        !file.type.startsWith(
+            "image/"
+        )
     ) {
         throw new Error(
             "الملف المحدد ليس صورة صالحة."
@@ -932,26 +3158,37 @@ async function loadProductImageIntoEditor(file) {
     );
 
     const objectUrl =
-        URL.createObjectURL(file);
+        URL.createObjectURL(
+            file
+        );
 
-    productImageEditorState.file = file;
+    productImageEditorState.file =
+        file;
+
     productImageEditorState.objectUrl =
         objectUrl;
 
-    const image = new Image();
+    const image =
+        new Image();
 
     await new Promise(
-        (resolve, reject) => {
-            image.onload = resolve;
+        (
+            resolve,
+            reject
+        ) => {
+            image.onload =
+                resolve;
 
-            image.onerror = () =>
-                reject(
-                    new Error(
-                        "تعذر قراءة الصورة."
-                    )
-                );
+            image.onerror =
+                () =>
+                    reject(
+                        new Error(
+                            "تعذر قراءة الصورة."
+                        )
+                    );
 
-            image.src = objectUrl;
+            image.src =
+                objectUrl;
         }
     );
 
@@ -959,19 +3196,26 @@ async function loadProductImageIntoEditor(file) {
         currentToken !==
         productImageLoadToken
     ) {
-        image.removeAttribute("src");
-        revokeObjectUrl(objectUrl);
+        image.removeAttribute(
+            "src"
+        );
+
+        revokeObjectUrl(
+            objectUrl
+        );
+
         return;
     }
 
-    /*
-     * حماية الذاكرة من الصور الضخمة جدًا.
-     */
     if (
-        image.naturalWidth <= 0 ||
-        image.naturalHeight <= 0 ||
-        image.naturalWidth > 6000 ||
-        image.naturalHeight > 6000
+        image.naturalWidth <=
+            0 ||
+        image.naturalHeight <=
+            0 ||
+        image.naturalWidth >
+            6000 ||
+        image.naturalHeight >
+            6000
     ) {
         throw new Error(
             "أبعاد الصورة غير صالحة أو ضخمة جدًا للحماية."
@@ -997,7 +3241,8 @@ async function loadProductImageIntoEditor(file) {
     elements.image.src =
         objectUrl;
 
-    elements.editor.hidden = false;
+    elements.editor.hidden =
+        false;
 
     const stageWidth =
         elements.stage.clientWidth;
@@ -1092,7 +3337,9 @@ async function exportEditedProductImage() {
         state.image.naturalHeight;
 
     const originalFileSize =
-        Number(state.file?.size) || 0;
+        Number(
+            state.file?.size
+        ) || 0;
 
     if (
         !sourceWidth ||
@@ -1119,8 +3366,11 @@ async function exportEditedProductImage() {
             640
         );
 
-    const MIN_QUALITY = 0.45;
-    const MAX_QUALITY = 0.85;
+    const MIN_QUALITY =
+        0.45;
+
+    const MAX_QUALITY =
+        0.85;
 
     const stageWidth =
         stage.clientWidth;
@@ -1137,31 +3387,36 @@ async function exportEditedProductImage() {
         );
     }
 
-    /*
-     * نحافظ على نفس الـcrop والموضع
-     * والتكبير المستخدم في المحرر.
-     */
     const renderedWidth =
-        sourceWidth * state.scale;
+        sourceWidth *
+        state.scale;
 
     const renderedHeight =
-        sourceHeight * state.scale;
+        sourceHeight *
+        state.scale;
 
     const renderedLeft =
-        (stageWidth - renderedWidth) / 2 +
+        (stageWidth -
+            renderedWidth) /
+            2 +
         state.offsetX;
 
     const renderedTop =
-        (stageHeight - renderedHeight) / 2 +
+        (stageHeight -
+            renderedHeight) /
+            2 +
         state.offsetY;
 
-    /*
-     * إنشاء WebP بالحجم والجودة المطلوبين.
-     */
     const createWebP =
-        (outputSize, quality) => {
+        (
+            outputSize,
+            quality
+        ) => {
             return new Promise(
-                (resolve, reject) => {
+                (
+                    resolve,
+                    reject
+                ) => {
                     const canvas =
                         document.createElement(
                             "canvas"
@@ -1196,11 +3451,6 @@ async function exportEditedProductImage() {
                         return;
                     }
 
-                    /*
-                     * لا نحتاج إلى رسم خلفية.
-                     * WebP الناتج سيحافظ على
-                     * نفس crop الموجود حاليًا.
-                     */
                     context.clearRect(
                         0,
                         0,
@@ -1208,10 +3458,6 @@ async function exportEditedProductImage() {
                         canvas.height
                     );
 
-                    /*
-                     * تحويل إحداثيات محرر الصورة
-                     * إلى إحداثيات الـcanvas.
-                     */
                     const cropScale =
                         finalSize /
                         stageWidth;
@@ -1244,9 +3490,10 @@ async function exportEditedProductImage() {
                                 return;
                             }
 
-                            resolve(blob);
+                            resolve(
+                                blob
+                            );
                         },
-
                         "image/webp",
                         quality
                     );
@@ -1254,23 +3501,19 @@ async function exportEditedProductImage() {
             );
         };
 
-    /*
-     * إنتاج عدد محدود من النتائج فقط
-     * للحفاظ على سرعة الرفع.
-     *
-     * النتيجة المرجعة دائمًا Blob.
-     */
     const findBestResult =
         async (
             outputSize,
-            maximumSize = TARGET_SIZE
+            maximumSize =
+                TARGET_SIZE
         ) => {
-            const qualities = [
-                MAX_QUALITY,
-                0.70,
-                0.55,
-                MIN_QUALITY
-            ];
+            const qualities =
+                [
+                    MAX_QUALITY,
+                    0.70,
+                    0.55,
+                    MIN_QUALITY
+                ];
 
             let smallestResult =
                 null;
@@ -1279,7 +3522,8 @@ async function exportEditedProductImage() {
                 null;
 
             for (
-                const quality of qualities
+                const quality of
+                qualities
             ) {
                 const blob =
                     await createWebP(
@@ -1287,12 +3531,14 @@ async function exportEditedProductImage() {
                         quality
                     );
 
-                const result = {
-                    blob,
-                    quality,
-                    size: blob.size,
-                    outputSize
-                };
+                const result =
+                    {
+                        blob,
+                        quality,
+                        size:
+                            blob.size,
+                        outputSize
+                    };
 
                 if (
                     !smallestResult ||
@@ -1303,10 +3549,6 @@ async function exportEditedProductImage() {
                         result;
                 }
 
-                /*
-                 * نحافظ على أعلى جودة
-                 * تحقق الحجم المطلوب.
-                 */
                 if (
                     result.size <=
                     maximumSize
@@ -1324,25 +3566,12 @@ async function exportEditedProductImage() {
             );
         };
 
-    /*
-     * ---------------------------------------------------------
-     * المسار الخاص بالصور الأصلية الصغيرة
-     * ---------------------------------------------------------
-     *
-     * الهدف هنا عدم تكبير الملف الأصلي بلا داعٍ.
-     *
-     * لكن يجب تطبيق crop المستخدم أولًا،
-     * لذلك لا يمكن ببساطة إعادة الملف الأصلي
-     * إذا كان المستخدم قد اختار crop مختلفًا.
-     */
     if (
-        originalFileSize > 0 &&
-        originalFileSize <= TARGET_SIZE
+        originalFileSize >
+            0 &&
+        originalFileSize <=
+            TARGET_SIZE
     ) {
-        /*
-         * المحاولة الأولى:
-         * أعلى جودة مع الأبعاد الحالية.
-         */
         let bestSmallResult =
             await findBestResult(
                 MAX_OUTPUT_SIZE,
@@ -1357,9 +3586,6 @@ async function exportEditedProductImage() {
             return bestSmallResult.blob;
         }
 
-        /*
-         * محاولة ثانية بجودة أقل.
-         */
         const secondResult =
             await createWebP(
                 MAX_OUTPUT_SIZE,
@@ -1378,36 +3604,36 @@ async function exportEditedProductImage() {
             bestSmallResult.size
         ) {
             bestSmallResult = {
-                blob: secondResult,
-                quality: 0.55,
-                size: secondResult.size,
+                blob:
+                    secondResult,
+                quality:
+                    0.55,
+                size:
+                    secondResult.size,
                 outputSize:
                     MAX_OUTPUT_SIZE
             };
         }
 
-        /*
-         * إذا بقي الناتج أكبر من الأصل،
-         * نقلل الأبعاد تدريجيًا.
-         *
-         * هذا يحافظ على crop بدل التضحية به.
-         */
         if (
             MAX_OUTPUT_SIZE >
             MIN_OUTPUT_SIZE
         ) {
-            const reducedSizes = [
-                Math.round(
-                    MAX_OUTPUT_SIZE * 0.80
-                ),
-                Math.round(
-                    MAX_OUTPUT_SIZE * 0.65
-                )
-            ];
+            const reducedSizes =
+                [
+                    Math.round(
+                        MAX_OUTPUT_SIZE *
+                            0.80
+                    ),
+                    Math.round(
+                        MAX_OUTPUT_SIZE *
+                            0.65
+                    )
+                ];
 
             for (
-                const outputSize
-                of reducedSizes
+                const outputSize of
+                reducedSizes
             ) {
                 const safeOutputSize =
                     Math.max(
@@ -1452,20 +3678,8 @@ async function exportEditedProductImage() {
             }
         }
 
-        /*
-         * إذا تعذر الوصول إلى حجم <= الأصل
-         * بعد المعالجة، لا نفشل العملية.
-         *
-         * نعيد أصغر نتيجة معالجة وصلنا إليها.
-         */
         return bestSmallResult.blob;
     }
-
-    /*
-     * ---------------------------------------------------------
-     * الصور الأكبر من 50 KB
-     * ---------------------------------------------------------
-     */
 
     let bestResult =
         await findBestResult(
@@ -1479,9 +3693,6 @@ async function exportEditedProductImage() {
         );
     }
 
-    /*
-     * وصلنا إلى 50 KB أو أقل.
-     */
     if (
         bestResult.size <=
         TARGET_SIZE
@@ -1489,29 +3700,26 @@ async function exportEditedProductImage() {
         return bestResult.blob;
     }
 
-    /*
-     * لم نصل إلى 50 KB.
-     *
-     * نقلل الأبعاد مرة أو مرتين فقط.
-     * لا توجد عشرات عمليات الضغط.
-     */
     if (
         MAX_OUTPUT_SIZE >
         MIN_OUTPUT_SIZE
     ) {
-        const reducedSizes = [
-            Math.round(
-                MAX_OUTPUT_SIZE * 0.80
-            ),
+        const reducedSizes =
+            [
+                Math.round(
+                    MAX_OUTPUT_SIZE *
+                        0.80
+                ),
 
-            Math.round(
-                MAX_OUTPUT_SIZE * 0.65
-            )
-        ];
+                Math.round(
+                    MAX_OUTPUT_SIZE *
+                        0.65
+                )
+            ];
 
         for (
-            const outputSize
-            of reducedSizes
+            const outputSize of
+            reducedSizes
         ) {
             const safeOutputSize =
                 Math.max(
@@ -1539,9 +3747,6 @@ async function exportEditedProductImage() {
                 continue;
             }
 
-            /*
-             * وصلنا للهدف.
-             */
             if (
                 candidate.size <=
                 TARGET_SIZE
@@ -1549,9 +3754,6 @@ async function exportEditedProductImage() {
                 return candidate.blob;
             }
 
-            /*
-             * نحتفظ بأصغر نتيجة عملية.
-             */
             if (
                 candidate.size <
                 bestResult.size
@@ -1562,12 +3764,6 @@ async function exportEditedProductImage() {
         }
     }
 
-    /*
-     * تجاوز 50 KB ليس خطأ.
-     *
-     * مثلًا إذا كانت أفضل نتيجة 57 KB،
-     * يتم استخدامها بدل فشل حفظ المنتج.
-     */
     return bestResult.blob;
 }
 
@@ -1575,7 +3771,9 @@ async function exportEditedProductImage() {
 // Image File Selection
 // ==========================================
 document
-    .getElementById("productImageFile")
+    .getElementById(
+        "productImageFile"
+    )
     ?.addEventListener(
         "change",
         async function () {
@@ -1619,15 +3817,6 @@ document
                 return;
             }
 
-            /*
-             * loadProductImageIntoEditor()
-             * هي المسؤولة عن إدارة
-             * productImageLoadToken.
-             *
-             * لا ننشئ token ثاني هنا،
-             * حتى لا يصبح token قديمًا
-             * قبل انتهاء تحميل الصورة.
-             */
             resetProductImageEditorState();
 
             try {
@@ -1640,11 +3829,9 @@ document
                     file
                 );
 
-                /*
-                 * إذا انتهت عملية تحميل الصورة
-                 * بنجاح، نعرض حالة المحرر.
-                 */
-                if (previewContainer) {
+                if (
+                    previewContainer
+                ) {
                     previewContainer.hidden =
                         true;
                 }
@@ -1681,19 +3868,20 @@ document
 // ==========================================
 // Upload & Clean Storage
 // ==========================================
-async function uploadProductImage(file) {
+async function uploadProductImage(
+    file
+) {
     if (!file) return null;
 
-    /*
-     * exportEditedProductImage()
-     * تعيد Blob دائمًا.
-     */
     const optimizedImage =
         await exportEditedProductImage();
 
     if (
         !optimizedImage ||
-        !(optimizedImage instanceof Blob)
+        !(
+            optimizedImage instanceof
+            Blob
+        )
     ) {
         throw new Error(
             "تعذر تجهيز الصورة للرفع."
@@ -1716,7 +3904,9 @@ async function uploadProductImage(file) {
         error: uploadError
     } =
         await supabaseClient.storage
-            .from("product-images")
+            .from(
+                "product-images"
+            )
             .upload(
                 filePath,
                 optimizedImage,
@@ -1727,7 +3917,8 @@ async function uploadProductImage(file) {
                     cacheControl:
                         "31536000",
 
-                    upsert: false
+                    upsert:
+                        false
                 }
             );
 
@@ -1737,14 +3928,17 @@ async function uploadProductImage(file) {
 
     const { data } =
         supabaseClient.storage
-            .from("product-images")
+            .from(
+                "product-images"
+            )
             .getPublicUrl(
                 filePath
             );
 
     const url =
         String(
-            data?.publicUrl ?? ""
+            data?.publicUrl ??
+                ""
         ).trim();
 
     if (
@@ -1752,8 +3946,12 @@ async function uploadProductImage(file) {
         !isSafeImageUrl(url)
     ) {
         await supabaseClient.storage
-            .from("product-images")
-            .remove([filePath])
+            .from(
+                "product-images"
+            )
+            .remove([
+                filePath
+            ])
             .catch(e =>
                 console.warn(e)
             );
@@ -1764,7 +3962,8 @@ async function uploadProductImage(file) {
     }
 
     return {
-        path: filePath,
+        path:
+            filePath,
         url
     };
 }
@@ -1779,7 +3978,11 @@ function getProductImagePath(
 
     try {
         const parsedUrl =
-            new URL(String(imageUrl));
+            new URL(
+                String(
+                    imageUrl
+                )
+            );
 
         const index =
             parsedUrl.pathname.indexOf(
@@ -1792,7 +3995,8 @@ function getProductImagePath(
 
         const encodedPath =
             parsedUrl.pathname.slice(
-                index + marker.length
+                index +
+                    marker.length
             );
 
         return encodedPath
@@ -1808,28 +4012,54 @@ function getProductImagePath(
 // ==========================================
 // Save Product
 // ==========================================
-async function saveProduct(event) {
+async function saveProduct(
+    event
+) {
     event.preventDefault();
 
     if (isProductSaving) return;
 
     clearFormMessage();
 
+    /*
+     * حماية مهمة:
+     * في حالة تعديل منتج موجود، يجب أن تكون
+     * حالة Variants قد تم تحميلها بنجاح.
+     */
     const idValue =
         document
-            .getElementById("productId")
+            .getElementById(
+                "productId"
+            )
             .value
             .trim();
 
+    const isEdit =
+        Boolean(idValue);
+
+    if (
+        isEdit &&
+        !productVariantsLoaded
+    ) {
+        return showFormMessage(
+            "لا يمكن حفظ المنتج قبل اكتمال تحميل خياراته. يرجى الانتظار أو إعادة فتح المنتج.",
+            "error"
+        );
+    }
+
     const name =
         document
-            .getElementById("productName")
+            .getElementById(
+                "productName"
+            )
             .value
             .trim();
 
     const productCode =
         document
-            .getElementById("productCode")
+            .getElementById(
+                "productCode"
+            )
             .value
             .trim();
 
@@ -1863,7 +4093,9 @@ async function saveProduct(event) {
 
     const target =
         document
-            .getElementById("productTarget")
+            .getElementById(
+                "productTarget"
+            )
             .value
             .trim();
 
@@ -1880,7 +4112,8 @@ async function saveProduct(event) {
             .getElementById(
                 "productImageFile"
             )
-            ?.files?.[0] || null;
+            ?.files?.[0] ||
+        null;
 
     const saveButton =
         document.getElementById(
@@ -1915,7 +4148,9 @@ async function saveProduct(event) {
     }
 
     if (
-        !Number.isInteger(quantity) ||
+        !Number.isInteger(
+            quantity
+        ) ||
         quantity < 0
     ) {
         return showFormMessage(
@@ -1937,7 +4172,9 @@ async function saveProduct(event) {
     }
 
     if (
-        !Number.isInteger(categoryId) ||
+        !Number.isInteger(
+            categoryId
+        ) ||
         categoryId <= 0
     ) {
         return showFormMessage(
@@ -1946,10 +4183,32 @@ async function saveProduct(event) {
         );
     }
 
+    /*
+     * تحقق Variants فقط إذا كانت مفعلة
+     * أو إذا تم تغيير حالتها.
+     */
+    if (
+        productVariantsDirty &&
+        productVariantsState.enabled
+    ) {
+        const variantValidation =
+            validateProductVariants();
+
+        if (
+            !variantValidation.valid
+        ) {
+            return showFormMessage(
+                variantValidation.message,
+                "error"
+            );
+        }
+    }
+
     isProductSaving = true;
 
     if (saveButton) {
-        saveButton.disabled = true;
+        saveButton.disabled =
+            true;
 
         saveButton.dataset.originalText =
             saveButton.textContent;
@@ -1958,17 +4217,17 @@ async function saveProduct(event) {
             "جاري الحفظ...";
     }
 
-    let uploadedImagePath = null;
+    let uploadedImagePath =
+        null;
 
     try {
-        const isEdit =
-            Boolean(idValue);
-
         const oldProduct =
             isEdit
                 ? adminProducts.find(
                       item =>
-                          String(item.id) ===
+                          String(
+                              item.id
+                          ) ===
                           idValue
                   )
                 : null;
@@ -2016,7 +4275,8 @@ async function saveProduct(event) {
             ).trim();
 
         let mainImage =
-            oldImageUrl || null;
+            oldImageUrl ||
+            null;
 
         // ==================================
         // Upload new image first
@@ -2034,16 +4294,20 @@ async function saveProduct(event) {
                 uploaded.url;
         }
 
-        const productData = {
-            name,
-            description,
-            price,
-            quantity,
-            main_image: mainImage,
-            target,
-            product_code: productCode,
-            category_id: categoryId
-        };
+        const productData =
+            {
+                name,
+                description,
+                price,
+                quantity,
+                main_image:
+                    mainImage,
+                target,
+                product_code:
+                    productCode,
+                category_id:
+                    categoryId
+            };
 
         let savedProductId =
             idValue;
@@ -2053,15 +4317,21 @@ async function saveProduct(event) {
         // ==================================
         if (!isEdit) {
             const {
-                data: insertedProduct,
-                error: insertError
+                data:
+                    insertedProduct,
+                error:
+                    insertError
             } =
                 await supabaseClient
-                    .from("products")
+                    .from(
+                        "products"
+                    )
                     .insert(
                         productData
                     )
-                    .select("id")
+                    .select(
+                        "id"
+                    )
                     .single();
 
             if (insertError) {
@@ -2074,10 +4344,13 @@ async function saveProduct(event) {
                 );
 
             const {
-                error: costError
+                error:
+                    costError
             } =
                 await supabaseClient
-                    .from("product_costs")
+                    .from(
+                        "product_costs"
+                    )
                     .insert({
                         product_id:
                             insertedProduct.id,
@@ -2088,22 +4361,41 @@ async function saveProduct(event) {
 
             if (costError) {
                 /*
-                 * Rollback product
-                 * إذا فشل حفظ التكلفة.
+                 * Rollback:
+                 * إذا فشل حفظ تكلفة الشراء بعد
+                 * إنشاء المنتج، نحذف المنتج.
                  */
-                await supabaseClient
-                    .from("products")
-                    .delete()
-                    .eq(
-                        "id",
-                        insertedProduct.id
-                    )
-                    .catch(e =>
+                try {
+                    const {
+                        error:
+                            rollbackError
+                    } =
+                        await supabaseClient
+                            .from(
+                                "products"
+                            )
+                            .delete()
+                            .eq(
+                                "id",
+                                insertedProduct.id
+                            );
+
+                    if (
+                        rollbackError
+                    ) {
                         console.error(
                             "Rollback failed:",
-                            e
-                        )
+                            rollbackError
+                        );
+                    }
+                } catch (
+                    rollbackException
+                ) {
+                    console.error(
+                        "Rollback failed:",
+                        rollbackException
                     );
+                }
 
                 throw costError;
             }
@@ -2114,10 +4406,13 @@ async function saveProduct(event) {
         // ==================================
         else {
             const {
-                error: updateError
+                error:
+                    updateError
             } =
                 await supabaseClient
-                    .from("products")
+                    .from(
+                        "products"
+                    )
                     .update(
                         productData
                     )
@@ -2131,10 +4426,13 @@ async function saveProduct(event) {
             }
 
             const {
-                error: costError
+                error:
+                    costError
             } =
                 await supabaseClient
-                    .from("product_costs")
+                    .from(
+                        "product_costs"
+                    )
                     .upsert(
                         {
                             product_id:
@@ -2153,52 +4451,89 @@ async function saveProduct(event) {
 
             if (costError) {
                 /*
-                 * Restore old product data.
+                 * إذا فشل تحديث تكلفة الشراء،
+                 * نحاول إعادة بيانات المنتج الأساسية
+                 * إلى حالتها السابقة.
                  */
-                await supabaseClient
-                    .from("products")
-                    .update(
-                        oldProductData
-                    )
-                    .eq(
-                        "id",
-                        idValue
-                    )
-                    .catch(e =>
-                        console.error(e)
-                    );
+                try {
+                    const {
+                        error:
+                            productRestoreError
+                    } =
+                        await supabaseClient
+                            .from(
+                                "products"
+                            )
+                            .update(
+                                oldProductData
+                            )
+                            .eq(
+                                "id",
+                                idValue
+                            );
 
-                /*
-                 * Restore old cost.
-                 */
+                    if (
+                        productRestoreError
+                    ) {
+                        console.error(
+                            "Product restore failed:",
+                            productRestoreError
+                        );
+                    }
+                } catch (
+                    restoreException
+                ) {
+                    console.error(
+                        "Product restore failed:",
+                        restoreException
+                    );
+                }
+
                 if (
                     oldPurchaseCost !==
                     undefined
                 ) {
-                    await supabaseClient
-                        .from(
-                            "product_costs"
-                        )
-                        .upsert(
-                            {
-                                product_id:
-                                    Number(
-                                        idValue
-                                    ),
+                    try {
+                        const {
+                            error:
+                                costRestoreError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "product_costs"
+                                )
+                                .upsert(
+                                    {
+                                        product_id:
+                                            Number(
+                                                idValue
+                                            ),
 
-                                purchase_cost:
-                                    oldPurchaseCost
-                            },
-                            {
-                                onConflict:
-                                    "product_id"
-                            }
-                        )
-                        .catch(e =>
+                                        purchase_cost:
+                                            oldPurchaseCost
+                                    },
+                                    {
+                                        onConflict:
+                                            "product_id"
+                                    }
+                                );
+
+                        if (
+                            costRestoreError
+                        ) {
                             console.error(
-                                e
-                            )
+                                "Cost restore failed:",
+                                costRestoreError
+                            );
+                        }
+                    } catch (
+                        costRestoreException
+                    ) {
+                        console.error(
+                            "Cost restore failed:",
+                            costRestoreException
                         );
+                    }
                 }
 
                 throw costError;
@@ -2206,7 +4541,199 @@ async function saveProduct(event) {
         }
 
         // ==================================
-        // Remove old image after success
+        // Save Variants
+        // ==================================
+        /*
+         * لا نرسل RPC إلا إذا حدث تغيير فعلي
+         * في نظام Variants.
+         */
+
+        
+        if (
+            productVariantsDirty
+        ) {
+            try {
+                if (
+                    productVariantsState
+                        .enabled
+                ) {
+                    await saveProductVariants(
+                        savedProductId
+                    );
+                } else {
+                    /*
+                     * enabled=false مع dirty=true
+                     * يعني أن المستخدم اختار تعطيل
+                     * نظام الخيارات.
+                     *
+                     * إرسال مصفوفتين فارغتين يجعل
+                     * RPC يحذف مجموعات/Variants
+                     * الخاصة بهذا المنتج بشكل ذري.
+                     */
+                    const {
+                        error:
+                            disableVariantsError
+                    } =
+                        await supabaseClient.rpc(
+                            "admin_save_product_variants",
+                            {
+                                p_product_id:
+                                    Number(
+                                        savedProductId
+                                    ),
+
+                                p_groups: [],
+
+                                p_variants: []
+                            }
+                        );
+
+                    if (
+                        disableVariantsError
+                    ) {
+                        throw disableVariantsError;
+                    }
+                }
+            } catch (
+                variantError
+            ) {
+                /*
+                 * في المنتج الجديد:
+                 * حذف المنتج يؤدي إلى حذف
+                 * كل بيانات Variants التابعة
+                 * له عبر ON DELETE CASCADE.
+                 */
+                if (!isEdit) {
+                    try {
+                        const {
+                            error:
+                                rollbackError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "products"
+                                )
+                                .delete()
+                                .eq(
+                                    "id",
+                                    savedProductId
+                                );
+
+                        if (
+                            rollbackError
+                        ) {
+                            console.error(
+                                "Variant rollback delete failed:",
+                                rollbackError
+                            );
+                        }
+                    } catch (
+                        rollbackException
+                    ) {
+                        console.error(
+                            "Variant rollback delete failed:",
+                            rollbackException
+                        );
+                    }
+                } else {
+                    /*
+                     * استعادة بيانات المنتج الأساسية
+                     * إذا فشل حفظ Variants بعد تحديثها.
+                     */
+                    if (
+                        oldProductData
+                    ) {
+                        try {
+                            const {
+                                error:
+                                    productRestoreError
+                            } =
+                                await supabaseClient
+                                    .from(
+                                        "products"
+                                    )
+                                    .update(
+                                        oldProductData
+                                    )
+                                    .eq(
+                                        "id",
+                                        idValue
+                                    );
+
+                            if (
+                                productRestoreError
+                            ) {
+                                console.error(
+                                    "Product restore failed:",
+                                    productRestoreError
+                                );
+                            }
+                        } catch (
+                            restoreException
+                        ) {
+                            console.error(
+                                "Product restore failed:",
+                                restoreException
+                            );
+                        }
+                    }
+
+                    if (
+                        oldPurchaseCost !==
+                            undefined &&
+                        oldPurchaseCost !==
+                            null
+                    ) {
+                        try {
+                            const {
+                                error:
+                                    costRestoreError
+                            } =
+                                await supabaseClient
+                                    .from(
+                                        "product_costs"
+                                    )
+                                    .upsert(
+                                        {
+                                            product_id:
+                                                Number(
+                                                    idValue
+                                                ),
+
+                                            purchase_cost:
+                                                oldPurchaseCost
+                                        },
+                                        {
+                                            onConflict:
+                                                "product_id"
+                                        }
+                                    );
+
+                            if (
+                                costRestoreError
+                            ) {
+                                console.error(
+                                    "Cost restore failed:",
+                                    costRestoreError
+                                );
+                            }
+                        } catch (
+                            costRestoreException
+                        ) {
+                            console.error(
+                                "Cost restore failed:",
+                                costRestoreException
+                            );
+                        }
+                    }
+                }
+
+                throw variantError;
+            }
+        }
+
+        // ==================================
+        // Remove old image after all success
         // ==================================
         if (
             imageFile &&
@@ -2239,6 +4766,7 @@ async function saveProduct(event) {
                     );
             }
         }
+         productVariantsDirty = false;
 
         closeProductModalWindow();
 
@@ -2259,29 +4787,53 @@ async function saveProduct(event) {
         /*
          * إذا تم رفع صورة جديدة ثم فشل
          * أي جزء من عملية الحفظ،
-         * نحذف الصورة الجديدة حتى لا تبقى
-         * في Storage بدون ارتباط بمنتج.
+         * نحذف الصورة الجديدة.
          */
-        if (uploadedImagePath) {
+        if (
+            uploadedImagePath
+        ) {
             await supabaseClient
                 .storage
-                .from("product-images")
+                .from(
+                    "product-images"
+                )
                 .remove([
                     uploadedImagePath
                 ])
                 .catch(e =>
-                    console.warn(e)
+                    console.warn(
+                        e
+                    )
                 );
         }
 
         const code =
             String(
-                error?.code || ""
+                error?.code ||
+                    ""
             );
 
-        if (code === "23505") {
+        const errorMessage =
+            String(
+                error?.message ||
+                    ""
+            );
+
+        if (
+            code === "23505" &&
+            /sku/i.test(
+                errorMessage
+            )
+        ) {
             showFormMessage(
-                "كود المنتج مستخدم مسبقاً. يرجى اختيار كود آخر.",
+                "SKU مستخدم مسبقاً. يرجى اختيار SKU آخر.",
+                "error"
+            );
+        } else if (
+            code === "23505"
+        ) {
+            showFormMessage(
+                "كود المنتج أو إحدى قيم البيانات مستخدمة مسبقاً. يرجى مراجعة البيانات.",
                 "error"
             );
         } else if (
@@ -2299,7 +4851,8 @@ async function saveProduct(event) {
             );
         }
     } finally {
-        isProductSaving = false;
+        isProductSaving =
+            false;
 
         if (saveButton) {
             saveButton.disabled =
@@ -2309,6 +4862,12 @@ async function saveProduct(event) {
                 saveButton.dataset
                     .originalText ||
                 "حفظ المنتج";
+
+            /*
+             * إذا كانت حالة Variants غير محملة
+             * لأي سبب، نعيد تعطيل الحفظ.
+             */
+            updateProductVariantsSaveAvailability();
         }
     }
 }
@@ -2316,7 +4875,9 @@ async function saveProduct(event) {
 // ==========================================
 // Delete Product
 // ==========================================
-async function deleteProduct(id) {
+async function deleteProduct(
+    id
+) {
     if (
         isProductDeleting ||
         isProductSaving
@@ -2327,7 +4888,9 @@ async function deleteProduct(id) {
     const product =
         adminProducts.find(
             item =>
-                String(item.id) ===
+                String(
+                    item.id
+                ) ===
                 String(id)
         );
 
@@ -2341,22 +4904,27 @@ async function deleteProduct(id) {
         return;
     }
 
-    isProductDeleting = true;
+    isProductDeleting =
+        true;
 
     try {
-        /*
-         * نقرأ الصورة الحالية من قاعدة البيانات
-         * قبل الحذف حتى لا نعتمد فقط على
-         * النسخة الموجودة في الواجهة.
-         */
         const {
-            data: latestProduct,
-            error: fetchError
+            data:
+                latestProduct,
+            error:
+                fetchError
         } =
             await supabaseClient
-                .from("products")
-                .select("main_image")
-                .eq("id", id)
+                .from(
+                    "products"
+                )
+                .select(
+                    "main_image"
+                )
+                .eq(
+                    "id",
+                    id
+                )
                 .maybeSingle();
 
         if (fetchError) {
@@ -2371,21 +4939,34 @@ async function deleteProduct(id) {
             ).trim();
 
         const {
-            error: deleteError
+            error:
+                deleteError
         } =
             await supabaseClient
-                .from("products")
+                .from(
+                    "products"
+                )
                 .delete()
-                .eq("id", id);
+                .eq(
+                    "id",
+                    id
+                );
 
         if (deleteError) {
             throw deleteError;
         }
 
         /*
-         * حذف صورة المنتج من Storage
-         * بعد نجاح حذف المنتج.
+         * ON DELETE CASCADE في قاعدة البيانات
+         * يتولى حذف:
+         * - product_costs
+         * - option groups
+         * - option values
+         * - variants
+         * - variant costs
+         * - variant options
          */
+
         const imagePath =
             getProductImagePath(
                 imageUrl
@@ -2394,7 +4975,9 @@ async function deleteProduct(id) {
         if (imagePath) {
             await supabaseClient
                 .storage
-                .from("product-images")
+                .from(
+                    "product-images"
+                )
                 .remove([
                     imagePath
                 ])
@@ -2420,10 +5003,13 @@ async function deleteProduct(id) {
 
         const code =
             String(
-                error?.code || ""
+                error?.code ||
+                    ""
             );
 
-        if (code === "42501") {
+        if (
+            code === "42501"
+        ) {
             showAdminProductToast(
                 "لا توجد صلاحية كافية لحذف المنتج.",
                 "error"
@@ -2442,7 +5028,8 @@ async function deleteProduct(id) {
             );
         }
     } finally {
-        isProductDeleting = false;
+        isProductDeleting =
+            false;
     }
 }
 
@@ -2461,7 +5048,9 @@ function showFormMessage(
     if (!element) return;
 
     element.textContent =
-        String(message ?? "");
+        String(
+            message ?? ""
+        );
 
     element.className =
         `admin-form-message ${type}`;
@@ -2475,7 +5064,8 @@ function clearFormMessage() {
 
     if (!element) return;
 
-    element.textContent = "";
+    element.textContent =
+        "";
 
     element.className =
         "admin-form-message";
@@ -2503,14 +5093,18 @@ function setupProductSearch() {
             );
 
             searchTimeout =
-                setTimeout(() => {
-                    currentSearchTerm =
-                        val;
+                setTimeout(
+                    () => {
+                        currentSearchTerm =
+                            val;
 
-                    currentPage = 1;
+                        currentPage =
+                            1;
 
-                    loadAdminProducts();
-                }, 800);
+                        loadAdminProducts();
+                    },
+                    800
+                );
         }
     );
 }
@@ -2537,7 +5131,8 @@ function setupProductTableActions() {
             if (!button) return;
 
             const action =
-                button.dataset.action;
+                button.dataset
+                    .action;
 
             const id =
                 button.dataset.id;
@@ -2545,15 +5140,19 @@ function setupProductTableActions() {
             if (!id) return;
 
             if (
-                action === "edit"
+                action ===
+                "edit"
             ) {
                 openEditProductModal(
                     id
                 );
             } else if (
-                action === "delete"
+                action ===
+                "delete"
             ) {
-                deleteProduct(id);
+                deleteProduct(
+                    id
+                );
             }
         }
     );
@@ -2565,58 +5164,61 @@ function setupAdminNavigation() {
             ".admin-nav-item"
         );
 
-    buttons.forEach(button => {
-        button.addEventListener(
-            "click",
-            function () {
-                if (
-                    this.id ===
-                        "offersButton" ||
-                    this.getAttribute(
-                        "href"
-                    )
-                ) {
-                    return;
-                }
-
-                const sectionName =
-                    this.dataset.section;
-
-                buttons.forEach(
-                    item =>
-                        item.classList.remove(
-                            "active"
+    buttons.forEach(
+        button => {
+            button.addEventListener(
+                "click",
+                function () {
+                    if (
+                        this.id ===
+                            "offersButton" ||
+                        this.getAttribute(
+                            "href"
                         )
-                );
+                    ) {
+                        return;
+                    }
 
-                this.classList.add(
-                    "active"
-                );
+                    const sectionName =
+                        this.dataset
+                            .section;
 
-                document
-                    .querySelectorAll(
-                        ".admin-section"
-                    )
-                    .forEach(
-                        section =>
-                            section.classList.remove(
+                    buttons.forEach(
+                        item =>
+                            item.classList.remove(
                                 "active"
                             )
                     );
 
-                const target =
-                    document.getElementById(
-                        `${sectionName}Section`
-                    );
-
-                if (target) {
-                    target.classList.add(
+                    this.classList.add(
                         "active"
                     );
+
+                    document
+                        .querySelectorAll(
+                            ".admin-section"
+                        )
+                        .forEach(
+                            section =>
+                                section.classList.remove(
+                                    "active"
+                                )
+                        );
+
+                    const target =
+                        document.getElementById(
+                            `${sectionName}Section`
+                        );
+
+                    if (target) {
+                        target.classList.add(
+                            "active"
+                        );
+                    }
                 }
-            }
-        );
-    });
+            );
+        }
+    );
 }
 
 function updateProductsCountDisplay() {
@@ -2644,6 +5246,184 @@ function updateCategoriesCountDisplay() {
             String(
                 adminCategories.length
             );
+    }
+}
+
+// ==========================================
+// Variant Events
+// ==========================================
+
+function setupProductVariantsEvents() {
+    const toggle =
+        document.getElementById(
+            "productVariantsEnabled"
+        );
+
+    const addGroupButton =
+        document.getElementById(
+            "addOptionGroupButton"
+        );
+
+    const regenerateButton =
+        document.getElementById(
+            "regenerateProductVariantsButton"
+        );
+
+    if (toggle) {
+        toggle.addEventListener(
+            "change",
+            () => {
+                const nextValue =
+                    toggle.checked;
+
+                /*
+                 * تعطيل نظام Variants لمنتج موجود
+                 * عملية مؤثرة لأنها ستحذف النظام
+                 * عند الحفظ.
+                 */
+                if (
+                    !nextValue &&
+                    (
+                        productVariantsState
+                            .groups
+                            .length >
+                            0 ||
+                        productVariantsState
+                            .variants
+                            .length >
+                            0
+                    )
+                ) {
+                    const confirmed =
+                        confirm(
+                            "تعطيل خيارات المنتج سيؤدي إلى حذف مجموعات الخيارات والـVariants المرتبطة بهذا المنتج عند الحفظ. هل تريد المتابعة؟"
+                        );
+
+                    if (!confirmed) {
+                        toggle.checked =
+                            true;
+
+                        return;
+                    }
+                }
+
+                productVariantsState.enabled =
+                    nextValue;
+
+                markProductVariantsDirty();
+
+                if (!nextValue) {
+                    productVariantsState.groups =
+                        [];
+
+                    productVariantsState.variants =
+                        [];
+
+                    setProductVariantsStatus(
+                        "سيتم حذف نظام الخيارات عند حفظ المنتج."
+                    );
+                } else {
+                    setProductVariantsStatus(
+                        "تم تفعيل خيارات المنتج. أضف المجموعات والقيم ثم حدّث التركيبات."
+                    );
+                }
+
+                updateProductVariantsToggleUI();
+                renderProductOptionGroups();
+                renderProductVariantsTable();
+            }
+        );
+    }
+
+    if (addGroupButton) {
+        addGroupButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    !productVariantsState.enabled
+                ) {
+                    const toggle =
+                        document.getElementById(
+                            "productVariantsEnabled"
+                        );
+
+                    if (toggle) {
+                        toggle.checked =
+                            true;
+                    }
+
+                    productVariantsState.enabled =
+                        true;
+                        updateProductVariantsToggleUI();
+                }
+
+                productVariantsState.groups.push(
+                    {
+                        id: null,
+
+                        clientKey:
+                            createClientKey(
+                                "g"
+                            ),
+
+                        name: "",
+
+                        sortOrder:
+                            productVariantsState
+                                .groups
+                                .length,
+
+                        values: []
+                    }
+                );
+
+                markProductVariantsDirty();
+
+                renderProductOptionGroups();
+                renderProductVariantsTable();
+
+                /*
+                 * التركيز على أول input للمجموعة
+                 * الجديدة لتحسين الاستخدام.
+                 */
+                const groupsContainer =
+                    document.getElementById(
+                        "productOptionGroups"
+                    );
+
+                const inputs =
+                    groupsContainer?.querySelectorAll(
+                        "input"
+                    );
+
+                inputs?.[
+                    inputs.length -
+                        1
+                ]?.focus();
+            }
+        );
+    }
+
+    if (regenerateButton) {
+        regenerateButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    !productVariantsState.enabled
+                ) {
+                    setProductVariantsStatus(
+                        "فعّل خيارات المنتج أولاً.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                markProductVariantsDirty();
+
+                generateProductVariantCombinations();
+            }
+        );
     }
 }
 
@@ -2749,6 +5529,7 @@ document.addEventListener(
         setupModalEvents();
         setupProductImageEditor();
         setupPaginationControls();
+        setupProductVariantsEvents();
 
         await loadAdminCategories();
         await loadAdminProducts();

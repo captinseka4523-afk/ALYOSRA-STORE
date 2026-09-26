@@ -858,66 +858,68 @@ text-align:
 
 
 /* =========================================================
-ADD TO CART
-نفس الزر — بدون تغيير في الشكل الأساسي
+   ADD TO CART / CHOOSE OPTIONS
+   نفس التصميم للزرين
 ========================================================= */
 
-.add-cart {
-width:
-    calc(
-        100% - 36px
-    );
+.add-cart,
+.choose-options {
+    width:
+        calc(
+            100% - 36px
+        );
 
-margin:
-    auto 18px 18px;
+    margin:
+        auto 18px 18px;
 
-padding:
-    13px 16px;
+    padding:
+        13px 16px;
 
-border:
-    none;
+    border:
+        none;
 
-border-radius:
-    15px;
+    border-radius:
+        15px;
 
-background:
-    #111827;
+    background:
+        #111827;
 
-color:
-    #ffffff;
+    color:
+        #ffffff;
 
-font-family:
-    inherit;
+    font-family:
+        inherit;
 
-font-size:
-    16px;
+    font-size:
+        16px;
 
-font-weight:
-    700;
+    font-weight:
+        700;
 
-cursor:
-    pointer;
+    cursor:
+        pointer;
 
-transition:
-    background .25s
-    ease,
-    box-shadow .25s
-    ease;
+    transition:
+        background .25s
+        ease,
+        box-shadow .25s
+        ease;
 }
 
 
-.add-cart:hover {
-background:
-    #2563eb;
+.add-cart:hover,
+.choose-options:hover {
+    background:
+        #2563eb;
 
-box-shadow:
-    0 8px 18px
-    rgba(
-        37,
-        99,
-        235,
-        .20
-    );
+    box-shadow:
+        0 8px 18px
+        rgba(
+            37,
+            99,
+            235,
+            .20
+        );
 }
 
 /* =========================================================
@@ -1695,7 +1697,8 @@ PHONE
 }
 
 
-.add-cart {
+.add-cart,
+.choose-options {
     width:
         calc(
             100% - 20px

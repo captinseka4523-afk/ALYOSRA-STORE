@@ -195,6 +195,59 @@
     const offerId =
         params.get("id");
 
+        const OFFER_CART_SNAPSHOTS_KEY =
+    "alYosraOfferCartSnapshots_v1";
+
+
+function saveOfferCartSnapshot(
+    offer,
+    quantity
+) {
+    try {
+        const raw =
+            localStorage.getItem(
+                OFFER_CART_SNAPSHOTS_KEY
+            );
+
+        const snapshots =
+            raw
+                ? JSON.parse(raw)
+                : {};
+
+        snapshots[
+            `offer_${offer.id}`
+        ] = {
+            offerId:
+                String(offer.id),
+
+            name:
+                offer.name || "",
+
+            image:
+                offer.image || "",
+
+            price:
+                Number(offer.price) || 0,
+
+            quantity:
+                Number(offer.quantity) || 0,
+
+            savedAt:
+                Date.now()
+        };
+
+        localStorage.setItem(
+            OFFER_CART_SNAPSHOTS_KEY,
+            JSON.stringify(snapshots)
+        );
+
+    } catch (error) {
+        console.warn(
+            "تعذر حفظ بيانات العرض المحلية:",
+            error
+        );
+    }
+}
 
 
     // ==========================================
@@ -932,30 +985,33 @@
                 // جلب مخزون العرض فقط
                 // ==================================
 
-                const {
-                    data: offerData,
-                    error: offerError
-                } = await supabaseClient
+              const {
+    data: offerData,
+    error: offerError
+} = await supabaseClient
 
-                    .from("offers")
+    .from("offers")
 
-                    .select(`
-                        id,
-                        quantity,
-                        active
-                    `)
+    .select(`
+        id,
+        name,
+        image,
+        price,
+        quantity,
+        active
+    `)
 
-                    .eq(
-                        "id",
-                        selectedOfferId
-                    )
+    .eq(
+        "id",
+        selectedOfferId
+    )
 
-                    .eq(
-                        "active",
-                        true
-                    )
+    .eq(
+        "active",
+        true
+    )
 
-                    .single();
+    .single();
 
 
                 if (offerError) {
@@ -1045,6 +1101,26 @@
                 cart[cartKey] =
                     currentQuantity + 1;
 
+
+saveOfferCartSnapshot(
+    {
+        id:
+            offerData.id,
+
+        name:
+            offerData.name,
+
+        image:
+            offerData.image,
+
+        price:
+            offerData.price,
+
+        quantity:
+            offerData.quantity
+    },
+    currentQuantity + 1
+);
 
                 // ==================================
                 // حفظ السلة
