@@ -1856,3 +1856,104 @@ if (backToHomeBtn) {
         }
     );
 }
+
+// ==========================================================
+// AL YOSRA STORE — CHECKOUT SIDE MENU
+// ==========================================================
+
+function setupCheckoutSideMenu() {
+
+    const menuToggle =
+        document.getElementById("menuToggle");
+
+    const sideMenu =
+        document.getElementById("sideMenu");
+
+    const sideMenuClose =
+        document.getElementById("sideMenuClose");
+
+    const sideMenuOverlay =
+        document.getElementById("sideMenuOverlay");
+
+
+    if (
+        !menuToggle ||
+        !sideMenu ||
+        !sideMenuOverlay
+    ) {
+        return;
+    }
+
+
+    function openCheckoutMenu() {
+
+        sideMenu.classList.add("open");
+
+        sideMenu.removeAttribute("inert");
+
+        sideMenuOverlay.classList.add("open");
+
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+    }
+
+
+    function closeCheckoutMenu() {
+
+        sideMenu.classList.remove("open");
+
+        sideMenu.setAttribute(
+            "inert",
+            ""
+        );
+
+        sideMenuOverlay.classList.remove("open");
+
+        sideMenu.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+
+    menuToggle.addEventListener(
+        "click",
+        openCheckoutMenu
+    );
+
+
+    if (sideMenuClose) {
+
+        sideMenuClose.addEventListener(
+            "click",
+            closeCheckoutMenu
+        );
+    }
+
+
+    sideMenuOverlay.addEventListener(
+        "click",
+        closeCheckoutMenu
+    );
+}
+
+
+// ==========================================================
+// START CHECKOUT SIDE MENU
+// ==========================================================
+
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        setupCheckoutSideMenu
+    );
+
+} else {
+
+    setupCheckoutSideMenu();
+}

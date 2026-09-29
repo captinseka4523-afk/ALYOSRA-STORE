@@ -1,0 +1,1050 @@
+  // ==========================================
+    // عناصر الصفحة
+    // ==========================================
+
+    const offerDetails =
+        document.getElementById(
+            "offerDetails"
+        );
+
+
+    const offerToast =
+        document.getElementById(
+            "offerToast"
+        );
+
+
+    const offerToastText =
+        document.getElementById(
+            "offerToastText"
+        );
+
+
+
+    // ==========================================
+    // قراءة رقم العرض من الرابط
+    // ==========================================
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const offerId =
+        params.get("id");
+
+        const OFFER_CART_SNAPSHOTS_KEY =
+    "alYosraOfferCartSnapshots_v1";
+
+
+function saveOfferCartSnapshot(
+    offer,
+    quantity
+) {
+    try {
+        const raw =
+            localStorage.getItem(
+                OFFER_CART_SNAPSHOTS_KEY
+            );
+
+        const snapshots =
+            raw
+                ? JSON.parse(raw)
+                : {};
+
+        snapshots[
+            `offer_${offer.id}`
+        ] = {
+            offerId:
+                String(offer.id),
+
+            name:
+                offer.name || "",
+
+            image:
+                offer.image || "",
+
+            price:
+                Number(offer.price) || 0,
+
+            quantity:
+                Number(offer.quantity) || 0,
+
+            savedAt:
+                Date.now()
+        };
+
+        localStorage.setItem(
+            OFFER_CART_SNAPSHOTS_KEY,
+            JSON.stringify(snapshots)
+        );
+
+    } catch (error) {
+        console.warn(
+            "تعذر حفظ بيانات العرض المحلية:",
+            error
+        );
+    }
+}
+
+
+    // ==========================================
+    // رسالة النجاح
+    // ==========================================
+
+    let toastTimer;
+
+
+    function showOfferToast(message) {
+
+        if (!offerToast) {
+            return;
+        }
+
+
+        if (offerToastText) {
+
+            offerToastText.textContent =
+                message;
+
+        }
+
+
+        offerToast.classList.add(
+            "show"
+        );
+
+
+        clearTimeout(
+            toastTimer
+        );
+
+
+        toastTimer =
+            setTimeout(
+                () => {
+
+                    offerToast.classList.remove(
+                        "show"
+                    );
+
+                },
+                3000
+            );
+
+    }
+
+
+
+    // ==========================================
+    // تحميل تفاصيل العرض
+    // ==========================================
+
+    async function loadOfferDetails() {
+
+        if (!offerId) {
+
+            offerDetails.innerHTML = `
+
+                <div class="offer-details-state">
+
+                    <div class="offer-state-icon">
+                        !
+                    </div>
+
+                    <h1>
+                        العرض غير موجود
+                    </h1>
+
+                    <p>
+                        لم يتم العثور على العرض المطلوب.
+                    </p>
+
+                    <a
+                        href="offers.html"
+                        class="offer-state-button"
+                    >
+                        العودة إلى العروض
+                    </a>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+
+        try {
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+
+                .from("offers")
+
+                .select(`
+                    id,
+                    name,
+                    description,
+                    price,
+                    image,
+                    quantity,
+                    active,
+                    offer_items (
+                        quantity,
+                        products (
+                            id,
+                            name,
+                            description,
+                            price,
+                            main_image
+                        )
+                    )
+                `)
+
+                .eq(
+                    "id",
+                    offerId
+                )
+
+                .eq(
+                    "active",
+                    true
+                )
+
+                .single();
+
+
+
+            if (error) {
+
+                throw error;
+
+            }
+
+
+
+            if (!data) {
+
+                offerDetails.innerHTML = `
+
+                    <div class="offer-details-state">
+
+                        <div class="offer-state-icon">
+                            !
+                        </div>
+
+                        <h1>
+                            العرض غير موجود
+                        </h1>
+
+                        <p>
+                            قد يكون العرض انتهى أو لم يعد متاحًا.
+                        </p>
+
+                        <a
+                            href="offers.html"
+                            class="offer-state-button"
+                        >
+                            استكشاف العروض
+                        </a>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+
+            // ==================================
+            // منتجات العرض
+            // ==================================
+
+            const products =
+                data.offer_items || [];
+
+
+
+            const productsHTML =
+                products
+
+                    .map(
+                        (item, index) => `
+
+                            <article
+                                class="offer-detail-product"
+                            >
+
+                                <div class="offer-product-number">
+                                    ${String(index + 1).padStart(2, "0")}
+                                </div>
+
+
+                                <div
+                                    class="offer-product-detail-info"
+                                >
+
+                                    ${
+                                        item.products?.main_image
+
+                                            ? `
+
+                                                <div
+                                                    class="offer-product-image-wrap"
+                                                >
+
+                                                    <img
+                                                        src="${item.products.main_image}"
+                                                        alt="${item.products?.name || "منتج"}"
+                                                        class="offer-product-detail-image"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                    >
+
+                                                </div>
+
+                                              `
+
+                                            : `
+
+                                                <div
+                                                    class="offer-product-image-wrap offer-product-image-empty"
+                                                >
+                                                    <span>اليُسرى</span>
+                                                </div>
+
+                                              `
+                                    }
+
+
+                                    <div
+                                        class="offer-product-text"
+                                    >
+
+                                        <span
+                                            class="offer-product-label"
+                                        >
+                                            منتج ضمن العرض
+                                        </span>
+
+
+                                        <strong>
+                                            ${
+                                                item.products?.name ||
+                                                "منتج"
+                                            }
+                                        </strong>
+
+
+                                        ${
+                                            item.products?.description
+
+                                                ? `
+
+                                                    <p>
+                                                        ${item.products.description}
+                                                    </p>
+
+                                                  `
+
+                                                : ""
+                                        }
+
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    class="offer-product-quantity"
+                                >
+
+                                    <span>
+                                        الكمية
+                                    </span>
+
+                                    <strong>
+                                        ${item.quantity}
+                                    </strong>
+
+                                </div>
+
+                            </article>
+
+                        `
+                    )
+
+                    .join("");
+
+
+
+            // ==================================
+            // عرض الصفحة
+            // ==================================
+
+            offerDetails.innerHTML = `
+
+                <article class="offer-details-shell">
+
+
+                    <!-- =================================
+                         Hero / المعلومات الرئيسية
+                    ================================== -->
+
+                    <section
+                        class="offer-details-hero"
+                    >
+
+
+                        <div
+                            class="offer-details-visual"
+                        >
+
+                            <div
+                                class="offer-visual-frame"
+                            >
+
+                                <div
+                                    class="offer-visual-glow"
+                                ></div>
+
+
+                                ${
+                                    data.image
+
+                                        ? `
+
+                                            <img
+                                                src="${data.image}"
+                                                alt="${data.name}"
+                                                class="offer-detail-image"
+                                                fetchpriority="high"
+                                                decoding="async"
+                                            >
+
+                                          `
+
+                                        : `
+
+                                            <div
+                                                class="offer-no-image"
+                                            >
+                                                <span>
+                                                    متجر اليُسرى
+                                                </span>
+                                            </div>
+
+                                          `
+                                }
+
+
+                                <div
+                                    class="offer-image-badge"
+                                >
+                                    عرض خاص
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div
+                            class="offer-details-info"
+                        >
+
+                            <div
+                                class="offer-details-eyebrow"
+                            >
+
+                                <span class="offer-eyebrow-line"></span>
+
+                                <span>
+                                    عرض متجر اليُسرى
+                                </span>
+
+                            </div>
+
+
+                            <span
+                                class="offer-details-label"
+                            >
+                                عرض مميز
+                            </span>
+
+
+                            <h1>
+                                ${data.name}
+                            </h1>
+
+
+                            <div
+                                class="offer-detail-divider"
+                            ></div>
+
+
+
+                            <div
+                                class="offer-price-area"
+                            >
+
+                                <span
+                                    class="offer-price-label"
+                                >
+                                    سعر العرض
+                                </span>
+
+
+                                <div
+                                    class="offer-detail-price"
+                                >
+
+                                    <span class="offer-price-currency">
+                                        $
+                                    </span>
+
+                                    <span>
+                                        ${Number(data.price).toFixed(2)}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <button
+                                class="offer-cart-button"
+                                type="button"
+                                data-offer-id="${data.id}"
+                            >
+
+                                <span class="offer-cart-button-icon">
+                                    🛒
+                                </span>
+
+                                <span>
+                                    أضف العرض إلى السلة
+                                </span>
+
+                            </button>
+
+
+                        </div>
+
+
+                    </section>
+
+
+
+                    <!-- =================================
+                         وصف العرض
+                    ================================== -->
+
+                    ${
+                        data.description
+
+                            ? `
+
+                                <section
+                                    class="offer-description-section"
+                                >
+
+                                    <div
+                                        class="offer-description-heading"
+                                    >
+
+                                        <div>
+
+                                            <span
+                                                class="offer-description-overline"
+                                            >
+                                                تفاصيل العرض
+                                            </span>
+
+                                            <h2>
+                                                عن هذا العرض
+                                            </h2>
+
+                                        </div>
+
+
+                                        <span
+                                            class="offer-description-mark"
+                                        >
+                                            DESCRIPTION
+                                        </span>
+
+                                    </div>
+
+
+                                    <div
+                                        class="offer-description-box"
+                                    >
+
+                                        <div
+                                            class="offer-description-scroll"
+                                        >
+
+                                            <p>
+                                                ${data.description}
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+                              `
+
+                            : ""
+                    }
+
+
+
+                    <!-- =================================
+                         فاصل زخرفي
+                    ================================== -->
+
+                    <div
+                        class="offer-details-section-divider"
+                    >
+
+                        <span></span>
+
+                        <div class="offer-divider-diamond">
+                            ◆
+                        </div>
+
+                        <span></span>
+
+                    </div>
+
+
+
+                    <!-- =================================
+                         محتويات العرض
+                    ================================== -->
+
+                    <section
+                        class="offer-detail-products"
+                    >
+
+
+                        <div
+                            class="offer-products-heading"
+                        >
+
+                            <div>
+
+                                <span
+                                    class="offer-products-overline"
+                                >
+                                    مكونات العرض
+                                </span>
+
+                                <h2>
+                                    ما الذي يتضمنه هذا العرض؟
+                                </h2>
+
+                                <p>
+                                    منتجات مختارة بعناية ضمن عرض واحد.
+                                </p>
+
+                            </div>
+
+
+                            <div
+                                class="offer-products-count"
+                            >
+
+                                <strong>
+                                    ${products.length}
+                                </strong>
+
+                                <span>
+                                    ${
+                                        products.length === 1
+                                            ? "منتج"
+                                            : "منتجات"
+                                    }
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div
+                            class="offer-products-list"
+                        >
+
+                            ${
+                                productsHTML
+
+                                    ||
+
+                                `
+
+                                    <div
+                                        class="offer-products-empty"
+                                    >
+
+                                        لا توجد منتجات ضمن هذا العرض حاليًا.
+
+                                    </div>
+
+                                `
+                            }
+
+                        </div>
+
+
+                    </section>
+
+
+                </article>
+
+            `;
+
+
+        } catch (error) {
+
+            console.error(
+                "خطأ في تحميل تفاصيل العرض:",
+                error
+            );
+
+
+            offerDetails.innerHTML = `
+
+                <div class="offer-details-state">
+
+                    <div class="offer-state-icon">
+                        !
+                    </div>
+
+                    <h1>
+                        تعذر تحميل العرض
+                    </h1>
+
+                    <p>
+                        حدث خطأ أثناء تحميل تفاصيل العرض. يرجى المحاولة مرة أخرى.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="offer-state-button"
+                        onclick="loadOfferDetails()"
+                    >
+                        المحاولة مرة أخرى
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // إضافة العرض إلى السلة
+    // ==========================================
+
+    document.addEventListener(
+        "click",
+        async function(event) {
+
+            const button =
+                event.target.closest(
+                    ".offer-cart-button"
+                );
+
+
+            if (!button) {
+                return;
+            }
+
+
+            const selectedOfferId =
+                button.dataset.offerId;
+
+
+            if (!selectedOfferId) {
+                return;
+            }
+
+
+            // ==================================
+            // منع الضغط المتكرر
+            // ==================================
+
+            if (button.disabled) {
+                return;
+            }
+
+
+            button.disabled = true;
+
+
+            const originalText =
+                button.innerHTML;
+
+
+            button.innerHTML = `
+
+                <span class="offer-cart-button-icon">
+                    …
+                </span>
+
+                <span>
+                    جاري التحقق...
+                </span>
+
+            `;
+
+
+            try {
+
+                // ==================================
+                // جلب مخزون العرض فقط
+                // ==================================
+
+              const {
+    data: offerData,
+    error: offerError
+} = await supabaseClient
+
+    .from("offers")
+
+    .select(`
+        id,
+        name,
+        image,
+        price,
+        quantity,
+        active
+    `)
+
+    .eq(
+        "id",
+        selectedOfferId
+    )
+
+    .eq(
+        "active",
+        true
+    )
+
+    .single();
+
+
+                if (offerError) {
+
+                    throw offerError;
+
+                }
+
+
+                if (!offerData) {
+
+                    throw new Error(
+                        "تعذر العثور على بيانات العرض."
+                    );
+
+                }
+
+
+                // ==================================
+                // مخزون العرض
+                // ==================================
+
+                const maxOfferQuantity =
+                    Number(
+                        offerData.quantity
+                    ) || 0;
+
+
+                // ==================================
+                // قراءة السلة الحالية
+                // ==================================
+
+                const cart =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "cart"
+                        )
+                    ) || {};
+
+
+                const cartKey =
+                    "offer_" +
+                    selectedOfferId;
+
+
+                const currentQuantity =
+                    Number(
+                        cart[cartKey]
+                    ) || 0;
+
+
+                // ==================================
+                // التحقق من المخزون
+                // ==================================
+
+                if (
+                    maxOfferQuantity <= 0
+                ) {
+
+                    showOfferToast(
+                        "هذا العرض غير متوفر حاليًا."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    currentQuantity >=
+                    maxOfferQuantity
+                ) {
+
+                    showOfferToast(
+                        `لا يمكنك إضافة أكثر من ${maxOfferQuantity} من هذا العرض.`
+                    );
+
+                    return;
+
+                }
+
+
+                // ==================================
+                // إضافة العرض
+                // ==================================
+
+                cart[cartKey] =
+                    currentQuantity + 1;
+
+
+saveOfferCartSnapshot(
+    {
+        id:
+            offerData.id,
+
+        name:
+            offerData.name,
+
+        image:
+            offerData.image,
+
+        price:
+            offerData.price,
+
+        quantity:
+            offerData.quantity
+    },
+    currentQuantity + 1
+);
+
+                // ==================================
+                // حفظ السلة
+                // ==================================
+
+                localStorage.setItem(
+                    "cart",
+                    JSON.stringify(cart)
+                );
+
+
+                // ==================================
+                // تحديث عداد السلة
+                // ==================================
+
+                if (
+                    typeof updateCartCount ===
+                    "function"
+                ) {
+
+                    updateCartCount();
+
+                }
+
+
+                // ==================================
+                // رسالة النجاح
+                // ==================================
+
+                const remaining =
+                    maxOfferQuantity -
+                    (currentQuantity + 1);
+
+
+                if (remaining > 0) {
+
+                    showOfferToast(
+                        `تمت إضافة العرض إلى السلة. يمكنك إضافة ${remaining} عرض إضافي.`
+                    );
+
+                } else {
+
+                    showOfferToast(
+                        "تمت إضافة العرض إلى السلة."
+                    );
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "خطأ أثناء التحقق من مخزون العرض:",
+                    error
+                );
+
+
+                showOfferToast(
+                    "تعذر التحقق من مخزون العرض حاليًا."
+                );
+
+
+            } finally {
+
+                // ==================================
+                // إعادة الزر
+                // ==================================
+
+                button.disabled =
+                    false;
+
+
+                button.innerHTML =
+                    originalText;
+
+            }
+
+        }
+    );
+
+
+
+    // ==========================================
+    // بدء التحميل
+    // ==========================================
+
+    loadOfferDetails();
+    
