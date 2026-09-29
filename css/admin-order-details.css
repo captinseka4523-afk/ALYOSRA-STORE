@@ -320,6 +320,106 @@ body {
 }
 
 
+.order-item-options {
+    width: 100%;
+
+    margin-top: 12px;
+    margin-bottom: 12px;
+
+    padding: 12px 14px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+
+/* عنوان منطقة الخيارات */
+
+.order-item-options-title {
+    margin-bottom: 9px;
+
+    color: #334155;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* منطقة الخيارات القابلة للتمرير */
+
+.order-item-options-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+
+    gap: 8px 14px;
+
+    /*
+     * أهم جزء:
+     * المنطقة لن تكبر بلا حدود.
+     */
+
+    max-height: 180px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-left: 4px;
+    padding-right: 4px;
+
+    scrollbar-width: thin;
+}
+
+
+/* كل خيار */
+
+.order-item-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    min-width: 0;
+
+    padding: 7px 9px;
+
+    background: #ffffff;
+
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+}
+
+
+.order-item-option-name {
+    color: #64748b;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+.order-item-option-value {
+    color: #0f172a;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-align: left;
+
+    overflow-wrap: anywhere;
+}
+
 /* ==========================================
    Total
    ========================================== */

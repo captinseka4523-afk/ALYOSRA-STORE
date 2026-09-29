@@ -1240,7 +1240,7 @@ border-top: 40px solid  #e7d9d4;
         var(--yosra-white);
 
     padding:
-        85px 0 25px;
+        75px 0 25px;
 }
 
 
@@ -1399,6 +1399,7 @@ border-top: 40px solid  #e7d9d4;
 
     font-weight:
         700;
+        
 }
 
 
@@ -1788,12 +1789,7 @@ border-top: 40px solid  #e7d9d4;
     gap: 4px;
 }
 
-.hero-brand-ar {
-    font-size: clamp(25px, 2.2vw, 38px);
-    font-weight: 900;
-    line-height: 1.1;
-    color: #ffffff;
-}
+
 
 .hero-brand-en {
     font-size: clamp(15px, 1.2vw, 20px);

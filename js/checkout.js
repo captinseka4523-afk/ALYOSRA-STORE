@@ -245,6 +245,222 @@ function formatPrice(value) {
 }
 
 
+
+// ==========================================================
+// AL YOSRA STORE — CHECKOUT TOAST
+// ==========================================================
+
+function showCheckoutToast(
+    message,
+    type = "error"
+) {
+
+    const existingToast =
+        document.getElementById(
+            "checkoutToast"
+        );
+
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+
+    const toast =
+        document.createElement("div");
+
+    toast.id =
+        "checkoutToast";
+
+    toast.setAttribute(
+        "role",
+        "alert"
+    );
+
+    toast.setAttribute(
+        "aria-live",
+        "polite"
+    );
+
+
+    const isError =
+        type === "error";
+
+
+    toast.innerHTML = `
+        <div
+            style="
+                display:flex;
+                align-items:flex-start;
+                gap:12px;
+            "
+        >
+
+            <div
+                style="
+                    flex:0 0 auto;
+                    width:36px;
+                    height:36px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:50%;
+                    background:${
+                        isError
+                            ? "#fee2e2"
+                            : "#dcfce7"
+                    };
+                    color:${
+                        isError
+                            ? "#dc2626"
+                            : "#16a34a"
+                    };
+                    font-size:20px;
+                    font-weight:700;
+                "
+            >
+                ${
+                    isError
+                        ? "!"
+                        : "✓"
+                }
+            </div>
+
+            <div
+                style="
+                    flex:1;
+                    min-width:0;
+                    padding-top:2px;
+                "
+            >
+                <div
+                    style="
+                        font-size:15px;
+                        font-weight:700;
+                        color:#111827;
+                        margin-bottom:3px;
+                    "
+                >
+                    ${
+                        isError
+                            ? "تنبيه"
+                            : "تم بنجاح"
+                    }
+                </div>
+
+                <div
+                    style="
+                        font-size:14px;
+                        line-height:1.6;
+                        color:#374151;
+                    "
+                >
+                    ${escapeHtml(message)}
+                </div>
+            </div>
+
+            <button
+                type="button"
+                aria-label="إغلاق التنبيه"
+                style="
+                    flex:0 0 auto;
+                    border:0;
+                    background:transparent;
+                    color:#6b7280;
+                    cursor:pointer;
+                    font-size:20px;
+                    line-height:1;
+                    padding:2px;
+                "
+            >
+                ×
+            </button>
+
+        </div>
+    `;
+
+
+    Object.assign(
+        toast.style,
+        {
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform:
+                "translate(-50%, -20px)",
+            width:
+                "min(calc(100vw - 32px), 430px)",
+            padding: "14px 16px",
+            background: "#ffffff",
+            borderRadius: "14px",
+            border:
+                isError
+                    ? "1px solid #fecaca"
+                    : "1px solid #bbf7d0",
+            boxShadow:
+                "0 12px 35px rgba(15, 23, 42, 0.16)",
+            zIndex: "99999",
+            opacity: "0",
+            transition:
+                "opacity 0.25s ease, transform 0.25s ease",
+            direction: "rtl",
+            boxSizing: "border-box",
+            fontFamily:
+                "inherit"
+        }
+    );
+
+
+    document.body.appendChild(
+        toast
+    );
+
+
+    const closeButton =
+        toast.querySelector("button");
+
+
+    const removeToast = () => {
+
+        toast.style.opacity =
+            "0";
+
+        toast.style.transform =
+            "translate(-50%, -20px)";
+
+        setTimeout(
+            () => {
+                toast.remove();
+            },
+            250
+        );
+    };
+
+
+    closeButton.addEventListener(
+        "click",
+        removeToast
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            toast.style.opacity =
+                "1";
+
+            toast.style.transform =
+                "translate(-50%, 0)";
+        }
+    );
+
+
+    setTimeout(
+        removeToast,
+        4000
+    );
+}
+
+
 // ==========================================================
 // 7. حماية النصوص المعروضة في HTML
 // ==========================================================
@@ -1216,9 +1432,9 @@ async function processOrder(orderType) {
         getCartEntries().length === 0
     ) {
 
-        alert(
-            "السلة فارغة."
-        );
+      showCheckoutToast(
+    "السلة فارغة. أضف منتجًا واحدًا على الأقل قبل إتمام الطلب."
+);
 
         return;
     }
@@ -1242,10 +1458,9 @@ async function processOrder(orderType) {
         )
     ) {
 
-        alert(
-            "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
-        );
-
+      showCheckoutToast(
+    "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
+);
         return;
     }
 
@@ -1264,9 +1479,9 @@ async function processOrder(orderType) {
 
     if (!validation.valid) {
 
-        alert(
-            validation.message
-        );
+       showCheckoutToast(
+    validation.message
+);
 
         return;
     }
@@ -1291,10 +1506,10 @@ async function processOrder(orderType) {
             error
         );
 
-        alert(
-            error.message ||
-            "تعذر تجهيز الطلب."
-        );
+  showCheckoutToast(
+    error.message ||
+    "تعذر تجهيز الطلب."
+);
 
         return;
     }
@@ -1494,9 +1709,9 @@ async function processOrder(orderType) {
         );
 
 
-        alert(
-            "تعذر تأكيد الطلب حالياً.\n\nيرجى المحاولة مرة أخرى."
-        );
+    showCheckoutToast(
+    "تعذر تأكيد الطلب حالياً. يرجى المحاولة مرة أخرى."
+);
 
 
         isOrderProcessing =

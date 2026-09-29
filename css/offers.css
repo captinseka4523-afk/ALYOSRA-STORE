@@ -501,6 +501,7 @@
         clamp(70px, 8vw, 110px);
 
     box-sizing: border-box;
+    
 }
 
 
@@ -627,6 +628,7 @@
         clamp(18px, 2vw, 28px);
 
     align-items: start;
+    padding-bottom: 40px;
 }
 
 

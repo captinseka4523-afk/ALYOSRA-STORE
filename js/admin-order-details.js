@@ -219,9 +219,15 @@ async function loadOrderDetails(
         // المنتجات
         // ----------------------------------
 
-        renderOrderItems(
-            items || []
-        );
+      const variantOptions =
+    await loadVariantOptions(
+        items || []
+    );
+
+renderOrderItems(
+    items || [],
+    variantOptions
+);
 
 
         loading.hidden = true;
@@ -924,13 +930,146 @@ function showStatusMessage(
 
 }
 
+// ==========================================
+// Load Variant Options
+// ==========================================
+
+async function loadVariantOptions(
+    items
+) {
+
+    const variantIds =
+        [
+            ...new Set(
+                items
+                    .map(
+                        item =>
+                            item.variant_id
+                    )
+                    .filter(
+                        variantId =>
+                            variantId !== null &&
+                            variantId !== undefined
+                    )
+            )
+        ];
+
+
+    if (!variantIds.length) {
+
+        return new Map();
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "product_variant_options"
+            )
+            .select(`
+                variant_id,
+                product_option_values (
+                    value,
+                    product_option_groups (
+                        name
+                    )
+                )
+            `)
+            .in(
+                "variant_id",
+                variantIds
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Variant options error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    const optionsMap =
+        new Map();
+
+
+    (data || []).forEach(
+        function(row) {
+
+            const variantId =
+                String(
+                    row.variant_id
+                );
+
+
+            const optionValue =
+                row.product_option_values;
+
+
+            const optionGroup =
+                optionValue
+                    ?.product_option_groups;
+
+
+            if (
+                !optionValue ||
+                !optionGroup
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !optionsMap.has(
+                    variantId
+                )
+            ) {
+
+                optionsMap.set(
+                    variantId,
+                    []
+                );
+
+            }
+
+
+            optionsMap
+                .get(variantId)
+                .push({
+
+                    group:
+                        optionGroup.name || "",
+
+                    value:
+                        optionValue.value || ""
+
+                });
+
+        }
+    );
+
+
+    return optionsMap;
+
+}
 
 // ==========================================
 // Render Order Items
 // ==========================================
 
 function renderOrderItems(
-    items
+    items,
+    variantOptions = new Map()
 ) {
 
     const container =
@@ -951,6 +1090,7 @@ function renderOrderItems(
         `;
 
         return;
+
     }
 
 
@@ -967,13 +1107,63 @@ function renderOrderItems(
                 "order-item";
 
 
-            element.innerHTML = `
+            let optionsHtml = "";
 
+
+            if (
+                item.variant_id !== null &&
+                item.variant_id !== undefined
+            ) {
+
+                const options =
+                    variantOptions.get(
+                        String(
+                            item.variant_id
+                        )
+                    ) || [];
+
+
+                if (options.length) {
+
+                    optionsHtml = `
+                        <div class="order-item-options">
+                            ${options.map(
+                                function(option) {
+
+                                    return `
+                                        <div class="order-item-option">
+                                            <span class="order-item-option-name">
+                                                ${escapeHtml(
+                                                    option.group
+                                                )}
+                                            </span>
+
+                                            <span class="order-item-option-value">
+                                                ${escapeHtml(
+                                                    option.value
+                                                )}
+                                            </span>
+                                        </div>
+                                    `;
+
+                                }
+                            ).join("")}
+                        </div>
+                    `;
+
+                }
+
+            }
+
+
+            element.innerHTML = `
                 <div class="order-item-name">
                     ${escapeHtml(
                         item.product_name || "-"
                     )}
                 </div>
+
+                ${optionsHtml}
 
                 <div class="order-item-quantity">
                     الكمية:
@@ -986,7 +1176,6 @@ function renderOrderItems(
                     )}
                 $
                 </div>
-
             `;
 
 
