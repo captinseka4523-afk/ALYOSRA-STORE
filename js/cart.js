@@ -1379,3 +1379,32 @@ document.addEventListener(
 
     }
 );
+
+
+
+
+    const menuToggle = document.getElementById("menuToggle");
+    const sideMenu = document.getElementById("sideMenu");
+    const sideMenuClose = document.getElementById("sideMenuClose");
+    const sideMenuOverlay = document.getElementById("sideMenuOverlay");
+
+    function openMenu() {
+        if(sideMenu && sideMenuOverlay) {
+            sideMenu.classList.add("open");
+sideMenu.removeAttribute("inert");
+            sideMenuOverlay.classList.add("open");
+            sideMenu.setAttribute("aria-hidden", "false");
+        }
+    }
+    function closeMenu() {
+        if(sideMenu && sideMenuOverlay) {
+            sideMenu.classList.remove("open");
+sideMenu.setAttribute("inert", "");
+            sideMenuOverlay.classList.remove("open");
+            sideMenu.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    if(menuToggle) menuToggle.addEventListener("click", openMenu);
+    if(sideMenuClose) sideMenuClose.addEventListener("click", closeMenu);
+    if(sideMenuOverlay) sideMenuOverlay.addEventListener("click", closeMenu);
