@@ -2570,3 +2570,370 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 3. جلب وعرض المنتجات
     loadProducts();
 });
+
+
+/* =========================================================
+   PRODUCTS PAGE — SIDE MENU
+   تم نقله من products.html لتجنب Inline JavaScript
+========================================================= */
+
+const menuToggle =
+    document.getElementById("menuToggle");
+
+const sideMenu =
+    document.getElementById("sideMenu");
+
+const sideMenuClose =
+    document.getElementById("sideMenuClose");
+
+const sideMenuOverlay =
+    document.getElementById("sideMenuOverlay");
+
+
+if (
+    menuToggle &&
+    sideMenu &&
+    sideMenuOverlay
+) {
+
+    menuToggle.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.add("open");
+
+            sideMenu.removeAttribute(
+                "inert"
+            );
+
+            sideMenuOverlay.classList.add(
+                "open"
+            );
+
+        }
+    );
+
+}
+
+
+if (
+    sideMenuClose &&
+    sideMenu &&
+    sideMenuOverlay
+) {
+
+    sideMenuClose.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.remove(
+                "open"
+            );
+
+            sideMenu.setAttribute(
+                "inert",
+                ""
+            );
+
+            sideMenuOverlay.classList.remove(
+                "open"
+            );
+
+        }
+    );
+
+}
+
+
+if (sideMenuOverlay) {
+
+    sideMenuOverlay.addEventListener(
+        "click",
+        () => {
+
+            sideMenu.classList.remove(
+                "open"
+            );
+
+            sideMenu.setAttribute(
+                "inert",
+                ""
+            );
+
+            sideMenuOverlay.classList.remove(
+                "open"
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   PRODUCTS PAGE — REVEAL SECTIONS
+   تم نقله من products.html لتجنب Inline JavaScript
+========================================================= */
+
+(function () {
+
+    "use strict";
+
+    const sections =
+        document.querySelectorAll(
+            ".reveal-section"
+        );
+
+
+    if (!sections.length) {
+        return;
+    }
+
+
+    const revealSection = (section) => {
+
+        section.classList.add(
+            "is-visible"
+        );
+
+    };
+
+
+    const isInViewport = (section) => {
+
+        const rect =
+            section.getBoundingClientRect();
+
+        const viewportHeight =
+            window.innerHeight ||
+            document.documentElement.clientHeight;
+
+        return (
+            rect.bottom > 0 &&
+            rect.top < viewportHeight
+        );
+
+    };
+
+
+    if (
+        "IntersectionObserver" in window
+    ) {
+
+        const observer =
+            new IntersectionObserver(
+                (entries) => {
+
+                    entries.forEach(
+                        (entry) => {
+
+                            if (
+                                entry.isIntersecting
+                            ) {
+
+                                revealSection(
+                                    entry.target
+                                );
+
+                                observer.unobserve(
+                                    entry.target
+                                );
+
+                            }
+
+                        }
+                    );
+
+                },
+                {
+                    threshold: 0,
+                    rootMargin: "0px"
+                }
+            );
+
+
+        sections.forEach(
+            (section) => {
+
+                if (
+                    isInViewport(section)
+                ) {
+
+                    revealSection(
+                        section
+                    );
+
+                } else {
+
+                    observer.observe(
+                        section
+                    );
+
+                }
+
+            }
+        );
+
+
+        requestAnimationFrame(() => {
+
+            sections.forEach(
+                (section) => {
+
+                    if (
+                        !section.classList.contains(
+                            "is-visible"
+                        ) &&
+                        isInViewport(section)
+                    ) {
+
+                        revealSection(
+                            section
+                        );
+
+                        observer.unobserve(
+                            section
+                        );
+
+                    }
+
+                }
+            );
+
+        });
+
+    } else {
+
+        sections.forEach(
+            (section) => {
+
+                revealSection(
+                    section
+                );
+
+            }
+        );
+
+    }
+
+})();
+
+
+
+/* =========================================================
+   PRODUCTS PAGE — RESTORE PREVIOUS PRODUCT POSITION
+   تم نقله من products.html لتجنب Inline JavaScript
+========================================================= */
+
+(function () {
+
+    "use strict";
+
+
+    const productId =
+        sessionStorage.getItem(
+            "productsReturnProductId"
+        );
+
+
+    if (!productId) {
+        return;
+    }
+
+
+    /*
+       نبحث عن المنتج بعد أن ينتهي
+       products.js من بناء البطاقات.
+    */
+
+    const findAndRestore = () => {
+
+        const productCard =
+            document.querySelector(
+                '.product-card[data-id="' +
+                productId +
+                '"]'
+            );
+
+
+        if (!productCard) {
+            return false;
+        }
+
+
+        productCard.scrollIntoView({
+            behavior: "instant",
+            block: "center"
+        });
+
+
+        sessionStorage.removeItem(
+            "productsReturnProductId"
+        );
+
+
+        return true;
+
+    };
+
+
+    /*
+       المحاولة الأولى
+    */
+
+    if (findAndRestore()) {
+        return;
+    }
+
+
+    /*
+       مراقبة productsContainer حتى
+       تظهر المنتجات التي أنشأها products.js
+    */
+
+    const productsContainer =
+        document.getElementById(
+            "productsContainer"
+        );
+
+
+    if (!productsContainer) {
+        return;
+    }
+
+
+    const observer =
+        new MutationObserver(() => {
+
+            if (findAndRestore()) {
+
+                observer.disconnect();
+
+            }
+
+        });
+
+
+    observer.observe(
+        productsContainer,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+
+    /*
+       حماية في حال حدث شيء غير متوقع
+    */
+
+    setTimeout(() => {
+
+        observer.disconnect();
+
+        findAndRestore();
+
+    }, 5000);
+
+})();
