@@ -3,6 +3,7 @@
    MOBILE-FIRST / STABLE CONTAINERS / RTL SAFE
    ========================================================= */
 
+
 /* =========================================================
    GLOBAL SAFETY
    ========================================================= */
@@ -14,7 +15,6 @@ body.checkout-body {
     color: #071a2b;
     box-sizing: border-box;
 
-    /* منع أي تمدد أفقي غير مقصود */
     overflow-x: hidden;
 }
 
@@ -67,7 +67,6 @@ body.checkout-body {
 
     font-family: inherit;
 
-    /* حماية إضافية للحاوية */
     overflow-x: hidden;
 }
 
@@ -248,6 +247,8 @@ body.checkout-body {
 
 /* =========================================================
    ORDER SUMMARY
+   IMPORTANT:
+   ONLY THIS AREA SCROLLS
    ========================================================= */
 
 #orderSummary {
@@ -259,20 +260,65 @@ body.checkout-body {
 
     gap: 12px;
 
+    /*
+     * Stable visible area.
+     * The container does not grow with the number
+     * of products.
+     */
+    height: 320px;
     max-height: 320px;
 
-    overflow-x: hidden;
+    /*
+     * The list itself scrolls vertically.
+     */
     overflow-y: auto;
+    overflow-x: hidden;
+
+    /*
+     * Prevent flexbox from shrinking the container.
+     */
+    flex: 0 0 320px;
+
+    min-height: 320px;
+
+    /*
+     * Smooth touch scrolling on phones.
+     */
+    -webkit-overflow-scrolling: touch;
+
+    /*
+     * Keep scroll gestures inside this region.
+     */
+    overscroll-behavior: contain;
+
+    /*
+     * Small inner spacing for the scrollbar.
+     */
+    padding-right: 3px;
 }
 
 
 /* =========================================================
    ORDER ITEM
+   IMPORTANT:
+   CARDS MUST NEVER SHRINK
    ========================================================= */
 
 .order-item {
     width: 100%;
     min-width: 0;
+
+    /*
+     * CRITICAL FIX:
+     * Prevent the flex container from compressing
+     * product cards when many products exist.
+     */
+    flex: 0 0 auto;
+
+    /*
+     * Each card keeps its natural content height.
+     */
+    min-height: 89px;
 
     display: flex;
     align-items: center;
@@ -289,11 +335,290 @@ body.checkout-body {
     overflow: hidden;
 }
 
+
+/* =========================================================
+   VARIANT DETAILS
+   LARGE / READABLE SIDE PANEL
+   ========================================================= */
+
+/*
+ * Normal product cards remain 89px.
+ *
+ * Variant cards intentionally become approximately
+ * 50–60% taller so the option table has enough room
+ * to remain readable.
+ *
+ * Desktop:
+ *   normal ≈ 89px
+ *   variant ≈ 140px
+ */
+
+.order-item-variant {
+    display: flex;
+    align-items: stretch;
+
+    gap: 14px;
+
+    min-height: 140px;
+    max-height: 140px;
+
+    padding: 12px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   VARIANT MAIN CONTENT
+   ========================================================= */
+
+.order-item-variant .order-item-content {
+    flex: 1 1 0;
+
+    min-width: 145px;
+
+    max-width: none;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   VARIANT DETAILS PANEL
+   ========================================================= */
+
+/*
+ * The panel expands horizontally as much as the
+ * available card space allows.
+ *
+ * It never grows outside the card.
+ */
+
+.variant-details-panel {
+    flex: 1 1 245px;
+
+    width: 245px;
+
+    min-width: 190px;
+    max-width: 300px;
+
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+
+    border: 1px solid rgba(7, 26, 43, 0.09);
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    direction: rtl;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(7, 26, 43, 0.015);
+}
+
+
+/* =========================================================
+   VARIANT DETAILS TITLE
+   ========================================================= */
+
+.variant-details-title {
+    flex: 0 0 auto;
+
+    padding: 7px 9px;
+
+    background: #f1f5f9;
+
+    color: #071a2b;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    line-height: 1.4;
+
+    border-bottom: 1px solid rgba(7, 26, 43, 0.07);
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   VARIANT DETAILS LIST
+   ========================================================= */
+
+.variant-details-list {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    width: 100%;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+
+    overscroll-behavior: contain;
+
+    scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   VARIANT DETAIL ROW
+   ========================================================= */
+
+.variant-detail-row {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.9fr)
+        minmax(0, 1.1fr);
+
+    align-items: center;
+
+    min-height: 27px;
+
+    padding: 5px 9px;
+
+    border-bottom:
+        1px solid rgba(7, 26, 43, 0.05);
+
+    column-gap: 8px;
+}
+
+.variant-detail-row:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   VARIANT DETAIL NAME
+   ========================================================= */
+
+.variant-detail-name {
+    min-width: 0;
+
+    color: #64707d;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   VARIANT DETAIL VALUE
+   ========================================================= */
+
+.variant-detail-value {
+    min-width: 0;
+
+    color: #071a2b;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   VARIANT DETAILS SCROLLBAR
+   ========================================================= */
+
+.variant-details-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.variant-details-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.variant-details-list::-webkit-scrollbar-thumb {
+    background: rgba(7, 26, 43, 0.20);
+
+    border-radius: 10px;
+}
+
+.variant-details-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(7, 26, 43, 0.30);
+}
+
+
+/* =========================================================
+   VARIANT IMAGE
+   ========================================================= */
+
+.order-item-variant img {
+    flex: 0 0 65px;
+
+    width: 65px;
+    height: 65px;
+
+    min-width: 65px;
+    max-width: 65px;
+
+    align-self: center;
+}
+
+
+/* =========================================================
+   VARIANT TOTAL
+   ========================================================= */
+
+.order-item-variant .order-item-total,
+.order-item-variant strong {
+    flex: 0 0 auto;
+
+    min-width: 65px;
+
+    max-width: 90px;
+
+    align-self: center;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   PRODUCT IMAGE
+   ========================================================= */
+
 .order-item img {
     width: 65px;
     height: 65px;
 
     max-width: 65px;
+    min-width: 65px;
 
     object-fit: contain;
 
@@ -303,8 +628,16 @@ body.checkout-body {
 
     padding: 4px;
 
+    /*
+     * Image must never shrink.
+     */
     flex: 0 0 65px;
 }
+
+
+/* =========================================================
+   PRODUCT INFO
+   ========================================================= */
 
 .order-item-info {
     flex: 1 1 auto;
@@ -314,6 +647,11 @@ body.checkout-body {
 
     overflow: hidden;
 }
+
+
+/* =========================================================
+   PRODUCT TITLE
+   ========================================================= */
 
 .order-item h3 {
     max-width: 100%;
@@ -331,6 +669,11 @@ body.checkout-body {
     text-overflow: ellipsis;
 }
 
+
+/* =========================================================
+   PRODUCT DETAILS
+   ========================================================= */
+
 .order-item p {
     max-width: 100%;
 
@@ -343,6 +686,11 @@ body.checkout-body {
 
     overflow-wrap: anywhere;
 }
+
+
+/* =========================================================
+   ITEM PRICE
+   ========================================================= */
 
 .order-item strong {
     flex: 0 0 auto;
@@ -497,7 +845,9 @@ body.checkout-body {
 
     display: grid;
 
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
 
     gap: 15px;
 
@@ -738,6 +1088,7 @@ body.checkout-body {
     z-index: 9999;
 
     width: max-content;
+
     max-width: calc(100vw - 30px);
 
     padding: 12px 22px;
@@ -922,6 +1273,108 @@ body.checkout-body {
         border-radius: 18px;
     }
 
+    /*
+     * Keep the summary area stable on mobile.
+     * Only its contents scroll.
+     */
+    #orderSummary {
+        height: 320px;
+        max-height: 320px;
+
+        min-height: 320px;
+
+        flex: 0 0 320px;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /*
+     * Cards retain their normal size.
+     */
+    .order-item {
+        flex: 0 0 auto;
+
+        min-height: 89px;
+    }
+
+
+    /* =====================================================
+       VARIANT — MOBILE
+       ===================================================== */
+
+    .order-item-variant {
+        min-height: 125px;
+        max-height: 125px;
+
+        gap: 9px;
+
+        padding: 9px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 100px;
+    }
+
+    .order-item-variant img {
+        flex: 0 0 55px;
+
+        width: 55px;
+        height: 55px;
+
+        min-width: 55px;
+        max-width: 55px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 165px;
+
+        width: 165px;
+
+        min-width: 125px;
+        max-width: 210px;
+
+        height: 100%;
+        max-height: 100%;
+
+        border-radius: 9px;
+    }
+
+    .variant-details-title {
+        padding: 6px 7px;
+
+        font-size: 10px;
+    }
+
+    .variant-detail-row {
+        min-height: 24px;
+
+        padding: 4px 7px;
+
+        column-gap: 5px;
+    }
+
+    .variant-detail-name {
+        font-size: 10px;
+    }
+
+    .variant-detail-value {
+        font-size: 10.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 52px;
+
+        max-width: 70px;
+
+        font-size: 13px;
+    }
+
+
     .checkout-submit-actions {
         grid-template-columns:
             minmax(0, 1fr);
@@ -1002,7 +1455,32 @@ body.checkout-body {
             12px;
     }
 
+    /*
+     * Stable scroll area.
+     */
+    #orderSummary {
+        height: 320px;
+        max-height: 320px;
+
+        min-height: 320px;
+
+        flex: 0 0 320px;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /*
+     * Never compress product cards.
+     */
     .order-item {
+        flex: 0 0 auto;
+
+        min-height: 73px;
+
         gap: 9px;
         padding: 9px;
     }
@@ -1012,6 +1490,7 @@ body.checkout-body {
         height: 55px;
 
         max-width: 55px;
+        min-width: 55px;
 
         flex-basis: 55px;
     }
@@ -1029,6 +1508,80 @@ body.checkout-body {
 
         font-size: 14px;
     }
+
+
+    /* =====================================================
+       VARIANT — SMALL PHONES
+       ===================================================== */
+
+    .order-item-variant {
+        min-height: 115px;
+        max-height: 115px;
+
+        gap: 7px;
+
+        padding: 8px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 82px;
+    }
+
+    .order-item-variant img {
+        width: 52px;
+        height: 52px;
+
+        min-width: 52px;
+        max-width: 52px;
+
+        flex-basis: 52px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 135px;
+
+        width: 135px;
+
+        min-width: 105px;
+        max-width: 160px;
+
+        height: 100%;
+        max-height: 100%;
+
+        border-radius: 8px;
+    }
+
+    .variant-details-title {
+        padding: 5px 6px;
+
+        font-size: 9px;
+    }
+
+    .variant-detail-row {
+        min-height: 23px;
+
+        padding: 4px 6px;
+
+        column-gap: 4px;
+    }
+
+    .variant-detail-name {
+        font-size: 9px;
+    }
+
+    .variant-detail-value {
+        font-size: 9.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 48px;
+
+        max-width: 62px;
+
+        font-size: 12px;
+    }
+
 
     .checkout-total-row strong {
         font-size: 20px;
@@ -1085,7 +1638,29 @@ body.checkout-body {
             10px;
     }
 
+    /*
+     * Keep the scrolling area stable even on very small screens.
+     */
+    #orderSummary {
+        height: 300px;
+        max-height: 300px;
+
+        min-height: 300px;
+
+        flex: 0 0 300px;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
     .order-item {
+        flex: 0 0 auto;
+
+        min-height: 64px;
+
         gap: 7px;
         padding: 8px;
     }
@@ -1095,6 +1670,7 @@ body.checkout-body {
         height: 48px;
 
         max-width: 48px;
+        min-width: 48px;
 
         flex-basis: 48px;
     }
@@ -1104,6 +1680,80 @@ body.checkout-body {
 
         font-size: 13px;
     }
+
+
+    /* =====================================================
+       VARIANT — VERY SMALL PHONES
+       ===================================================== */
+
+    .order-item-variant {
+        min-height: 108px;
+        max-height: 108px;
+
+        gap: 5px;
+
+        padding: 7px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 65px;
+    }
+
+    .order-item-variant img {
+        width: 48px;
+        height: 48px;
+
+        min-width: 48px;
+        max-width: 48px;
+
+        flex-basis: 48px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 112px;
+
+        width: 112px;
+
+        min-width: 88px;
+        max-width: 125px;
+
+        height: 100%;
+        max-height: 100%;
+
+        border-radius: 7px;
+    }
+
+    .variant-details-title {
+        padding: 4px 5px;
+
+        font-size: 8px;
+    }
+
+    .variant-detail-row {
+        min-height: 21px;
+
+        padding: 3px 5px;
+
+        column-gap: 3px;
+    }
+
+    .variant-detail-name {
+        font-size: 8px;
+    }
+
+    .variant-detail-value {
+        font-size: 8.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 43px;
+
+        max-width: 55px;
+
+        font-size: 11px;
+    }
+
 
     .checkout-total-row {
         gap: 8px;

@@ -1,23 +1,36 @@
 // ==========================================
-// AL YOSRA STORE - Admin Products (Production-Grade)
+// AL YOSRA STORE - Admin Products
+// Production-Grade / Safe Integrated Version
+// ==========================================
+
+// ==========================================
+// Global State
 // ==========================================
 
 let adminProducts = [];
 let adminCategories = [];
 let adminProductCosts = {};
 
-// ==========================================
-// State & Protections
-// ==========================================
 let currentPage = 1;
 const ITEMS_PER_PAGE = 50;
+
 let totalProductsCount = 0;
 let currentSearchTerm = "";
 let searchTimeout = null;
 
+// يمنع تداخل عمليات حفظ/حذف المنتج.
 let isProductSaving = false;
 let isProductDeleting = false;
+
+// Token لمنع نتائج تحميل المنتجات القديمة
+// من الكتابة فوق نتيجة أحدث.
+let adminProductsLoadToken = 0;
+
+// Token خاص بتحميل الصور.
 let productImageLoadToken = 0;
+
+// Token خاص بتحميل Variants.
+let productVariantsLoadToken = 0;
 
 let adminProductToastTimer;
 
@@ -45,37 +58,58 @@ let productVariantsState = {
 
 let productVariantsLoaded = true;
 let productVariantsDirty = false;
-let productVariantsLoadToken = 0;
 
 // ==========================================
 // Toast Notifications
 // ==========================================
-function showAdminProductToast(message, type = "success") {
+
+function showAdminProductToast(
+    message,
+    type = "success"
+) {
     let toast =
         document.getElementById(
             "adminProductToast"
         );
 
     if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "adminProductToast";
-        document.body.appendChild(toast);
+        toast =
+            document.createElement(
+                "div"
+            );
+
+        toast.id =
+            "adminProductToast";
+
+        document.body.appendChild(
+            toast
+        );
     }
 
-    clearTimeout(adminProductToastTimer);
+    clearTimeout(
+        adminProductToastTimer
+    );
 
-    toast.textContent = String(message ?? "");
+    toast.textContent =
+        String(
+            message ?? ""
+        );
+
     toast.className =
         `admin-product-toast ${type} show`;
 
-    adminProductToastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 3500);
+    adminProductToastTimer =
+        setTimeout(() => {
+            toast.classList.remove(
+                "show"
+            );
+        }, 3500);
 }
 
 // ==========================================
 // Security & Validation Helpers
 // ==========================================
+
 function isSafeImageUrl(url) {
     if (!url) return false;
 
@@ -87,8 +121,10 @@ function isSafeImageUrl(url) {
             );
 
         return (
-            parsed.protocol === "https:" ||
-            parsed.protocol === "http:"
+            parsed.protocol ===
+                "https:" ||
+            parsed.protocol ===
+                "http:"
         );
     } catch {
         return false;
@@ -96,15 +132,15 @@ function isSafeImageUrl(url) {
 }
 
 function revokeObjectUrl(url) {
-    if (url) {
-        try {
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            console.warn(
-                "Revoke failed:",
-                e
-            );
-        }
+    if (!url) return;
+
+    try {
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.warn(
+            "Revoke failed:",
+            error
+        );
     }
 }
 
@@ -112,14 +148,34 @@ function revokeObjectUrl(url) {
  * حماية قيمة البحث قبل إدخالها داخل
  * صيغة PostgREST الخاصة بـ .or()
  */
-function escapePostgrestSearchValue(value) {
+function escapePostgrestSearchValue(
+    value
+) {
     return String(value ?? "")
-        .replace(/\\/g, "\\\\")
-        .replace(/,/g, "\\,")
-        .replace(/\(/g, "\\(")
-        .replace(/\)/g, "\\)")
-        .replace(/%/g, "\\%")
-        .replace(/_/g, "\\_");
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+        .replace(
+            /,/g,
+            "\\,"
+        )
+        .replace(
+            /\(/g,
+            "\\("
+        )
+        .replace(
+            /\)/g,
+            "\\)"
+        )
+        .replace(
+            /%/g,
+            "\\%"
+        )
+        .replace(
+            /_/g,
+            "\\_"
+        );
 }
 
 // ==========================================
@@ -130,7 +186,10 @@ function createClientKey(prefix) {
     return `${prefix}:new:${crypto.randomUUID()}`;
 }
 
-function getExistingClientKey(prefix, id) {
+function getExistingClientKey(
+    prefix,
+    id
+) {
     return `${prefix}:${id}`;
 }
 
@@ -166,7 +225,9 @@ function setProductVariantsStatus(
     if (!element) return;
 
     element.textContent =
-        String(message ?? "");
+        String(
+            message ?? ""
+        );
 
     element.className =
         type
@@ -246,7 +307,8 @@ function normalizeVariantNumber(
         return fallback;
     }
 
-    const number = Number(value);
+    const number =
+        Number(value);
 
     return Number.isFinite(number)
         ? number
@@ -257,7 +319,9 @@ function getVariantCombinationKey(
     optionValueKeys
 ) {
     return [...optionValueKeys]
-        .map(key => String(key))
+        .map(key =>
+            String(key)
+        )
         .sort()
         .join("|");
 }
@@ -269,21 +333,26 @@ function getVariantCombinationFromIds(
         return [];
     }
 
-    const valueKeyById = new Map();
+    const valueKeyById =
+        new Map();
 
     productVariantsState.groups.forEach(
         group => {
-            group.values.forEach(value => {
-                if (
-                    value.id !== null &&
-                    value.id !== undefined
-                ) {
-                    valueKeyById.set(
-                        String(value.id),
-                        value.clientKey
-                    );
+            group.values.forEach(
+                value => {
+                    if (
+                        value.id !== null &&
+                        value.id !== undefined
+                    ) {
+                        valueKeyById.set(
+                            String(
+                                value.id
+                            ),
+                            value.clientKey
+                        );
+                    }
                 }
-            });
+            );
         }
     );
 
@@ -324,7 +393,9 @@ async function loadProductVariants(
                 "admin_get_product_variants",
                 {
                     p_product_id:
-                        Number(productId)
+                        Number(
+                            productId
+                        )
                 }
             );
 
@@ -332,6 +403,10 @@ async function loadProductVariants(
             throw error;
         }
 
+        /*
+         * تم فتح/إغلاق/تغيير منتج آخر
+         * أثناء انتظار RPC.
+         */
         if (
             token !==
             productVariantsLoadToken
@@ -346,12 +421,16 @@ async function loadProductVariants(
                 : {};
 
         const rawGroups =
-            Array.isArray(result.groups)
+            Array.isArray(
+                result.groups
+            )
                 ? result.groups
                 : [];
 
         const rawVariants =
-            Array.isArray(result.variants)
+            Array.isArray(
+                result.variants
+            )
                 ? result.variants
                 : [];
 
@@ -370,7 +449,8 @@ async function loadProductVariants(
 
                     name:
                         String(
-                            group.name ?? ""
+                            group.name ??
+                                ""
                         ),
 
                     sortOrder:
@@ -440,7 +520,8 @@ async function loadProductVariants(
 
                     sku:
                         String(
-                            variant.sku ?? ""
+                            variant.sku ??
+                                ""
                         ),
 
                     price:
@@ -480,8 +561,11 @@ async function loadProductVariants(
         productVariantsState.enabled =
             groups.length > 0;
 
-        productVariantsLoaded = true;
-        productVariantsDirty = false;
+        productVariantsLoaded =
+            true;
+
+        productVariantsDirty =
+            false;
 
         updateProductVariantsToggleUI();
         renderProductVariantsUI();
@@ -496,7 +580,9 @@ async function loadProductVariants(
                     : ""
             );
         } else {
-            setProductVariantsStatus("");
+            setProductVariantsStatus(
+                ""
+            );
         }
 
         updateProductVariantsSaveAvailability();
@@ -513,8 +599,11 @@ async function loadProductVariants(
             return;
         }
 
-        productVariantsLoaded = false;
-        productVariantsDirty = false;
+        productVariantsLoaded =
+            false;
+
+        productVariantsDirty =
+            false;
 
         productVariantsState = {
             enabled: false,
@@ -543,8 +632,11 @@ function generateProductVariantCombinations() {
     if (
         !productVariantsState.enabled
     ) {
-        productVariantsState.variants = [];
+        productVariantsState.variants =
+            [];
+
         renderProductVariantsTable();
+
         return;
     }
 
@@ -552,7 +644,8 @@ function generateProductVariantCombinations() {
         productVariantsState.groups;
 
     if (groups.length === 0) {
-        productVariantsState.variants = [];
+        productVariantsState.variants =
+            [];
 
         renderProductVariantsTable();
 
@@ -565,21 +658,24 @@ function generateProductVariantCombinations() {
     }
 
     const groupsWithValues =
-        groups.map(group => ({
-            ...group,
-            values:
-                Array.isArray(
-                    group.values
-                )
-                    ? group.values.filter(
-                          value =>
-                              String(
-                                  value.value ??
-                                      ""
-                              ).trim()
-                      )
-                    : []
-        }));
+        groups.map(
+            group => ({
+                ...group,
+
+                values:
+                    Array.isArray(
+                        group.values
+                    )
+                        ? group.values.filter(
+                              value =>
+                                  String(
+                                      value.value ??
+                                          ""
+                                  ).trim()
+                          )
+                        : []
+            })
+        );
 
     const emptyGroup =
         groupsWithValues.find(
@@ -629,7 +725,9 @@ function generateProductVariantCombinations() {
     /*
      * Cartesian Product
      */
-    let combinations = [[]];
+    let combinations = [
+        []
+    ];
 
     groupsWithValues.forEach(
         group => {
@@ -648,7 +746,8 @@ function generateProductVariantCombinations() {
                 }
             );
 
-            combinations = next;
+            combinations =
+                next;
         }
     );
 
@@ -683,9 +782,11 @@ function generateProductVariantCombinations() {
                 if (existing) {
                     return {
                         ...existing,
-                        optionValueKeys: [
-                            ...optionValueKeys
-                        ]
+
+                        optionValueKeys:
+                            [
+                                ...optionValueKeys
+                            ]
                     };
                 }
 
@@ -718,9 +819,10 @@ function generateProductVariantCombinations() {
 
                     active: true,
 
-                    optionValueKeys: [
-                        ...optionValueKeys
-                    ]
+                    optionValueKeys:
+                        [
+                            ...optionValueKeys
+                        ]
                 };
             }
         );
@@ -756,28 +858,33 @@ function renderProductOptionGroups() {
 
     if (!container) return;
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
     if (
         productVariantsState.groups
             .length === 0
     ) {
         if (empty) {
-            empty.hidden = false;
+            empty.hidden =
+                false;
         }
 
         return;
     }
 
     if (empty) {
-        empty.hidden = true;
+        empty.hidden =
+            true;
     }
 
     const fragment =
         document.createDocumentFragment();
 
     productVariantsState.groups.forEach(
-        (group, groupIndex) => {
+        (
+            group
+        ) => {
             const groupElement =
                 document.createElement(
                     "div"
@@ -818,11 +925,15 @@ function renderProductOptionGroups() {
                     "input"
                 );
 
-            input.type = "text";
+            input.type =
+                "text";
+
             input.className =
                 "admin-form-input";
+
             input.placeholder =
                 "مثال: اللون";
+
             input.value =
                 group.name;
 
@@ -846,7 +957,9 @@ function renderProductOptionGroups() {
                 input
             );
 
-            header.appendChild(field);
+            header.appendChild(
+                field
+            );
 
             const removeGroupButton =
                 document.createElement(
@@ -865,14 +978,37 @@ function renderProductOptionGroups() {
             removeGroupButton.addEventListener(
                 "click",
                 () => {
-                    const hasData =
-                        productVariantsState.groups.length >
-                            0 ||
-                        productVariantsState.variants.length >
-                            0;
+                    const hasGroupData =
+                        Boolean(
+                            String(
+                                group.name ??
+                                    ""
+                            ).trim()
+                        ) ||
+                        (
+                            Array.isArray(
+                                group.values
+                            ) &&
+                            group.values.length >
+                                0
+                        ) ||
+                        productVariantsState.variants.some(
+                            variant =>
+                                Array.isArray(
+                                    variant.optionValueKeys
+                                ) &&
+                                variant.optionValueKeys.some(
+                                    key =>
+                                        group.values.some(
+                                            value =>
+                                                value.clientKey ===
+                                                key
+                                        )
+                                )
+                        );
 
                     if (
-                        hasData &&
+                        hasGroupData &&
                         !confirm(
                             "حذف هذه المجموعة سيغيّر تركيبات الـVariants المرتبطة بها. هل تريد المتابعة؟"
                         )
@@ -918,7 +1054,7 @@ function renderProductOptionGroups() {
                     : [];
 
             values.forEach(
-                (value, valueIndex) => {
+                value => {
                     const valueRow =
                         document.createElement(
                             "div"
@@ -1091,7 +1227,9 @@ function renderProductOptionGroups() {
         }
     );
 
-    container.appendChild(fragment);
+    container.appendChild(
+        fragment
+    );
 }
 
 function getVariantOptionLabels(
@@ -1150,7 +1288,8 @@ function renderProductVariantsTable() {
 
     if (!table) return;
 
-    table.innerHTML = "";
+    table.innerHTML =
+        "";
 
     const variants =
         Array.isArray(
@@ -1164,14 +1303,16 @@ function renderProductVariantsTable() {
         variants.length === 0
     ) {
         if (empty) {
-            empty.hidden = false;
+            empty.hidden =
+                false;
         }
 
         return;
     }
 
     if (empty) {
-        empty.hidden = true;
+        empty.hidden =
+            true;
     }
 
     const fragment =
@@ -1190,6 +1331,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // Options
             // ------------------------------
+
             const optionsCell =
                 document.createElement(
                     "td"
@@ -1234,6 +1376,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // SKU
             // ------------------------------
+
             const skuCell =
                 document.createElement(
                     "td"
@@ -1244,14 +1387,20 @@ function renderProductVariantsTable() {
                     "input"
                 );
 
-            skuInput.type = "text";
+            skuInput.type =
+                "text";
+
             skuInput.className =
                 "admin-product-variant-input sku";
+
             skuInput.value =
                 variant.sku || "";
+
             skuInput.autocomplete =
                 "off";
-            skuInput.spellcheck = false;
+
+            skuInput.spellcheck =
+                false;
 
             skuInput.addEventListener(
                 "input",
@@ -1270,6 +1419,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // Price
             // ------------------------------
+
             const priceCell =
                 document.createElement(
                     "td"
@@ -1286,15 +1436,20 @@ function renderProductVariantsTable() {
             priceInput.className =
                 "admin-product-variant-input";
 
-            priceInput.min = "0";
-            priceInput.step = "0.01";
+            priceInput.min =
+                "0";
+
+            priceInput.step =
+                "0.01";
 
             priceInput.placeholder =
                 "سعر المنتج الأساسي";
 
             priceInput.value =
-                variant.price === null ||
-                variant.price === undefined
+                variant.price ===
+                    null ||
+                variant.price ===
+                    undefined
                     ? ""
                     : String(
                           variant.price
@@ -1324,6 +1479,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // Quantity
             // ------------------------------
+
             const quantityCell =
                 document.createElement(
                     "td"
@@ -1340,8 +1496,11 @@ function renderProductVariantsTable() {
             quantityInput.className =
                 "admin-product-variant-input";
 
-            quantityInput.min = "0";
-            quantityInput.step = "1";
+            quantityInput.min =
+                "0";
+
+            quantityInput.step =
+                "1";
 
             quantityInput.value =
                 String(
@@ -1373,6 +1532,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // Purchase Cost
             // ------------------------------
+
             const costCell =
                 document.createElement(
                     "td"
@@ -1389,8 +1549,11 @@ function renderProductVariantsTable() {
             costInput.className =
                 "admin-product-variant-input";
 
-            costInput.min = "0.01";
-            costInput.step = "0.01";
+            costInput.min =
+                "0.01";
+
+            costInput.step =
+                "0.01";
 
             costInput.value =
                 variant.purchaseCost ===
@@ -1421,6 +1584,7 @@ function renderProductVariantsTable() {
             // ------------------------------
             // Active
             // ------------------------------
+
             const activeCell =
                 document.createElement(
                     "td"
@@ -1463,11 +1627,15 @@ function renderProductVariantsTable() {
                 activeCell
             );
 
-            fragment.appendChild(row);
+            fragment.appendChild(
+                row
+            );
         }
     );
 
-    table.appendChild(fragment);
+    table.appendChild(
+        fragment
+    );
 }
 
 // ==========================================
@@ -1498,12 +1666,18 @@ function validateProductVariants() {
 
     const normalizedGroups =
         groups.map(
-            (group, groupIndex) => ({
+            (
+                group,
+                groupIndex
+            ) => ({
                 ...group,
+
                 name:
                     String(
-                        group.name ?? ""
+                        group.name ??
+                            ""
                     ).trim(),
+
                 sortOrder:
                     groupIndex
             })
@@ -1513,7 +1687,8 @@ function validateProductVariants() {
         new Set();
 
     for (
-        const group of normalizedGroups
+        const group of
+        normalizedGroups
     ) {
         if (!group.name) {
             return {
@@ -1559,11 +1734,13 @@ function validateProductVariants() {
             new Set();
 
         for (
-            const value of group.values
+            const value of
+            group.values
         ) {
             const valueText =
                 String(
-                    value.value ?? ""
+                    value.value ??
+                        ""
                 ).trim();
 
             if (!valueText) {
@@ -1620,11 +1797,13 @@ function validateProductVariants() {
         new Set();
 
     for (
-        const variant of variants
+        const variant of
+        variants
     ) {
         const sku =
             String(
-                variant.sku ?? ""
+                variant.sku ??
+                    ""
             ).trim();
 
         if (!sku) {
@@ -1672,9 +1851,12 @@ function validateProductVariants() {
         }
 
         if (
-            variant.price !== null &&
-            variant.price !== undefined &&
-            variant.price !== ""
+            variant.price !==
+                null &&
+            variant.price !==
+                undefined &&
+            variant.price !==
+                ""
         ) {
             const variantPrice =
                 Number(
@@ -1717,8 +1899,8 @@ function validateProductVariants() {
             new Set();
 
         for (
-            const valueKey
-            of optionValueKeys
+            const valueKey of
+            optionValueKeys
         ) {
             let foundGroup =
                 null;
@@ -1735,6 +1917,7 @@ function validateProductVariants() {
                     if (found) {
                         foundGroup =
                             group;
+
                         return true;
                     }
 
@@ -1742,9 +1925,7 @@ function validateProductVariants() {
                 }
             );
 
-            if (
-                !foundGroup
-            ) {
+            if (!foundGroup) {
                 return {
                     valid: false,
                     message:
@@ -1793,7 +1974,7 @@ function validateProductVariants() {
             return {
                 valid: false,
                 message:
-                    `تم تكرار نفس تركيبة الخيارات أكثر من مرة.`
+                    "تم تكرار نفس تركيبة الخيارات أكثر من مرة."
             };
         }
 
@@ -1809,14 +1990,15 @@ function validateProductVariants() {
         new Set();
 
     for (
-        const variant of variants
+        const variant of
+        variants
     ) {
         const sku =
             String(
-                variant.sku ?? ""
+                variant.sku ??
+                    ""
             ).trim();
-
-        const normalizedSku =
+            const normalizedSku =
             sku.toLocaleLowerCase();
 
         if (
@@ -1907,7 +2089,8 @@ function buildProductVariantsPayload() {
 
                 sku:
                     String(
-                        variant.sku ?? ""
+                        variant.sku ??
+                            ""
                     ).trim(),
 
                 price:
@@ -1953,30 +2136,47 @@ function buildProductVariantsPayload() {
     };
 }
 
-async function saveProductVariants(productId) {
-    const payload = buildProductVariantsPayload();
+async function saveProductVariants(
+    productId
+) {
+    const payload =
+        buildProductVariantsPayload();
 
     const {
         data,
         error
-    } = await supabaseClient.rpc(
-        "admin_save_product_variants",
-        {
-            p_product_id: Number(productId),
-            p_groups: payload.groups,
-            p_variants: payload.variants
-        }
-    );
+    } =
+        await supabaseClient.rpc(
+            "admin_save_product_variants",
+            {
+                p_product_id:
+                    Number(
+                        productId
+                    ),
 
-    if (error) throw error;
+                p_groups:
+                    payload.groups,
+
+                p_variants:
+                    payload.variants
+            }
+        );
+
+    if (error) {
+        throw error;
+    }
 
     return data;
 }
 
 // ==========================================
-// Load Data (Paginated + Debounced Search)
+// Load Products
 // ==========================================
+
 async function loadAdminProducts() {
+    const loadToken =
+        ++adminProductsLoadToken;
+
     const table =
         document.getElementById(
             "adminProductsTable"
@@ -1998,19 +2198,26 @@ async function loadAdminProducts() {
         );
 
     if (loading) {
-        loading.hidden = false;
+        loading.hidden =
+            false;
+
+        loading.textContent =
+            "جاري تحميل المنتجات...";
     }
 
     if (empty) {
-        empty.hidden = true;
+        empty.hidden =
+            true;
     }
 
     if (pagination) {
-        pagination.hidden = true;
+        pagination.hidden =
+            true;
     }
 
     if (table) {
-        table.innerHTML = "";
+        table.innerHTML =
+            "";
     }
 
     try {
@@ -2044,7 +2251,10 @@ async function loadAdminProducts() {
         }
 
         const from =
-            (currentPage - 1) *
+            (
+                currentPage -
+                1
+            ) *
             ITEMS_PER_PAGE;
 
         const to =
@@ -2069,15 +2279,68 @@ async function loadAdminProducts() {
             throw error;
         }
 
+        /*
+         * إذا انتهى التحميل الحالي وأصبح هناك
+         * طلب أحدث، لا نسمح للنتيجة القديمة
+         * بتغيير الواجهة.
+         */
+        if (
+            loadToken !==
+            adminProductsLoadToken
+        ) {
+            return;
+        }
+
+        const safeCount =
+            Number.isFinite(
+                Number(count)
+            )
+                ? Number(count)
+                : 0;
+
+        /*
+         * حماية الصفحة الحالية من أن تصبح خارج
+         * النطاق بعد حذف منتجات أو تغيير البحث.
+         */
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    safeCount /
+                        ITEMS_PER_PAGE
+                )
+            );
+
+        if (
+            currentPage >
+            totalPages
+        ) {
+            currentPage =
+                totalPages;
+
+            /*
+             * لا نرسم نتيجة الصفحة القديمة.
+             * نعيد الطلب للصفحة الصحيحة.
+             */
+            return await loadAdminProducts();
+        }
+
         adminProducts =
             Array.isArray(data)
                 ? data
                 : [];
 
         totalProductsCount =
-            count || 0;
+            safeCount;
 
         await loadAdminProductCosts();
+
+        if (
+            loadToken !==
+            adminProductsLoadToken
+        ) {
+            return;
+        }
 
         renderAdminProducts();
         updatePaginationUI();
@@ -2087,6 +2350,16 @@ async function loadAdminProducts() {
             "Load products error:",
             error
         );
+
+        /*
+         * تجاهل أخطاء/نتائج request قديم.
+         */
+        if (
+            loadToken !==
+            adminProductsLoadToken
+        ) {
+            return;
+        }
 
         if (loading) {
             loading.textContent =
@@ -2105,7 +2378,9 @@ async function loadAdminProductCosts() {
         adminProducts.length ===
         0
     ) {
-        adminProductCosts = {};
+        adminProductCosts =
+            {};
+
         return;
     }
 
@@ -2133,7 +2408,8 @@ async function loadAdminProductCosts() {
         throw error;
     }
 
-    adminProductCosts = {};
+    adminProductCosts =
+        {};
 
     (data || []).forEach(
         cost => {
@@ -2191,8 +2467,9 @@ async function loadAdminCategories() {
 }
 
 // ==========================================
-// Pagination UI
+// Pagination
 // ==========================================
+
 function setupPaginationControls() {
     const nextBtn =
         document.getElementById(
@@ -2208,6 +2485,13 @@ function setupPaginationControls() {
         nextBtn.addEventListener(
             "click",
             () => {
+                if (
+                    isProductSaving ||
+                    isProductDeleting
+                ) {
+                    return;
+                }
+
                 const totalPages =
                     Math.ceil(
                         totalProductsCount /
@@ -2219,6 +2503,7 @@ function setupPaginationControls() {
                     totalPages
                 ) {
                     currentPage++;
+
                     loadAdminProducts();
                 }
             }
@@ -2230,10 +2515,18 @@ function setupPaginationControls() {
             "click",
             () => {
                 if (
+                    isProductSaving ||
+                    isProductDeleting
+                ) {
+                    return;
+                }
+
+                if (
                     currentPage >
                     1
                 ) {
                     currentPage--;
+
                     loadAdminProducts();
                 }
             }
@@ -2273,11 +2566,14 @@ function updatePaginationUI() {
         totalProductsCount ===
         0
     ) {
-        pagination.hidden = true;
+        pagination.hidden =
+            true;
+
         return;
     }
 
-    pagination.hidden = false;
+    pagination.hidden =
+        false;
 
     const totalPages =
         Math.ceil(
@@ -2310,6 +2606,7 @@ function updatePaginationUI() {
 // ==========================================
 // Render UI
 // ==========================================
+
 function renderCategoryOptions() {
     const select =
         document.getElementById(
@@ -2373,24 +2670,28 @@ function renderAdminProducts() {
     if (!table) return;
 
     if (loading) {
-        loading.hidden = true;
+        loading.hidden =
+            true;
     }
 
-    table.innerHTML = "";
+    table.innerHTML =
+        "";
 
     if (
         adminProducts.length ===
         0
     ) {
         if (empty) {
-            empty.hidden = false;
+            empty.hidden =
+                false;
         }
 
         return;
     }
 
     if (empty) {
-        empty.hidden = true;
+        empty.hidden =
+            true;
     }
 
     const fragment =
@@ -2494,7 +2795,7 @@ function renderAdminProducts() {
                             type="button"
                             class="admin-edit-button"
                             data-action="edit"
-                            data-id="${product.id}">
+                            data-id="${escapeHtml(product.id)}">
                             تعديل
                         </button>
 
@@ -2502,7 +2803,7 @@ function renderAdminProducts() {
                             type="button"
                             class="admin-delete-button"
                             data-action="delete"
-                            data-id="${product.id}">
+                            data-id="${escapeHtml(product.id)}">
                             حذف
                         </button>
                     </div>
@@ -2521,8 +2822,9 @@ function renderAdminProducts() {
 }
 
 // ==========================================
-// Image Editor State & Elements
+// Image Editor State
 // ==========================================
+
 let productImageEditorState = {
     file: null,
     image: null,
@@ -2602,14 +2904,22 @@ function resetProductImageEditorState() {
     }
 
     if (elements.editor) {
-        elements.editor.hidden = true;
+        elements.editor.hidden =
+            true;
     }
 
     if (elements.zoom) {
-        elements.zoom.min = "0.05";
-        elements.zoom.max = "3";
-        elements.zoom.step = "0.01";
-        elements.zoom.value = "1";
+        elements.zoom.min =
+            "0.05";
+
+        elements.zoom.max =
+            "3";
+
+        elements.zoom.step =
+            "0.01";
+
+        elements.zoom.value =
+            "1";
     }
 }
 
@@ -2635,7 +2945,8 @@ function resetProductImageState() {
         );
 
     if (fileInput) {
-        fileInput.value = "";
+        fileInput.value =
+            "";
     }
 
     if (previewImage) {
@@ -2736,8 +3047,18 @@ function setProductImagePreview(
 // ==========================================
 // Modals
 // ==========================================
+
 function openAddProductModal() {
     if (isProductSaving) return;
+
+    /*
+     * مهم جدًا:
+     * إلغاء أي RPC قديم خاص بمنتج كان مفتوحًا
+     * قبل فتح نموذج إضافة منتج جديد.
+     *
+     * يمنع عودة Variants قديمة إلى المنتج الجديد.
+     */
+    productVariantsLoadToken++;
 
     const modal =
         document.getElementById(
@@ -2760,13 +3081,25 @@ function openAddProductModal() {
         form.reset();
     }
 
-    document.getElementById(
-        "productId"
-    ).value = "";
+    const productId =
+        document.getElementById(
+            "productId"
+        );
 
-    document.getElementById(
-        "productPurchaseCost"
-    ).value = "";
+    if (productId) {
+        productId.value =
+            "";
+    }
+
+    const purchaseCost =
+        document.getElementById(
+            "productPurchaseCost"
+        );
+
+    if (purchaseCost) {
+        purchaseCost.value =
+            "";
+    }
 
     if (title) {
         title.textContent =
@@ -2785,14 +3118,21 @@ function openAddProductModal() {
         variants: []
     };
 
-    productVariantsLoaded = true;
-    productVariantsDirty = false;
+    productVariantsLoaded =
+        true;
+
+    productVariantsDirty =
+        false;
 
     renderProductVariantsUI();
-    setProductVariantsStatus("");
+
+    setProductVariantsStatus(
+        ""
+    );
 
     if (modal) {
-        modal.hidden = false;
+        modal.hidden =
+            false;
     }
 
     updateProductVariantsSaveAvailability();
@@ -2806,7 +3146,9 @@ async function openEditProductModal(
     const product =
         adminProducts.find(
             item =>
-                String(item.id) ===
+                String(
+                    item.id
+                ) ===
                 String(id)
         );
 
@@ -2825,60 +3167,113 @@ async function openEditProductModal(
      */
     productVariantsLoadToken++;
 
-    productVariantsLoaded = false;
-    productVariantsDirty = false;
+    productVariantsLoaded =
+        false;
+
+    productVariantsDirty =
+        false;
 
     resetProductImageState();
 
-    document.getElementById(
-        "productId"
-    ).value =
-        product.id;
+    const productId =
+        document.getElementById(
+            "productId"
+        );
 
-    document.getElementById(
-        "productName"
-    ).value =
-        product.name || "";
+    const productName =
+        document.getElementById(
+            "productName"
+        );
 
-    document.getElementById(
-        "productCode"
-    ).value =
-        product.product_code ||
-        "";
+    const productCode =
+        document.getElementById(
+            "productCode"
+        );
 
-    document.getElementById(
-        "productPrice"
-    ).value =
-        product.price ?? "";
+    const productPrice =
+        document.getElementById(
+            "productPrice"
+        );
 
-    document.getElementById(
-        "productQuantity"
-    ).value =
-        product.quantity ?? 0;
+    const productQuantity =
+        document.getElementById(
+            "productQuantity"
+        );
 
-    document.getElementById(
-        "productCategory"
-    ).value =
-        product.category_id ||
-        "";
+    const productCategory =
+        document.getElementById(
+            "productCategory"
+        );
 
-    document.getElementById(
-        "productTarget"
-    ).value =
-        product.target || "";
+    const productTarget =
+        document.getElementById(
+            "productTarget"
+        );
 
-    document.getElementById(
-        "productDescription"
-    ).value =
-        product.description ||
-        "";
+    const productDescription =
+        document.getElementById(
+            "productDescription"
+        );
 
-    document.getElementById(
-        "productPurchaseCost"
-    ).value =
-        adminProductCosts[
-            String(product.id)
-        ] ?? "";
+    const productPurchaseCost =
+        document.getElementById(
+            "productPurchaseCost"
+        );
+
+    const productModalTitle =
+        document.getElementById(
+            "productModalTitle"
+        );
+
+    if (productId) {
+        productId.value =
+            product.id;
+    }
+
+    if (productName) {
+        productName.value =
+            product.name || "";
+    }
+
+    if (productCode) {
+        productCode.value =
+            product.product_code ||
+            "";
+    }
+
+    if (productPrice) {
+        productPrice.value =
+            product.price ?? "";
+    }
+
+    if (productQuantity) {
+        productQuantity.value =
+            product.quantity ?? 0;
+    }
+
+    if (productCategory) {
+        productCategory.value =
+            product.category_id ||
+            "";
+    }
+
+    if (productTarget) {
+        productTarget.value =
+            product.target || "";
+    }
+
+    if (productDescription) {
+        productDescription.value =
+            product.description ||
+            "";
+    }
+
+    if (productPurchaseCost) {
+        productPurchaseCost.value =
+            adminProductCosts[
+                String(product.id)
+            ] ?? "";
+    }
 
     if (product.main_image) {
         setProductImagePreview(
@@ -2889,10 +3284,10 @@ async function openEditProductModal(
         );
     }
 
-    document.getElementById(
-        "productModalTitle"
-    ).textContent =
-        "تعديل المنتج";
+    if (productModalTitle) {
+        productModalTitle.textContent =
+            "تعديل المنتج";
+    }
 
     clearFormMessage();
 
@@ -2917,7 +3312,8 @@ async function openEditProductModal(
         );
 
     if (modal) {
-        modal.hidden = false;
+        modal.hidden =
+            false;
     }
 
     updateProductVariantsSaveAvailability();
@@ -2948,7 +3344,8 @@ function closeProductModalWindow() {
         );
 
     if (modal) {
-        modal.hidden = true;
+        modal.hidden =
+            true;
     }
 
     resetProductImageState();
@@ -2960,16 +3357,23 @@ function closeProductModalWindow() {
         variants: []
     };
 
-    productVariantsLoaded = true;
-    productVariantsDirty = false;
+    productVariantsLoaded =
+        true;
+
+    productVariantsDirty =
+        false;
 
     renderProductVariantsUI();
-    setProductVariantsStatus("");
+
+    setProductVariantsStatus(
+        ""
+    );
 }
 
 // ==========================================
-// Image Editor Engine (Smart Crop & Drag)
+// Image Editor Engine
 // ==========================================
+
 function resetProductImageEditor() {
     productImageEditorState.scale =
         productImageEditorState.baseScale ||
@@ -3171,26 +3575,49 @@ async function loadProductImageIntoEditor(
     const image =
         new Image();
 
-    await new Promise(
-        (
-            resolve,
-            reject
-        ) => {
-            image.onload =
-                resolve;
+    try {
+        await new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+                image.onload =
+                    resolve;
 
-            image.onerror =
-                () =>
-                    reject(
-                        new Error(
-                            "تعذر قراءة الصورة."
-                        )
-                    );
+                image.onerror =
+                    () =>
+                        reject(
+                            new Error(
+                                "تعذر قراءة الصورة."
+                            )
+                        );
 
-            image.src =
-                objectUrl;
+                image.src =
+                    objectUrl;
+            }
+        );
+    } catch (error) {
+        image.removeAttribute(
+            "src"
+        );
+
+        revokeObjectUrl(
+            objectUrl
+        );
+
+        if (
+            productImageEditorState.objectUrl ===
+            objectUrl
+        ) {
+            productImageEditorState.objectUrl =
+                null;
+
+            productImageEditorState.file =
+                null;
         }
-    );
+
+        throw error;
+    }
 
     if (
         currentToken !==
@@ -3217,6 +3644,25 @@ async function loadProductImageIntoEditor(
         image.naturalHeight >
             6000
     ) {
+        image.removeAttribute(
+            "src"
+        );
+
+        revokeObjectUrl(
+            objectUrl
+        );
+
+        if (
+            productImageEditorState.objectUrl ===
+            objectUrl
+        ) {
+            productImageEditorState.objectUrl =
+                null;
+
+            productImageEditorState.file =
+                null;
+        }
+
         throw new Error(
             "أبعاد الصورة غير صالحة أو ضخمة جدًا للحماية."
         );
@@ -3230,6 +3676,14 @@ async function loadProductImageIntoEditor(
         !elements.editor ||
         !elements.stage
     ) {
+        image.removeAttribute(
+            "src"
+        );
+
+        revokeObjectUrl(
+            objectUrl
+        );
+
         throw new Error(
             "تعذر تجهيز محرر الصورة."
         );
@@ -3254,6 +3708,8 @@ async function loadProductImageIntoEditor(
         stageWidth <= 0 ||
         stageHeight <= 0
     ) {
+        resetProductImageEditorState();
+
         throw new Error(
             "تعذر تحديد حجم محرر الصورة."
         );
@@ -3294,10 +3750,14 @@ async function loadProductImageIntoEditor(
             );
 
         elements.zoom.min =
-            String(minZoom);
+            String(
+                minZoom
+            );
 
         elements.zoom.max =
-            String(maxZoom);
+            String(
+                maxZoom
+            );
 
         elements.zoom.step =
             String(
@@ -3308,7 +3768,9 @@ async function loadProductImageIntoEditor(
             );
 
         elements.zoom.value =
-            String(baseScale);
+            String(
+                baseScale
+            );
     }
 
     updateProductImageEditor();
@@ -3317,6 +3779,7 @@ async function loadProductImageIntoEditor(
 // ==========================================
 // Image Export & Smart Compression
 // ==========================================
+
 async function exportEditedProductImage() {
     const { stage } =
         getProductImageEditorElements();
@@ -3324,7 +3787,10 @@ async function exportEditedProductImage() {
     const state =
         productImageEditorState;
 
-    if (!stage || !state.image) {
+    if (
+        !stage ||
+        !state.image
+    ) {
         throw new Error(
             "لم يتم اختيار صورة."
         );
@@ -3396,14 +3862,18 @@ async function exportEditedProductImage() {
         state.scale;
 
     const renderedLeft =
-        (stageWidth -
-            renderedWidth) /
+        (
+            stageWidth -
+            renderedWidth
+        ) /
             2 +
         state.offsetX;
 
     const renderedTop =
-        (stageHeight -
-            renderedHeight) /
+        (
+            stageHeight -
+            renderedHeight
+        ) /
             2 +
         state.offsetY;
 
@@ -3531,14 +4001,13 @@ async function exportEditedProductImage() {
                         quality
                     );
 
-                const result =
-                    {
-                        blob,
-                        quality,
-                        size:
-                            blob.size,
-                        outputSize
-                    };
+                const result = {
+                    blob,
+                    quality,
+                    size:
+                        blob.size,
+                    outputSize
+                };
 
                 if (
                     !smallestResult ||
@@ -3566,6 +4035,10 @@ async function exportEditedProductImage() {
             );
         };
 
+    /*
+     * إذا كان الملف الأصلي صغيرًا بالفعل،
+     * لا نرفع الناتج فوق حجمه بلا داعٍ.
+     */
     if (
         originalFileSize >
             0 &&
@@ -3600,16 +4073,20 @@ async function exportEditedProductImage() {
         }
 
         if (
+            !bestSmallResult ||
             secondResult.size <
-            bestSmallResult.size
+                bestSmallResult.size
         ) {
             bestSmallResult = {
                 blob:
                     secondResult,
+
                 quality:
                     0.55,
+
                 size:
                     secondResult.size,
+
                 outputSize:
                     MAX_OUTPUT_SIZE
             };
@@ -3625,6 +4102,7 @@ async function exportEditedProductImage() {
                         MAX_OUTPUT_SIZE *
                             0.80
                     ),
+
                     Math.round(
                         MAX_OUTPUT_SIZE *
                             0.65
@@ -3638,6 +4116,7 @@ async function exportEditedProductImage() {
                 const safeOutputSize =
                     Math.max(
                         MIN_OUTPUT_SIZE,
+
                         Math.min(
                             MAX_OUTPUT_SIZE,
                             outputSize
@@ -3724,6 +4203,7 @@ async function exportEditedProductImage() {
             const safeOutputSize =
                 Math.max(
                     MIN_OUTPUT_SIZE,
+
                     Math.min(
                         MAX_OUTPUT_SIZE,
                         outputSize
@@ -3770,6 +4250,7 @@ async function exportEditedProductImage() {
 // ==========================================
 // Image File Selection
 // ==========================================
+
 document
     .getElementById(
         "productImageFile"
@@ -3797,6 +4278,7 @@ document
 
             if (!file) {
                 resetProductImageState();
+
                 return;
             }
 
@@ -3805,7 +4287,8 @@ document
                     "image/"
                 )
             ) {
-                this.value = "";
+                this.value =
+                    "";
 
                 resetProductImageState();
 
@@ -3852,7 +4335,8 @@ document
                     error
                 );
 
-                this.value = "";
+                this.value =
+                    "";
 
                 resetProductImageState();
 
@@ -3866,8 +4350,9 @@ document
     );
 
 // ==========================================
-// Upload & Clean Storage
+// Upload Product Image
 // ==========================================
+
 async function uploadProductImage(
     file
 ) {
@@ -3952,8 +4437,10 @@ async function uploadProductImage(
             .remove([
                 filePath
             ])
-            .catch(e =>
-                console.warn(e)
+            .catch(error =>
+                console.warn(
+                    error
+                )
             );
 
         throw new Error(
@@ -3964,6 +4451,7 @@ async function uploadProductImage(
     return {
         path:
             filePath,
+
         url
     };
 }
@@ -3971,7 +4459,9 @@ async function uploadProductImage(
 function getProductImagePath(
     imageUrl
 ) {
-    if (!imageUrl) return null;
+    if (!imageUrl) {
+        return null;
+    }
 
     const marker =
         "/storage/v1/object/public/product-images/";
@@ -4012,107 +4502,112 @@ function getProductImagePath(
 // ==========================================
 // Save Product
 // ==========================================
+
 async function saveProduct(
     event
 ) {
     event.preventDefault();
 
-    if (isProductSaving) return;
+    if (isProductSaving) {
+        return;
+    }
 
     clearFormMessage();
 
-    /*
-     * حماية مهمة:
-     * في حالة تعديل منتج موجود، يجب أن تكون
-     * حالة Variants قد تم تحميلها بنجاح.
-     */
+    const idElement =
+        document.getElementById(
+            "productId"
+        );
+
     const idValue =
-        document
-            .getElementById(
-                "productId"
-            )
-            .value
-            .trim();
+        String(
+            idElement?.value ??
+                ""
+        ).trim();
 
     const isEdit =
         Boolean(idValue);
 
+    /*
+     * في حالة تعديل منتج موجود،
+     * يجب أن تكون Variants قد حُمّلت بنجاح.
+     */
     if (
         isEdit &&
         !productVariantsLoaded
     ) {
-        return showFormMessage(
+        showFormMessage(
             "لا يمكن حفظ المنتج قبل اكتمال تحميل خياراته. يرجى الانتظار أو إعادة فتح المنتج.",
             "error"
         );
+
+        return;
     }
 
     const name =
-        document
-            .getElementById(
+        String(
+            document.getElementById(
                 "productName"
-            )
-            .value
-            .trim();
+            )?.value ??
+                ""
+        ).trim();
 
     const productCode =
-        document
-            .getElementById(
+        String(
+            document.getElementById(
                 "productCode"
-            )
-            .value
-            .trim();
+            )?.value ??
+                ""
+        ).trim();
 
     const price =
         Number(
             document.getElementById(
                 "productPrice"
-            ).value
+            )?.value
         );
 
     const quantity =
         Number(
             document.getElementById(
                 "productQuantity"
-            ).value
+            )?.value
         );
 
     const purchaseCost =
         Number(
             document.getElementById(
                 "productPurchaseCost"
-            ).value
+            )?.value
         );
 
     const categoryId =
         Number(
             document.getElementById(
                 "productCategory"
-            ).value
+            )?.value
         );
 
     const target =
-        document
-            .getElementById(
+        String(
+            document.getElementById(
                 "productTarget"
-            )
-            .value
-            .trim();
+            )?.value ??
+                ""
+        ).trim();
 
     const description =
-        document
-            .getElementById(
+        String(
+            document.getElementById(
                 "productDescription"
-            )
-            .value
-            .trim();
+            )?.value ??
+                ""
+        ).trim();
 
     const imageFile =
-        document
-            .getElementById(
-                "productImageFile"
-            )
-            ?.files?.[0] ||
+        document.getElementById(
+            "productImageFile"
+        )?.files?.[0] ||
         null;
 
     const saveButton =
@@ -4123,28 +4618,35 @@ async function saveProduct(
     // ======================================
     // Validations
     // ======================================
+
     if (!name) {
-        return showFormMessage(
+        showFormMessage(
             "يرجى إدخال اسم المنتج.",
             "error"
         );
+
+        return;
     }
 
     if (!productCode) {
-        return showFormMessage(
+        showFormMessage(
             "يرجى إدخال كود المنتج.",
             "error"
         );
+
+        return;
     }
 
     if (
         !Number.isFinite(price) ||
         price < 0
     ) {
-        return showFormMessage(
+        showFormMessage(
             "سعر المنتج غير صالح.",
             "error"
         );
+
+        return;
     }
 
     if (
@@ -4153,10 +4655,12 @@ async function saveProduct(
         ) ||
         quantity < 0
     ) {
-        return showFormMessage(
+        showFormMessage(
             "الكمية غير صالحة.",
             "error"
         );
+
+        return;
     }
 
     if (
@@ -4165,10 +4669,12 @@ async function saveProduct(
         ) ||
         purchaseCost <= 0
     ) {
-        return showFormMessage(
+        showFormMessage(
             "تكلفة الشراء يجب أن تكون أكبر من صفر.",
             "error"
         );
+
+        return;
     }
 
     if (
@@ -4177,15 +4683,17 @@ async function saveProduct(
         ) ||
         categoryId <= 0
     ) {
-        return showFormMessage(
+        showFormMessage(
             "يرجى اختيار التصنيف.",
             "error"
         );
+
+        return;
     }
 
     /*
-     * تحقق Variants فقط إذا كانت مفعلة
-     * أو إذا تم تغيير حالتها.
+     * إذا كانت Variants مفعلة وتم تعديلها،
+     * يجب التحقق منها قبل أي كتابة إلى قاعدة البيانات.
      */
     if (
         productVariantsDirty &&
@@ -4197,14 +4705,17 @@ async function saveProduct(
         if (
             !variantValidation.valid
         ) {
-            return showFormMessage(
+            showFormMessage(
                 variantValidation.message,
                 "error"
             );
+
+            return;
         }
     }
 
-    isProductSaving = true;
+    isProductSaving =
+        true;
 
     if (saveButton) {
         saveButton.disabled =
@@ -4279,8 +4790,9 @@ async function saveProduct(
             null;
 
         // ==================================
-        // Upload new image first
+        // Upload New Image First
         // ==================================
+
         if (imageFile) {
             const uploaded =
                 await uploadProductImage(
@@ -4294,20 +4806,26 @@ async function saveProduct(
                 uploaded.url;
         }
 
-        const productData =
-            {
-                name,
-                description,
-                price,
-                quantity,
-                main_image:
-                    mainImage,
-                target,
-                product_code:
-                    productCode,
-                category_id:
-                    categoryId
-            };
+        const productData = {
+            name,
+
+            description,
+
+            price,
+
+            quantity,
+
+            main_image:
+                mainImage,
+
+            target,
+
+            product_code:
+                productCode,
+
+            category_id:
+                categoryId
+        };
 
         let savedProductId =
             idValue;
@@ -4315,6 +4833,7 @@ async function saveProduct(
         // ==================================
         // Insert
         // ==================================
+
         if (!isEdit) {
             const {
                 data:
@@ -4336,6 +4855,18 @@ async function saveProduct(
 
             if (insertError) {
                 throw insertError;
+            }
+
+            if (
+                !insertedProduct ||
+                insertedProduct.id ===
+                    null ||
+                insertedProduct.id ===
+                    undefined
+            ) {
+                throw new Error(
+                    "تعذر الحصول على رقم المنتج الجديد."
+                );
             }
 
             savedProductId =
@@ -4404,6 +4935,7 @@ async function saveProduct(
         // ==================================
         // Update
         // ==================================
+
         else {
             const {
                 error:
@@ -4543,12 +5075,11 @@ async function saveProduct(
         // ==================================
         // Save Variants
         // ==================================
+
         /*
          * لا نرسل RPC إلا إذا حدث تغيير فعلي
          * في نظام Variants.
          */
-
-        
         if (
             productVariantsDirty
         ) {
@@ -4639,6 +5170,10 @@ async function saveProduct(
                     /*
                      * استعادة بيانات المنتج الأساسية
                      * إذا فشل حفظ Variants بعد تحديثها.
+                     *
+                     * RPC الخاص بالـVariants مصمم ليكون
+                     * ذريًا، لذلك لا نعيد بناء Variants
+                     * يدويًا هنا.
                      */
                     if (
                         oldProductData
@@ -4733,8 +5268,9 @@ async function saveProduct(
         }
 
         // ==================================
-        // Remove old image after all success
+        // Remove Old Image After All Success
         // ==================================
+
         if (
             imageFile &&
             uploadedImagePath &&
@@ -4758,15 +5294,18 @@ async function saveProduct(
                     .remove([
                         oldImagePath
                     ])
-                    .catch(e =>
-                        console.warn(
-                            "Old image cleanup failed:",
-                            e
-                        )
+                    .catch(
+                        error =>
+                            console.warn(
+                                "Old image cleanup failed:",
+                                error
+                            )
                     );
             }
         }
-         productVariantsDirty = false;
+
+        productVariantsDirty =
+            false;
 
         closeProductModalWindow();
 
@@ -4800,10 +5339,12 @@ async function saveProduct(
                 .remove([
                     uploadedImagePath
                 ])
-                .catch(e =>
-                    console.warn(
-                        e
-                    )
+                .catch(
+                    cleanupError =>
+                        console.warn(
+                            "New image cleanup failed:",
+                            cleanupError
+                        )
                 );
         }
 
@@ -4863,10 +5404,6 @@ async function saveProduct(
                     .originalText ||
                 "حفظ المنتج";
 
-            /*
-             * إذا كانت حالة Variants غير محملة
-             * لأي سبب، نعيد تعطيل الحفظ.
-             */
             updateProductVariantsSaveAvailability();
         }
     }
@@ -4875,6 +5412,7 @@ async function saveProduct(
 // ==========================================
 // Delete Product
 // ==========================================
+
 async function deleteProduct(
     id
 ) {
@@ -4894,7 +5432,9 @@ async function deleteProduct(
                 String(id)
         );
 
-    if (!product) return;
+    if (!product) {
+        return;
+    }
 
     if (
         !confirm(
@@ -4981,14 +5521,19 @@ async function deleteProduct(
                 .remove([
                     imagePath
                 ])
-                .catch(e =>
-                    console.warn(
-                        "Image cleanup failed:",
-                        e
-                    )
+                .catch(
+                    error =>
+                        console.warn(
+                            "Image cleanup failed:",
+                            error
+                        )
                 );
         }
 
+        /*
+         * loadAdminProducts() سيصحح الصفحة تلقائيًا
+         * إذا أصبحت الصفحة الحالية خارج النطاق.
+         */
         await loadAdminProducts();
 
         showAdminProductToast(
@@ -5036,6 +5581,7 @@ async function deleteProduct(
 // ==========================================
 // Form Messages
 // ==========================================
+
 function showFormMessage(
     message,
     type = "error"
@@ -5074,13 +5620,16 @@ function clearFormMessage() {
 // ==========================================
 // Debounced Server-Side Search
 // ==========================================
+
 function setupProductSearch() {
     const searchInput =
         document.getElementById(
             "productSearch"
         );
 
-    if (!searchInput) return;
+    if (!searchInput) {
+        return;
+    }
 
     searchInput.addEventListener(
         "input",
@@ -5112,13 +5661,16 @@ function setupProductSearch() {
 // ==========================================
 // Events & Navigation
 // ==========================================
+
 function setupProductTableActions() {
     const table =
         document.getElementById(
             "adminProductsTable"
         );
 
-    if (!table) return;
+    if (!table) {
+        return;
+    }
 
     table.addEventListener(
         "click",
@@ -5128,7 +5680,9 @@ function setupProductTableActions() {
                     "button[data-action]"
                 );
 
-            if (!button) return;
+            if (!button) {
+                return;
+            }
 
             const action =
                 button.dataset
@@ -5137,7 +5691,9 @@ function setupProductTableActions() {
             const id =
                 button.dataset.id;
 
-            if (!id) return;
+            if (!id) {
+                return;
+            }
 
             if (
                 action ===
@@ -5354,7 +5910,8 @@ function setupProductVariantsEvents() {
 
                     productVariantsState.enabled =
                         true;
-                        updateProductVariantsToggleUI();
+
+                    updateProductVariantsToggleUI();
                 }
 
                 productVariantsState.groups.push(
@@ -5383,8 +5940,8 @@ function setupProductVariantsEvents() {
                 renderProductVariantsTable();
 
                 /*
-                 * التركيز على أول input للمجموعة
-                 * الجديدة لتحسين الاستخدام.
+                 * التركيز على آخر input
+                 * للمجموعة الجديدة.
                  */
                 const groupsContainer =
                     document.getElementById(
@@ -5396,10 +5953,15 @@ function setupProductVariantsEvents() {
                         "input"
                     );
 
-                inputs?.[
-                    inputs.length -
-                        1
-                ]?.focus();
+                if (
+                    inputs &&
+                    inputs.length > 0
+                ) {
+                    inputs[
+                        inputs.length -
+                            1
+                    ].focus();
+                }
             }
         );
     }
@@ -5430,6 +5992,7 @@ function setupProductVariantsEvents() {
 // ==========================================
 // Formatting
 // ==========================================
+
 function formatPrice(price) {
     const number =
         Number(price);
@@ -5468,8 +6031,9 @@ function escapeHtml(value) {
 }
 
 // ==========================================
-// Initialization
+// Modal Events
 // ==========================================
+
 function setupModalEvents() {
     const addButton =
         document.getElementById(
@@ -5520,18 +6084,29 @@ function setupModalEvents() {
     }
 }
 
+// ==========================================
+// Initialization
+// ==========================================
+
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
         setupProductSearch();
+
         setupProductTableActions();
+
         setupAdminNavigation();
+
         setupModalEvents();
+
         setupProductImageEditor();
+
         setupPaginationControls();
+
         setupProductVariantsEvents();
 
         await loadAdminCategories();
+
         await loadAdminProducts();
     }
 );

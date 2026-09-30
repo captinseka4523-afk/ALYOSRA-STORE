@@ -26,7 +26,7 @@
 
 
 // ==========================================================
-// 1. عناصر الصفحة
+// 1. Elements
 // ==========================================================
 
 const orderSummary =
@@ -49,7 +49,7 @@ const backToHomeBtn =
 
 
 // ==========================================================
-// 2. بيانات السلة
+// 2. Cart
 // ==========================================================
 
 function getCheckoutCart() {
@@ -89,7 +89,7 @@ function getCheckoutCart() {
 
 
 // ==========================================================
-// 3. بيانات Variants المحلية
+// 3. Variant snapshots
 // ==========================================================
 
 const VARIANT_CART_SNAPSHOTS_KEY =
@@ -139,26 +139,29 @@ function getVariantSnapshot(id) {
     const snapshots =
         getVariantCartSnapshots();
 
-    return snapshots[String(id)] || null;
+    return (
+        snapshots[String(id)] ||
+        null
+    );
 }
 
 
 // ==========================================================
-// 4. بيانات العروض
+// 4. Offers
 // ==========================================================
 
 let checkoutOffers = [];
 
 
 // ==========================================================
-// 5. حالة الطلب
+// 5. State
 // ==========================================================
 
 let isOrderProcessing = false;
 
 
 // ==========================================================
-// 6. أدوات مساعدة
+// 6. Helpers
 // ==========================================================
 
 function getCartEntries() {
@@ -167,10 +170,12 @@ function getCartEntries() {
         getCheckoutCart();
 
     return Object.entries(cart)
+
         .map(([id, quantity]) => ({
             id: String(id),
             quantity: Number(quantity)
         }))
+
         .filter(item =>
             Number.isInteger(item.quantity) &&
             item.quantity > 0
@@ -208,27 +213,29 @@ function getVariantId(id) {
 
 function getProduct(productId) {
 
-    if (
-        !Array.isArray(window.products)
-    ) {
+    if (!Array.isArray(window.products)) {
         return null;
     }
 
-    return window.products.find(
-        product =>
-            String(product.id) ===
-            String(productId)
-    ) || null;
+    return (
+        window.products.find(
+            product =>
+                String(product.id) ===
+                String(productId)
+        ) || null
+    );
 }
 
 
 function getOffer(offerId) {
 
-    return checkoutOffers.find(
-        offer =>
-            String(offer.id) ===
-            String(offerId)
-    ) || null;
+    return (
+        checkoutOffers.find(
+            offer =>
+                String(offer.id) ===
+                String(offerId)
+        ) || null
+    );
 }
 
 
@@ -245,9 +252,8 @@ function formatPrice(value) {
 }
 
 
-
 // ==========================================================
-// AL YOSRA STORE — CHECKOUT TOAST
+// 7. Toast
 // ==========================================================
 
 function showCheckoutToast(
@@ -263,7 +269,6 @@ function showCheckoutToast(
     if (existingToast) {
         existingToast.remove();
     }
-
 
     const toast =
         document.createElement("div");
@@ -281,81 +286,55 @@ function showCheckoutToast(
         "polite"
     );
 
-
     const isError =
         type === "error";
 
-
     toast.innerHTML = `
-        <div
-            style="
-                display:flex;
-                align-items:flex-start;
-                gap:12px;
-            "
-        >
+        <div style="
+            display:flex;
+            align-items:flex-start;
+            gap:12px;
+        ">
 
-            <div
-                style="
-                    flex:0 0 auto;
-                    width:36px;
-                    height:36px;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    border-radius:50%;
-                    background:${
-                        isError
-                            ? "#fee2e2"
-                            : "#dcfce7"
-                    };
-                    color:${
-                        isError
-                            ? "#dc2626"
-                            : "#16a34a"
-                    };
-                    font-size:20px;
-                    font-weight:700;
-                "
-            >
-                ${
-                    isError
-                        ? "!"
-                        : "✓"
-                }
+            <div style="
+                flex:0 0 auto;
+                width:36px;
+                height:36px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:50%;
+                background:${isError ? "#fee2e2" : "#dcfce7"};
+                color:${isError ? "#dc2626" : "#16a34a"};
+                font-size:20px;
+                font-weight:700;
+            ">
+                ${isError ? "!" : "✓"}
             </div>
 
-            <div
-                style="
-                    flex:1;
-                    min-width:0;
-                    padding-top:2px;
-                "
-            >
-                <div
-                    style="
-                        font-size:15px;
-                        font-weight:700;
-                        color:#111827;
-                        margin-bottom:3px;
-                    "
-                >
-                    ${
-                        isError
-                            ? "تنبيه"
-                            : "تم بنجاح"
-                    }
+            <div style="
+                flex:1;
+                min-width:0;
+                padding-top:2px;
+            ">
+
+                <div style="
+                    font-size:15px;
+                    font-weight:700;
+                    color:#111827;
+                    margin-bottom:3px;
+                ">
+                    ${isError ? "تنبيه" : "تم بنجاح"}
                 </div>
 
-                <div
-                    style="
-                        font-size:14px;
-                        line-height:1.6;
-                        color:#374151;
-                    "
-                >
+                <div style="
+                    font-size:14px;
+                    line-height:1.6;
+                    color:#374151;
+                ">
                     ${escapeHtml(message)}
                 </div>
+
             </div>
 
             <button
@@ -378,7 +357,6 @@ function showCheckoutToast(
         </div>
     `;
 
-
     Object.assign(
         toast.style,
         {
@@ -389,35 +367,41 @@ function showCheckoutToast(
                 "translate(-50%, -20px)",
             width:
                 "min(calc(100vw - 32px), 430px)",
-            padding: "14px 16px",
-            background: "#ffffff",
-            borderRadius: "14px",
+            padding:
+                "14px 16px",
+            background:
+                "#ffffff",
             border:
                 isError
                     ? "1px solid #fecaca"
                     : "1px solid #bbf7d0",
+            borderRadius:
+                "14px",
             boxShadow:
                 "0 12px 35px rgba(15, 23, 42, 0.16)",
-            zIndex: "99999",
-            opacity: "0",
+            zIndex:
+                "99999",
+            opacity:
+                "0",
             transition:
                 "opacity 0.25s ease, transform 0.25s ease",
-            direction: "rtl",
-            boxSizing: "border-box",
+            direction:
+                "rtl",
+            boxSizing:
+                "border-box",
             fontFamily:
                 "inherit"
         }
     );
 
-
     document.body.appendChild(
         toast
     );
 
-
     const closeButton =
-        toast.querySelector("button");
-
+        toast.querySelector(
+            "button"
+        );
 
     const removeToast = () => {
 
@@ -435,12 +419,10 @@ function showCheckoutToast(
         );
     };
 
-
     closeButton.addEventListener(
         "click",
         removeToast
     );
-
 
     requestAnimationFrame(
         () => {
@@ -453,7 +435,6 @@ function showCheckoutToast(
         }
     );
 
-
     setTimeout(
         removeToast,
         4000
@@ -462,26 +443,42 @@ function showCheckoutToast(
 
 
 // ==========================================================
-// 7. حماية النصوص المعروضة في HTML
-// ==========================================================
-//
-// بيانات localStorage وبيانات قاعدة البيانات لا يجب أن تدخل
-// إلى innerHTML بدون escaping.
+// 7b. escape
 // ==========================================================
 
 function escapeHtml(value) {
 
     return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
 // ==========================================================
-// 8. تحميل العروض
+// 8. Offers
 // ==========================================================
 
 async function loadCheckoutOffers() {
@@ -491,16 +488,20 @@ async function loadCheckoutOffers() {
         const {
             data,
             error
-        } = await supabaseClient
-            .from("offers")
-            .select(`
-                id,
-                name,
-                price,
-                image,
-                active
-            `)
-            .eq("active", true);
+        } =
+            await supabaseClient
+                .from("offers")
+                .select(`
+                    id,
+                    name,
+                    price,
+                    image,
+                    active
+                `)
+                .eq(
+                    "active",
+                    true
+                );
 
         if (error) {
             throw error;
@@ -525,77 +526,104 @@ async function loadCheckoutOffers() {
 }
 
 
+
 // ==========================================================
-// 9. تنسيق خيارات Variant
+// 9. Variant selections
+// Compact details panel
 // ==========================================================
 
-function formatVariantSelections(snapshot) {
+function formatVariantSelections(
+    snapshot
+) {
 
     if (
         !snapshot ||
-        !Array.isArray(snapshot.selections)
+        !Array.isArray(
+            snapshot.selections
+        ) ||
+        snapshot.selections.length === 0
     ) {
         return "";
     }
 
-    return snapshot.selections
-        .map(selection => {
+    return `
+        <div
+            class="variant-details-panel"
+            aria-label="تفاصيل خيار المنتج"
+        >
 
-            const groupName =
-                escapeHtml(
-                    selection.groupName ||
-                    "الخيار"
-                );
+            <div
+                class="variant-details-title"
+            >
+                تفاصيل المنتج
+            </div>
 
-            const value =
-                escapeHtml(
-                    selection.value ||
-                    ""
-                );
+            <div
+                class="variant-details-list"
+            >
 
-            return `
-                <span
-                    style="
-                        display:inline-block;
-                        margin:2px 4px 2px 0;
-                        padding:4px 8px;
-                        border-radius:6px;
-                        background:#f3f4f6;
-                        font-size:0.9em;
-                    "
-                >
-                    ${groupName}: ${value}
-                </span>
-            `;
-        })
-        .join("");
+                ${
+                    snapshot.selections
+                        .map(selection => {
+
+                            const groupName =
+                                escapeHtml(
+                                    selection.groupName ||
+                                    "الخيار"
+                                );
+
+                            const value =
+                                escapeHtml(
+                                    selection.value ||
+                                    ""
+                                );
+
+                            return `
+                                <div
+                                    class="variant-detail-row"
+                                >
+
+                                    <span
+                                        class="variant-detail-name"
+                                    >
+                                        ${groupName}
+                                    </span>
+
+                                    <span
+                                        class="variant-detail-value"
+                                    >
+                                        ${value}
+                                    </span>
+
+                                </div>
+                            `;
+                        })
+                        .join("")
+                }
+
+            </div>
+
+        </div>
+    `;
 }
 
-
 // ==========================================================
-// 10. التحقق من وجود منتجات عادية فقط
-// ==========================================================
-//
-// الـ Variant لا يحتاج window.products.
-// بياناته موجودة في snapshot.
-// العرض له مصدره الخاص.
-//
-// لذلك لا نمنع الطلب لمجرد أن products.js لم يحمل بعد
-// إذا كانت السلة تحتوي فقط على Variants/Offers.
+// 10. Product data requirement
 // ==========================================================
 
 function cartRequiresProductsData() {
 
-    return getCartEntries().some(
-        ({ id }) =>
-            !isOfferItem(id) &&
-            !isVariantItem(id)
-    );
+    return getCartEntries()
+        .some(
+            ({ id }) =>
+                !isOfferItem(id) &&
+                !isVariantItem(id)
+        );
 }
 
 
 // ==========================================================
-// 11. عرض ملخص الطلب
+// 11. displayCheckout
 // ==========================================================
 
 function displayCheckout() {
@@ -604,7 +632,8 @@ function displayCheckout() {
         return;
     }
 
-    orderSummary.innerHTML = "";
+    orderSummary.innerHTML =
+        "";
 
     const entries =
         getCartEntries();
@@ -612,7 +641,12 @@ function displayCheckout() {
     if (entries.length === 0) {
 
         orderSummary.innerHTML = `
-            <p style="text-align:center;">
+            <p
+                style="
+                    text-align:center;
+                    margin:auto;
+                "
+            >
                 السلة فارغة
             </p>
         `;
@@ -625,17 +659,16 @@ function displayCheckout() {
         return;
     }
 
-    let displayTotal = 0;
+    let displayTotal =
+        0;
 
 
     entries.forEach(
-        ({
-            id,
-            quantity
-        }) => {
+        ({ id, quantity }) => {
+
 
             // ==================================================
-            // عرض
+            // Offer
             // ==================================================
 
             if (isOfferItem(id)) {
@@ -660,17 +693,21 @@ function displayCheckout() {
 
                 const offerName =
                     escapeHtml(
-                        offer.name || "عرض"
+                        offer.name ||
+                        "عرض"
                     );
 
                 const offerImage =
                     escapeHtml(
-                        offer.image || ""
+                        offer.image ||
+                        ""
                     );
 
                 orderSummary.innerHTML += `
 
-                    <div class="order-item">
+                    <div
+                        class="order-item order-item-offer"
+                    >
 
                         ${
                             offerImage
@@ -678,23 +715,14 @@ function displayCheckout() {
                                     <img
                                         src="${offerImage}"
                                         alt="${offerName}"
-                                        style="
-                                            width:80px;
-                                            height:80px;
-                                            object-fit:contain;
-                                        "
+                                        class="order-item-image"
                                     >
                                   `
                                 : `
                                     <div
-                                        style="
-                                            width:80px;
-                                            height:80px;
-                                            display:flex;
-                                            align-items:center;
-                                            justify-content:center;
-                                            background:#f3f4f6;
-                                            border-radius:10px;
+                                        class="
+                                            order-item-image
+                                            order-item-image-placeholder
                                         "
                                     >
                                         عرض
@@ -703,36 +731,44 @@ function displayCheckout() {
                         }
 
                         <div
-                            style="
-                                flex:1;
-                                padding:0 15px;
-                            "
+                            class="order-item-content"
                         >
 
                             <h3>
                                 ${offerName}
                             </h3>
 
-                            <p>
+                            <p
+                                class="order-item-type"
+                            >
                                 النوع: عرض
                             </p>
 
-                            <p>
-                                الكمية: ${quantity}
-                            </p>
+                            <div
+                                class="order-item-meta"
+                            >
 
-                            <p>
-                                سعر العرض:
-                                ${formatPrice(price)}$
-                            </p>
+                                <span>
+                                    الكمية: ${quantity}
+                                </span>
+
+                                <span>
+                                    سعر العرض:
+                                    ${formatPrice(price)}$
+                                </span>
+
+                            </div>
 
                         </div>
 
-                        <strong>
+                        <strong
+                            class="order-item-total"
+                        >
                             ${formatPrice(subtotal)}$
                         </strong>
 
                     </div>
+
                 `;
 
                 return;
@@ -775,12 +811,14 @@ function displayCheckout() {
 
                 const image =
                     escapeHtml(
-                        snapshot.image || ""
+                        snapshot.image ||
+                        ""
                     );
 
                 const sku =
                     escapeHtml(
-                        snapshot.sku || ""
+                        snapshot.sku ||
+                        ""
                     );
 
                 const selectionsHtml =
@@ -788,95 +826,89 @@ function displayCheckout() {
                         snapshot
                     );
 
-                orderSummary.innerHTML += `
+              orderSummary.innerHTML += `
 
-                    <div class="order-item">
+    <div
+        class="
+            order-item
+            order-item-variant
+        "
+    >
 
-                        ${
-                            image
-                                ? `
-                                    <img
-                                        src="${image}"
-                                        alt="${productName}"
-                                        style="
-                                            width:80px;
-                                            height:80px;
-                                            object-fit:contain;
-                                        "
-                                    >
-                                  `
-                                : `
-                                    <div
-                                        style="
-                                            width:80px;
-                                            height:80px;
-                                            display:flex;
-                                            align-items:center;
-                                            justify-content:center;
-                                            background:#f3f4f6;
-                                            border-radius:10px;
-                                        "
-                                    >
-                                        منتج
-                                    </div>
-                                  `
-                        }
-
-                        <div
-                            style="
-                                flex:1;
-                                padding:0 15px;
-                            "
-                        >
-
-                            <h3>
-                                ${productName}
-                            </h3>
-
-                            <p>
-                                النوع: خيار منتج
-                            </p>
-
-                            ${
-                                selectionsHtml
-                                    ? `
-                                        <div
-                                            style="
-                                                margin:6px 0;
-                                            "
-                                        >
-                                            ${selectionsHtml}
-                                        </div>
-                                      `
-                                    : ""
-                            }
-
-                        
-
-                            <p>
-                                الكمية: ${quantity}
-                            </p>
-
-                            <p>
-                                سعر القطعة:
-                                ${formatPrice(price)}$
-                            </p>
-
-                        </div>
-
-                        <strong>
-                            ${formatPrice(subtotal)}$
-                        </strong>
-
+        ${
+            image
+                ? `
+                    <img
+                        src="${image}"
+                        alt="${productName}"
+                        class="order-item-image"
+                    >
+                  `
+                : `
+                    <div
+                        class="
+                            order-item-image
+                            order-item-image-placeholder
+                        "
+                    >
+                        منتج
                     </div>
-                `;
+                  `
+        }
+
+        <div
+            class="order-item-content"
+        >
+
+            <h3>
+                ${productName}
+            </h3>
+
+            <p
+                class="order-item-type"
+            >
+                النوع: خيار منتج
+            </p>
+
+            <div
+                class="order-item-meta"
+            >
+
+                <span>
+                    الكمية: ${quantity}
+                </span>
+
+                <span>
+                    سعر القطعة:
+                    ${formatPrice(price)}$
+                </span>
+
+            </div>
+
+        </div>
+
+        ${
+            selectionsHtml
+                ? selectionsHtml
+                : ""
+        }
+
+        <strong
+            class="order-item-total"
+        >
+            ${formatPrice(subtotal)}$
+        </strong>
+
+    </div>
+
+`;
 
                 return;
             }
 
 
             // ==================================================
-            // منتج عادي
+            // Normal product
             // ==================================================
 
             const product =
@@ -897,7 +929,8 @@ function displayCheckout() {
 
             const productName =
                 escapeHtml(
-                    product.name || "منتج"
+                    product.name ||
+                    "منتج"
                 );
 
             const productImage =
@@ -909,45 +942,49 @@ function displayCheckout() {
 
             orderSummary.innerHTML += `
 
-                <div class="order-item">
+                <div
+                    class="order-item order-item-product"
+                >
 
                     <img
                         src="${productImage}"
                         alt="${productName}"
-                        style="
-                            width:80px;
-                            height:80px;
-                            object-fit:contain;
-                        "
+                        class="order-item-image"
                     >
 
                     <div
-                        style="
-                            flex:1;
-                            padding:0 15px;
-                        "
+                        class="order-item-content"
                     >
 
                         <h3>
                             ${productName}
                         </h3>
 
-                        <p>
-                            الكمية: ${quantity}
-                        </p>
+                        <div
+                            class="order-item-meta"
+                        >
 
-                        <p>
-                            سعر القطعة:
-                            ${formatPrice(price)}$
-                        </p>
+                            <span>
+                                الكمية: ${quantity}
+                            </span>
+
+                            <span>
+                                سعر القطعة:
+                                ${formatPrice(price)}$
+                            </span>
+
+                        </div>
 
                     </div>
 
-                    <strong>
+                    <strong
+                        class="order-item-total"
+                    >
                         ${formatPrice(subtotal)}$
                     </strong>
 
                 </div>
+
             `;
         }
     );
@@ -962,16 +999,7 @@ function displayCheckout() {
 
 
 // ==========================================================
-// 12. تجهيز عناصر الطلب
-// ==========================================================
-// نرسل IDs والكميات فقط.
-//
-// السعر والمخزون يتم التحقق منهما داخل create_order.
-//
-// Variant:
-// - product_id = المنتج الأب
-// - variant_id = الـ Variant المحدد
-// - offer_id = null
+// 12. prepareOrderItems
 // ==========================================================
 
 function prepareOrderItems() {
@@ -980,23 +1008,16 @@ function prepareOrderItems() {
         getCartEntries();
 
     if (entries.length === 0) {
-
         throw new Error(
             "السلة فارغة."
         );
     }
 
-
     return entries.map(
-        ({
-            id,
-            quantity
-        }) => {
+        ({ id, quantity }) => {
 
-            // ================================================
-            // عرض
-            // ================================================
 
+            // Offer
             if (isOfferItem(id)) {
 
                 const offer =
@@ -1005,30 +1026,22 @@ function prepareOrderItems() {
                     );
 
                 if (!offer) {
-
                     throw new Error(
                         "تعذر العثور على أحد العروض."
                     );
                 }
 
                 return {
-
                     product_id: null,
-
                     variant_id: null,
-
                     offer_id:
                         Number(offer.id),
-
                     quantity
                 };
             }
 
 
-            // ================================================
             // Variant
-            // ================================================
-
             if (isVariantItem(id)) {
 
                 const snapshot =
@@ -1041,7 +1054,6 @@ function prepareOrderItems() {
                     );
                 }
 
-
                 const productId =
                     Number(
                         snapshot.productId
@@ -1052,11 +1064,14 @@ function prepareOrderItems() {
                         snapshot.variantId
                     );
 
-
                 if (
-                    !Number.isInteger(productId) ||
+                    !Number.isInteger(
+                        productId
+                    ) ||
                     productId <= 0 ||
-                    !Number.isInteger(variantId) ||
+                    !Number.isInteger(
+                        variantId
+                    ) ||
                     variantId <= 0
                 ) {
 
@@ -1065,26 +1080,22 @@ function prepareOrderItems() {
                     );
                 }
 
-
                 return {
-
                     product_id:
                         productId,
 
                     variant_id:
                         variantId,
 
-                    offer_id: null,
+                    offer_id:
+                        null,
 
                     quantity
                 };
             }
 
 
-            // ================================================
-            // منتج عادي
-            // ================================================
-
+            // Normal product
             const product =
                 getProduct(id);
 
@@ -1096,13 +1107,14 @@ function prepareOrderItems() {
             }
 
             return {
-
                 product_id:
                     Number(product.id),
 
-                variant_id: null,
+                variant_id:
+                    null,
 
-                offer_id: null,
+                offer_id:
+                    null,
 
                 quantity
             };
@@ -1112,7 +1124,7 @@ function prepareOrderItems() {
 
 
 // ==========================================================
-// 13. بيانات العميل
+// 13. Customer
 // ==========================================================
 
 function getCustomerData() {
@@ -1121,25 +1133,33 @@ function getCustomerData() {
 
         name:
             document
-                .getElementById("customerName")
+                .getElementById(
+                    "customerName"
+                )
                 ?.value
                 .trim() || "",
 
         phone:
             document
-                .getElementById("customerPhone")
+                .getElementById(
+                    "customerPhone"
+                )
                 ?.value
                 .trim() || "",
 
         address:
             document
-                .getElementById("customerAddress")
+                .getElementById(
+                    "customerAddress"
+                )
                 ?.value
                 .trim() || "",
 
         note:
             document
-                .getElementById("customerNote")
+                .getElementById(
+                    "customerNote"
+                )
                 ?.value
                 .trim() || ""
     };
@@ -1147,16 +1167,19 @@ function getCustomerData() {
 
 
 // ==========================================================
-// 14. التحقق من بيانات العميل
+// 14. Validate
 // ==========================================================
 
-function validateCustomer(customer) {
+function validateCustomer(
+    customer
+) {
 
     if (!customer.name) {
 
         return {
             valid: false,
-            message: "يرجى إدخال الاسم."
+            message:
+                "يرجى إدخال الاسم."
         };
     }
 
@@ -1164,7 +1187,8 @@ function validateCustomer(customer) {
 
         return {
             valid: false,
-            message: "يرجى إدخال رقم الهاتف."
+            message:
+                "يرجى إدخال رقم الهاتف."
         };
     }
 
@@ -1172,7 +1196,8 @@ function validateCustomer(customer) {
 
         return {
             valid: false,
-            message: "يرجى إدخال العنوان."
+            message:
+                "يرجى إدخال العنوان."
         };
     }
 
@@ -1184,14 +1209,7 @@ function validateCustomer(customer) {
 
 
 // ==========================================================
-// 15. بناء رسالة WhatsApp
-// ==========================================================
-// هذا المسار مستقل عن Telegram.
-//
-// ملاحظة:
-// السعر هنا للعرض في الرسالة فقط.
-// السعر النهائي الذي تم اعتماده للطلب هو total الناتج
-// من create_order.
+// 15. WhatsApp
 // ==========================================================
 
 function buildWhatsAppMessage(
@@ -1201,30 +1219,36 @@ function buildWhatsAppMessage(
 ) {
 
     let message =
+
         `🛒 *طلب جديد | متجر اليُسرى*\n` +
+
         `━━━━━━━━━━━━━━━━━━\n` +
+
         `🆔 *رقم الطلب:* ${orderNumber}\n\n` +
+
         `👤 *بيانات العميل:*\n` +
+
         `▪️ *الاسم:* ${customer.name}\n` +
+
         `▪️ *الهاتف:* ${customer.phone}\n` +
+
         `▪️ *العنوان:* ${customer.address}\n` +
+
         `📝 *الملاحظات:* ${
-            customer.note || "لا توجد"
+            customer.note ||
+            "لا توجد"
         }\n` +
+
         `━━━━━━━━━━━━━━━━━━\n` +
+
         `📦 *تفاصيل الطلب:*\n`;
 
 
     getCartEntries().forEach(
-        ({
-            id,
-            quantity
-        }) => {
+        ({ id, quantity }) => {
 
-            // ================================================
-            // عرض
-            // ================================================
 
+            // Offer
             if (isOfferItem(id)) {
 
                 const offer =
@@ -1243,13 +1267,18 @@ function buildWhatsAppMessage(
                     price * quantity;
 
                 message +=
+
                     `\n🎁 *${
-                        offer.name || "عرض"
+                        offer.name ||
+                        "عرض"
                     }* (عرض)\n` +
+
                     `   الكمية: ${quantity} | ` +
+
                     `السعر: ${
                         formatPrice(price)
                     }$ | ` +
+
                     `الإجمالي: ${
                         formatPrice(subtotal)
                     }$\n`;
@@ -1258,10 +1287,7 @@ function buildWhatsAppMessage(
             }
 
 
-            // ================================================
             // Variant
-            // ================================================
-
             if (isVariantItem(id)) {
 
                 const snapshot =
@@ -1301,6 +1327,7 @@ function buildWhatsAppMessage(
                             ) {
 
                                 message +=
+
                                     `   ${
                                         selection.groupName
                                     }: ${
@@ -1315,17 +1342,18 @@ function buildWhatsAppMessage(
                 if (snapshot.sku) {
 
                     message +=
-                        `   SKU: ${
-                            snapshot.sku
-                        }\n`;
+                        `   SKU: ${snapshot.sku}\n`;
                 }
 
 
                 message +=
+
                     `   الكمية: ${quantity} | ` +
+
                     `السعر: ${
                         formatPrice(price)
                     }$ | ` +
+
                     `الإجمالي: ${
                         formatPrice(subtotal)
                     }$\n`;
@@ -1334,10 +1362,7 @@ function buildWhatsAppMessage(
             }
 
 
-            // ================================================
-            // منتج عادي
-            // ================================================
-
+            // Normal product
             const product =
                 getProduct(id);
 
@@ -1352,13 +1377,18 @@ function buildWhatsAppMessage(
                 price * quantity;
 
             message +=
+
                 `\n🔹 *${
-                    product.name || "منتج"
+                    product.name ||
+                    "منتج"
                 }*\n` +
+
                 `   الكمية: ${quantity} | ` +
+
                 `السعر: ${
                     formatPrice(price)
                 }$ | ` +
+
                 `الإجمالي: ${
                     formatPrice(subtotal)
                 }$\n`;
@@ -1367,19 +1397,24 @@ function buildWhatsAppMessage(
 
 
     message +=
+
         `\n━━━━━━━━━━━━━━━━━━\n` +
+
         `💰 *المجموع الكلي:* ${
             formatPrice(total)
         }$\n` +
+
         `━━━━━━━━━━━━━━━━━━\n` +
+
         `شكراً لاختياركم متجر اليُسرى 🌟`;
+
 
     return message;
 }
 
 
 // ==========================================================
-// 16. التحكم بالأزرار
+// 16. Buttons
 // ==========================================================
 
 function setOrderButtonsDisabled(
@@ -1399,97 +1434,74 @@ function setOrderButtonsDisabled(
 
 
 // ==========================================================
-// 17. معالجة الطلب
+// 17. Process order
 // ==========================================================
 
-async function processOrder(orderType) {
-
-    // ------------------------------------------------------
-    // منع الضغط المكرر
-    // ------------------------------------------------------
+async function processOrder(
+    orderType
+) {
 
     if (isOrderProcessing) {
         return;
     }
-
 
     const activeBtn =
         orderType === "whatsapp"
             ? whatsappOrderBtn
             : confirmOrderBtn;
 
-
     if (!activeBtn) {
         return;
     }
 
 
-    // ------------------------------------------------------
-    // التحقق من السلة
-    // ------------------------------------------------------
-
     if (
         getCartEntries().length === 0
     ) {
 
-      showCheckoutToast(
-    "السلة فارغة. أضف منتجًا واحدًا على الأقل قبل إتمام الطلب."
-);
+        showCheckoutToast(
+            "السلة فارغة. أضف منتجًا واحدًا على الأقل قبل إتمام الطلب."
+        );
 
         return;
     }
 
-
-    // ------------------------------------------------------
-    // التحقق من البيانات المطلوبة
-    // ------------------------------------------------------
-    //
-    // المنتج العادي يحتاج window.products.
-    //
-    // Variant يعتمد على snapshot المحلي.
-    // العرض يعتمد على checkoutOffers.
-    // ------------------------------------------------------
 
     if (
         cartRequiresProductsData() &&
         (
-            !Array.isArray(window.products) ||
+            !Array.isArray(
+                window.products
+            ) ||
             window.products.length === 0
         )
     ) {
 
-      showCheckoutToast(
-    "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
-);
+        showCheckoutToast(
+            "لم يتم تحميل المنتجات بعد. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى."
+        );
+
         return;
     }
 
-
-    // ------------------------------------------------------
-    // بيانات العميل
-    // ------------------------------------------------------
 
     const customer =
         getCustomerData();
 
-
     const validation =
-        validateCustomer(customer);
-
+        validateCustomer(
+            customer
+        );
 
     if (!validation.valid) {
 
-       showCheckoutToast(
-    validation.message
-);
+        showCheckoutToast(
+            validation.message
+        );
 
         return;
     }
 
-
-    // ------------------------------------------------------
-    // تجهيز عناصر الطلب
-    // ------------------------------------------------------
 
     let orderItems;
 
@@ -1506,18 +1518,14 @@ async function processOrder(orderType) {
             error
         );
 
-  showCheckoutToast(
-    error.message ||
-    "تعذر تجهيز الطلب."
-);
+        showCheckoutToast(
+            error.message ||
+            "تعذر تجهيز الطلب."
+        );
 
         return;
     }
 
-
-    // ------------------------------------------------------
-    // بدء العملية
-    // ------------------------------------------------------
 
     isOrderProcessing =
         true;
@@ -1530,44 +1538,36 @@ async function processOrder(orderType) {
     const originalText =
         activeBtn.textContent;
 
-
     activeBtn.textContent =
         "جاري تأكيد الطلب...";
 
 
     try {
 
-        // ==================================================
-        // 1. إنشاء الطلب
-        // ==================================================
-        //
-        // create_order هي المصدر الوحيد للحقيقة.
-        //
-        // السعر النهائي والمخزون يحسبان داخل PostgreSQL.
-        // ==================================================
-
         const {
             data,
             error
-        } = await supabaseClient.rpc(
-            "create_order",
-            {
-                p_customer_name:
-                    customer.name,
+        } =
+            await supabaseClient.rpc(
+                "create_order",
+                {
+                    p_customer_name:
+                        customer.name,
 
-                p_customer_phone:
-                    customer.phone,
+                    p_customer_phone:
+                        customer.phone,
 
-                p_customer_address:
-                    customer.address,
+                    p_customer_address:
+                        customer.address,
 
-                p_customer_note:
-                    customer.note || null,
+                    p_customer_note:
+                        customer.note ||
+                        null,
 
-                p_items:
-                    orderItems
-            }
-        );
+                    p_items:
+                        orderItems
+                }
+            );
 
 
         if (error) {
@@ -1587,19 +1587,21 @@ async function processOrder(orderType) {
 
 
         const orderId =
-            Number(data.order_id);
-
+            Number(
+                data.order_id
+            );
 
         const orderNumber =
             data.order_number;
-
 
         const total =
             Number(data.total) || 0;
 
 
         if (
-            !Number.isInteger(orderId) ||
+            !Number.isInteger(
+                orderId
+            ) ||
             orderId <= 0 ||
             !orderNumber
         ) {
@@ -1610,23 +1612,11 @@ async function processOrder(orderType) {
         }
 
 
-        // ==================================================
-        // 2. حفظ رقم الطلب
-        // ==================================================
-
         localStorage.setItem(
             "orderId",
             String(orderNumber)
         );
 
-
-        // ==================================================
-        // 3. مسار WhatsApp
-        // ==================================================
-        //
-        // WhatsApp يحتاج الرسالة التي سيقوم المستخدم
-        // بإرسالها يدويًا، لذلك يبقى هذا المسار مستقلًا.
-        // ==================================================
 
         if (
             orderType === "whatsapp"
@@ -1645,32 +1635,16 @@ async function processOrder(orderType) {
                 message
             );
 
-
-            // الطلب أصبح مسجلًا بنجاح.
-            // إزالة السلة المحلية قبل الانتقال.
-
             localStorage.removeItem(
                 "cart"
             );
 
-
             window.location.href =
                 "order-success.html";
-
 
             return;
         }
 
-
-        // ==================================================
-        // 4. إنهاء عملية العميل بعد نجاح create_order
-        // ==================================================
-        //
-        // Telegram يتم إرساله تلقائيًا من قاعدة البيانات
-        // عبر Trigger + pg_net بعد اكتمال عملية إنشاء الطلب.
-        //
-        // لا يوجد أي انتظار أو استدعاء Telegram من المتصفح.
-        // ==================================================
 
         localStorage.removeItem(
             "cart"
@@ -1689,10 +1663,6 @@ async function processOrder(orderType) {
         }
 
 
-        // --------------------------------------------------
-        // العملية انتهت من وجهة نظر العميل.
-        // --------------------------------------------------
-
         isOrderProcessing =
             false;
 
@@ -1708,20 +1678,16 @@ async function processOrder(orderType) {
             error
         );
 
-
-    showCheckoutToast(
-    "تعذر تأكيد الطلب حالياً. يرجى المحاولة مرة أخرى."
-);
-
+        showCheckoutToast(
+            "تعذر تأكيد الطلب حالياً. يرجى المحاولة مرة أخرى."
+        );
 
         isOrderProcessing =
             false;
 
-
         setOrderButtonsDisabled(
             false
         );
-
 
         activeBtn.textContent =
             originalText;
@@ -1730,14 +1696,17 @@ async function processOrder(orderType) {
 
 
 // ==========================================================
-// 18. ربط الأزرار
+// 18. Buttons
 // ==========================================================
 
 if (confirmOrderBtn) {
 
     confirmOrderBtn.addEventListener(
         "click",
-        () => processOrder("telegram")
+        () =>
+            processOrder(
+                "telegram"
+            )
     );
 }
 
@@ -1746,13 +1715,16 @@ if (whatsappOrderBtn) {
 
     whatsappOrderBtn.addEventListener(
         "click",
-        () => processOrder("whatsapp")
+        () =>
+            processOrder(
+                "whatsapp"
+            )
     );
 }
 
 
 // ==========================================================
-// 19. تحميل المنتجات
+// 19. Products loaded
 // ==========================================================
 
 document.addEventListener(
@@ -1764,7 +1736,7 @@ document.addEventListener(
 
 
 // ==========================================================
-// 20. تحميل الصفحة
+// 20. DOMContentLoaded
 // ==========================================================
 
 document.addEventListener(
@@ -1779,11 +1751,13 @@ document.addEventListener(
 
 
 // ==========================================================
-// 21. إذا كانت المنتجات محملة مسبقًا
+// 21. Already loaded
 // ==========================================================
 
 if (
-    Array.isArray(window.products) &&
+    Array.isArray(
+        window.products
+    ) &&
     window.products.length > 0
 ) {
 
@@ -1792,14 +1766,19 @@ if (
 
 
 // ==========================================================
-// 22. حفظ بيانات العميل
+// 22. Customer fields
 // ==========================================================
 
 const customerFields = [
+
     "customerName",
+
     "customerPhone",
+
     "customerAddress",
+
     "customerNote"
+
 ];
 
 
@@ -1807,7 +1786,9 @@ customerFields.forEach(
     id => {
 
         const field =
-            document.getElementById(id);
+            document.getElementById(
+                id
+            );
 
         if (!field) {
             return;
@@ -1815,7 +1796,9 @@ customerFields.forEach(
 
 
         const savedValue =
-            localStorage.getItem(id);
+            localStorage.getItem(
+                id
+            );
 
 
         if (
@@ -1842,7 +1825,7 @@ customerFields.forEach(
 
 
 // ==========================================================
-// 23. زر العودة للرئيسية
+// 23. Back home
 // ==========================================================
 
 if (backToHomeBtn) {
@@ -1857,23 +1840,32 @@ if (backToHomeBtn) {
     );
 }
 
+
 // ==========================================================
-// AL YOSRA STORE — CHECKOUT SIDE MENU
+// Checkout side menu
 // ==========================================================
 
 function setupCheckoutSideMenu() {
 
     const menuToggle =
-        document.getElementById("menuToggle");
+        document.getElementById(
+            "menuToggle"
+        );
 
     const sideMenu =
-        document.getElementById("sideMenu");
+        document.getElementById(
+            "sideMenu"
+        );
 
     const sideMenuClose =
-        document.getElementById("sideMenuClose");
+        document.getElementById(
+            "sideMenuClose"
+        );
 
     const sideMenuOverlay =
-        document.getElementById("sideMenuOverlay");
+        document.getElementById(
+            "sideMenuOverlay"
+        );
 
 
     if (
@@ -1881,17 +1873,24 @@ function setupCheckoutSideMenu() {
         !sideMenu ||
         !sideMenuOverlay
     ) {
+
         return;
     }
 
 
     function openCheckoutMenu() {
 
-        sideMenu.classList.add("open");
+        sideMenu.classList.add(
+            "open"
+        );
 
-        sideMenu.removeAttribute("inert");
+        sideMenu.removeAttribute(
+            "inert"
+        );
 
-        sideMenuOverlay.classList.add("open");
+        sideMenuOverlay.classList.add(
+            "open"
+        );
 
         sideMenu.setAttribute(
             "aria-hidden",
@@ -1902,14 +1901,18 @@ function setupCheckoutSideMenu() {
 
     function closeCheckoutMenu() {
 
-        sideMenu.classList.remove("open");
+        sideMenu.classList.remove(
+            "open"
+        );
 
         sideMenu.setAttribute(
             "inert",
             ""
         );
 
-        sideMenuOverlay.classList.remove("open");
+        sideMenuOverlay.classList.remove(
+            "open"
+        );
 
         sideMenu.setAttribute(
             "aria-hidden",
@@ -1940,12 +1943,9 @@ function setupCheckoutSideMenu() {
 }
 
 
-// ==========================================================
-// START CHECKOUT SIDE MENU
-// ==========================================================
-
 if (
-    document.readyState === "loading"
+    document.readyState ===
+    "loading"
 ) {
 
     document.addEventListener(
