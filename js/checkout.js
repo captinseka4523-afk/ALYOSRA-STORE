@@ -17,11 +17,18 @@
 // نجاح create_order = نجاح الطلب.
 // Telegram مجرد إشعار إداري، ولا يجب أن يمنع نجاح الطلب.
 //
-// Variants:
-// - تفاصيل الـ Variant تُقرأ من localStorage snapshot.
-// - لا يتم إجراء طلب Supabase لاكتشاف تفاصيل الـ Variant.
-// - السعر الموجود في snapshot للعرض فقط.
-// - create_order يعيد التحقق من Variant والسعر والمخزون فعليًا.
+// Cart:
+// - localStorage.cart هو المصدر الذي يحدد عناصر السلة.
+// - Checkout لا يعيد بناء السلة من قاعدة البيانات.
+// - window.products يستخدم فقط لإثراء عرض المنتجات العادية.
+// - Variant snapshots تُقرأ من localStorage.
+// - create_order يعيد التحقق فعليًا من المنتج/Variant والسعر والمخزون.
+//
+// Mobile Order Summary:
+// - الملخص مصغر افتراضيًا على الهاتف.
+// - لا توجد منطقة scroll كبيرة داخل الصفحة عند إغلاق الملخص.
+// - عند الفتح تظهر لوحة مستقلة قابلة للتمرير.
+// - إغلاق اللوحة يعيد المستخدم إلى Checkout الطبيعي.
 // ==========================================================
 
 
@@ -158,6 +165,22 @@ let checkoutOffers = [];
 // ==========================================================
 
 let isOrderProcessing = false;
+
+let mobileSummaryInitialized = false;
+
+let mobileSummaryOpen = false;
+
+let mobileSummaryBackdrop = null;
+
+let mobileSummaryDrawer = null;
+
+let mobileSummaryDrawerContent = null;
+
+let mobileSummaryOpenButton = null;
+
+let mobileSummaryCloseButton = null;
+
+let mobileSummaryCloseFooterButton = null;
 
 
 // ==========================================================
@@ -526,10 +549,8 @@ async function loadCheckoutOffers() {
 }
 
 
-
 // ==========================================================
 // 9. Variant selections
-// Compact details panel
 // ==========================================================
 
 function formatVariantSelections(
@@ -607,6 +628,7 @@ function formatVariantSelections(
     `;
 }
 
+
 // ==========================================================
 // 10. Product data requirement
 // ==========================================================
@@ -623,7 +645,841 @@ function cartRequiresProductsData() {
 
 
 // ==========================================================
-// 11. displayCheckout
+// 11. Build order item HTML
+// ==========================================================
+//
+// IMPORTANT:
+// هذا البناء يعتمد على عناصر localStorage.cart.
+// window.products لا يحدد العناصر الموجودة في السلة.
+// هو فقط يزوّد بيانات العرض للمنتج العادي.
+//
+// ==========================================================
+
+function buildOrderItemHtml(
+    id,
+    quantity
+) {
+
+    // ======================================================
+    // Offer
+    // ======================================================
+
+    if (isOfferItem(id)) {
+
+        const offer =
+            getOffer(
+                getOfferId(id)
+            );
+
+        if (!offer) {
+
+            return `
+                <div class="order-item order-item-missing">
+                    <div class="order-item-missing-content">
+                        تعذر تحميل بيانات هذا العرض.
+                    </div>
+                </div>
+            `;
+        }
+
+        const price =
+            Number(offer.price) || 0;
+
+        const subtotal =
+            price * quantity;
+
+        const offerName =
+            escapeHtml(
+                offer.name ||
+                "عرض"
+            );
+
+        const offerImage =
+            escapeHtml(
+                offer.image ||
+                ""
+            );
+
+        return `
+
+            <div
+                class="order-item order-item-offer"
+            >
+
+                ${
+                    offerImage
+                        ? `
+                            <img
+                                src="${offerImage}"
+                                alt="${offerName}"
+                                class="order-item-image"
+                            >
+                          `
+                        : `
+                            <div
+                                class="
+                                    order-item-image
+                                    order-item-image-placeholder
+                                "
+                            >
+                                عرض
+                            </div>
+                          `
+                }
+
+                <div
+                    class="order-item-content"
+                >
+
+                    <h3>
+                        ${offerName}
+                    </h3>
+
+                    <p
+                        class="order-item-type"
+                    >
+                        النوع: عرض
+                    </p>
+
+                    <div
+                        class="order-item-meta"
+                    >
+
+                        <span>
+                            الكمية: ${quantity}
+                        </span>
+
+                        <span>
+                            سعر العرض:
+                            ${formatPrice(price)}$
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <strong
+                    class="order-item-total"
+                >
+                    ${formatPrice(subtotal)}$
+                </strong>
+
+            </div>
+
+        `;
+    }
+
+
+    // ======================================================
+    // Variant
+    // ======================================================
+
+    if (isVariantItem(id)) {
+
+        const snapshot =
+            getVariantSnapshot(id);
+
+        if (!snapshot) {
+
+            return `
+                <div class="order-item order-item-missing">
+                    <div class="order-item-missing-content">
+                        تعذر تحميل تفاصيل خيار هذا المنتج.
+                        يرجى العودة إلى المنتج وإضافته إلى السلة من جديد.
+                    </div>
+                </div>
+            `;
+        }
+
+        const price =
+            Number(snapshot.price) || 0;
+
+        const subtotal =
+            price * quantity;
+
+        const productName =
+            escapeHtml(
+                snapshot.productName ||
+                "منتج"
+            );
+
+        const image =
+            escapeHtml(
+                snapshot.image ||
+                ""
+            );
+
+        const sku =
+            escapeHtml(
+                snapshot.sku ||
+                ""
+            );
+
+        const selectionsHtml =
+            formatVariantSelections(
+                snapshot
+            );
+
+        return `
+
+            <div
+                class="
+                    order-item
+                    order-item-variant
+                "
+            >
+
+                ${
+                    image
+                        ? `
+                            <img
+                                src="${image}"
+                                alt="${productName}"
+                                class="order-item-image"
+                            >
+                          `
+                        : `
+                            <div
+                                class="
+                                    order-item-image
+                                    order-item-image-placeholder
+                                "
+                            >
+                                منتج
+                            </div>
+                          `
+                }
+
+                <div
+                    class="order-item-content"
+                >
+
+                    <h3>
+                        ${productName}
+                    </h3>
+
+                    <p
+                        class="order-item-type"
+                    >
+                        النوع: خيار منتج
+                    </p>
+
+                    <div
+                        class="order-item-meta"
+                    >
+
+                        <span>
+                            الكمية: ${quantity}
+                        </span>
+
+                        <span>
+                            سعر القطعة:
+                            ${formatPrice(price)}$
+                        </span>
+
+                    </div>
+
+                    ${
+                        sku
+                            ? `
+                                <span class="order-item-sku">
+                                    SKU: ${sku}
+                                </span>
+                              `
+                            : ""
+                    }
+
+                </div>
+
+                ${
+                    selectionsHtml
+                        ? selectionsHtml
+                        : ""
+                }
+
+                <strong
+                    class="order-item-total"
+                >
+                    ${formatPrice(subtotal)}$
+                </strong>
+
+            </div>
+
+        `;
+    }
+
+
+    // ======================================================
+    // Normal product
+    // ======================================================
+
+    const product =
+        getProduct(id);
+
+    if (!product) {
+
+        return `
+            <div
+                class="
+                    order-item
+                    order-item-missing
+                "
+            >
+                <div
+                    class="order-item-missing-content"
+                >
+                    تعذر تحميل بيانات المنتج رقم
+                    ${escapeHtml(id)}.
+                    يرجى الانتظار لحظات ثم المحاولة مرة أخرى.
+                </div>
+            </div>
+        `;
+    }
+
+    const price =
+        Number(product.price) || 0;
+
+    const subtotal =
+        price * quantity;
+
+    const productName =
+        escapeHtml(
+            product.name ||
+            "منتج"
+        );
+
+    const productImage =
+        escapeHtml(
+            product.image ||
+            product.main_image ||
+            ""
+        );
+
+    return `
+
+        <div
+            class="order-item order-item-product"
+        >
+
+            ${
+                productImage
+                    ? `
+                        <img
+                            src="${productImage}"
+                            alt="${productName}"
+                            class="order-item-image"
+                        >
+                      `
+                    : `
+                        <div
+                            class="
+                                order-item-image
+                                order-item-image-placeholder
+                            "
+                        >
+                            منتج
+                        </div>
+                      `
+            }
+
+            <div
+                class="order-item-content"
+            >
+
+                <h3>
+                    ${productName}
+                </h3>
+
+                <div
+                    class="order-item-meta"
+                >
+
+                    <span>
+                        الكمية: ${quantity}
+                    </span>
+
+                    <span>
+                        سعر القطعة:
+                        ${formatPrice(price)}$
+                    </span>
+
+                </div>
+
+            </div>
+
+            <strong
+                class="order-item-total"
+            >
+                ${formatPrice(subtotal)}$
+            </strong>
+
+        </div>
+
+    `;
+}
+
+
+// ==========================================================
+// 12. Mobile Order Summary UI
+// ==========================================================
+//
+// يتم إنشاء عناصر واجهة الموبايل مرة واحدة فقط.
+// لا نضيف عناصر جديدة إلى HTML الأساسي.
+//
+// ==========================================================
+
+function setupMobileOrderSummary() {
+
+    if (
+        mobileSummaryInitialized ||
+        !orderSummary
+    ) {
+        return;
+    }
+
+    const summaryBox =
+        orderSummary.closest(
+            ".order-summary-box"
+        );
+
+    if (!summaryBox) {
+        return;
+    }
+
+
+    // ------------------------------------------------------
+    // Toggle button
+    // ------------------------------------------------------
+
+    mobileSummaryOpenButton =
+        document.createElement("button");
+
+    mobileSummaryOpenButton.type =
+        "button";
+
+    mobileSummaryOpenButton.className =
+        "mobile-summary-toggle";
+
+    mobileSummaryOpenButton.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+    mobileSummaryOpenButton.setAttribute(
+        "aria-controls",
+        "mobileOrderSummaryDrawer"
+    );
+
+    mobileSummaryOpenButton.innerHTML = `
+        <span class="mobile-summary-toggle-text">
+            عرض كامل الطلب
+        </span>
+
+        <span
+            class="mobile-summary-toggle-icon"
+            aria-hidden="true"
+        >
+            ↓
+        </span>
+    `;
+
+
+    // ------------------------------------------------------
+    // Preview fade
+    // ------------------------------------------------------
+
+    const previewFade =
+        document.createElement("div");
+
+    previewFade.className =
+        "mobile-summary-preview-fade";
+
+    previewFade.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    // ------------------------------------------------------
+    // Insert after orderSummary
+    // ------------------------------------------------------
+
+    orderSummary.insertAdjacentElement(
+        "afterend",
+        previewFade
+    );
+
+    previewFade.insertAdjacentElement(
+        "afterend",
+        mobileSummaryOpenButton
+    );
+
+
+    // ------------------------------------------------------
+    // Drawer
+    // ------------------------------------------------------
+
+    mobileSummaryBackdrop =
+        document.createElement("div");
+
+    mobileSummaryBackdrop.id =
+        "mobileOrderSummaryBackdrop";
+
+    mobileSummaryBackdrop.className =
+        "mobile-order-summary-backdrop";
+
+    mobileSummaryBackdrop.hidden =
+        true;
+
+
+    mobileSummaryDrawer =
+        document.createElement("section");
+
+    mobileSummaryDrawer.id =
+        "mobileOrderSummaryDrawer";
+
+    mobileSummaryDrawer.className =
+        "mobile-order-summary-drawer";
+
+    mobileSummaryDrawer.setAttribute(
+        "role",
+        "dialog"
+    );
+
+    mobileSummaryDrawer.setAttribute(
+        "aria-modal",
+        "true"
+    );
+
+    mobileSummaryDrawer.setAttribute(
+        "aria-labelledby",
+        "mobileOrderSummaryTitle"
+    );
+
+    mobileSummaryDrawer.hidden =
+        true;
+
+
+    mobileSummaryDrawer.innerHTML = `
+
+        <div
+            class="mobile-order-summary-header"
+        >
+
+            <div>
+                <span
+                    class="mobile-order-summary-eyebrow"
+                >
+                    ORDER SUMMARY
+                </span>
+
+                <h2
+                    id="mobileOrderSummaryTitle"
+                >
+                    ملخص الطلب
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="mobile-order-summary-close"
+                aria-label="إغلاق ملخص الطلب"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            class="mobile-order-summary-body"
+        >
+        </div>
+
+        <div
+            class="mobile-order-summary-footer"
+        >
+
+            <div
+                class="mobile-order-summary-total"
+            >
+                <span>
+                    المجموع النهائي:
+                </span>
+
+                <strong>
+                    0.00 $
+                </strong>
+            </div>
+
+            <button
+                type="button"
+                class="mobile-order-summary-close-footer"
+            >
+                إغلاق
+            </button>
+
+        </div>
+
+    `;
+
+
+    mobileSummaryDrawerContent =
+        mobileSummaryDrawer.querySelector(
+            ".mobile-order-summary-body"
+        );
+
+    mobileSummaryCloseButton =
+        mobileSummaryDrawer.querySelector(
+            ".mobile-order-summary-close"
+        );
+
+    mobileSummaryCloseFooterButton =
+        mobileSummaryDrawer.querySelector(
+            ".mobile-order-summary-close-footer"
+        );
+
+
+    document.body.appendChild(
+        mobileSummaryBackdrop
+    );
+
+    document.body.appendChild(
+        mobileSummaryDrawer
+    );
+
+
+    // ------------------------------------------------------
+    // Events
+    // ------------------------------------------------------
+
+    mobileSummaryOpenButton.addEventListener(
+        "click",
+        openMobileOrderSummary
+    );
+
+    mobileSummaryBackdrop.addEventListener(
+        "click",
+        closeMobileOrderSummary
+    );
+
+    mobileSummaryCloseButton.addEventListener(
+        "click",
+        closeMobileOrderSummary
+    );
+
+    mobileSummaryCloseFooterButton.addEventListener(
+        "click",
+        closeMobileOrderSummary
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape" &&
+                mobileSummaryOpen
+            ) {
+
+                closeMobileOrderSummary();
+            }
+        }
+    );
+
+
+    mobileSummaryInitialized =
+        true;
+}
+
+
+// ==========================================================
+// 13. Open mobile summary
+// ==========================================================
+
+function openMobileOrderSummary() {
+
+    if (
+        !mobileSummaryDrawer ||
+        !mobileSummaryBackdrop
+    ) {
+        return;
+    }
+
+    updateMobileSummaryDrawer();
+
+
+    mobileSummaryOpen =
+        true;
+
+
+    mobileSummaryBackdrop.hidden =
+        false;
+
+    mobileSummaryDrawer.hidden =
+        false;
+
+
+    document.body.classList.add(
+        "checkout-summary-open"
+    );
+
+
+    mobileSummaryOpenButton?.setAttribute(
+        "aria-expanded",
+        "true"
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            mobileSummaryBackdrop.classList.add(
+                "is-open"
+            );
+
+            mobileSummaryDrawer.classList.add(
+                "is-open"
+            );
+        }
+    );
+}
+
+
+// ==========================================================
+// 14. Close mobile summary
+// ==========================================================
+
+function closeMobileOrderSummary() {
+
+    if (
+        !mobileSummaryDrawer ||
+        !mobileSummaryBackdrop
+    ) {
+        return;
+    }
+
+
+    mobileSummaryOpen =
+        false;
+
+
+    mobileSummaryBackdrop.classList.remove(
+        "is-open"
+    );
+
+    mobileSummaryDrawer.classList.remove(
+        "is-open"
+    );
+
+
+    document.body.classList.remove(
+        "checkout-summary-open"
+    );
+
+
+    mobileSummaryOpenButton?.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+
+    setTimeout(
+        () => {
+
+            if (!mobileSummaryOpen) {
+
+                mobileSummaryBackdrop.hidden =
+                    true;
+
+                mobileSummaryDrawer.hidden =
+                    true;
+            }
+
+        },
+        260
+    );
+}
+
+
+// ==========================================================
+// 15. Update mobile drawer
+// ==========================================================
+
+function updateMobileSummaryDrawer() {
+
+    if (
+        !mobileSummaryDrawer ||
+        !mobileSummaryDrawerContent ||
+        !orderSummary
+    ) {
+        return;
+    }
+
+    mobileSummaryDrawerContent.innerHTML =
+        orderSummary.innerHTML;
+
+
+    const drawerTotal =
+        mobileSummaryDrawer.querySelector(
+            ".mobile-order-summary-total strong"
+        );
+
+    if (drawerTotal && checkoutFinalTotal) {
+
+        drawerTotal.textContent =
+            checkoutFinalTotal.textContent;
+    }
+}
+
+
+// ==========================================================
+// 16. Update mobile summary state
+// ==========================================================
+
+function updateMobileSummaryState(
+    hasItems
+) {
+
+    if (
+        !mobileSummaryOpenButton ||
+        !orderSummary
+    ) {
+        return;
+    }
+
+
+    const summaryBox =
+        orderSummary.closest(
+            ".order-summary-box"
+        );
+
+
+    if (summaryBox) {
+
+        summaryBox.classList.toggle(
+            "mobile-summary-empty",
+            !hasItems
+        );
+    }
+
+
+    mobileSummaryOpenButton.hidden =
+        !hasItems;
+
+
+    if (!hasItems && mobileSummaryOpen) {
+
+        closeMobileOrderSummary();
+    }
+
+
+    updateMobileSummaryDrawer();
+}
+
+
+// ==========================================================
+// 17. displayCheckout
 // ==========================================================
 
 function displayCheckout() {
@@ -632,32 +1488,52 @@ function displayCheckout() {
         return;
     }
 
+
+    setupMobileOrderSummary();
+
+
     orderSummary.innerHTML =
         "";
+
 
     const entries =
         getCartEntries();
 
+
     if (entries.length === 0) {
 
         orderSummary.innerHTML = `
-            <p
-                style="
-                    text-align:center;
-                    margin:auto;
-                "
+            <div
+                class="checkout-empty-summary"
             >
-                السلة فارغة
-            </p>
+                <span
+                    class="checkout-empty-summary-icon"
+                    aria-hidden="true"
+                >
+                    🛒
+                </span>
+
+                <span>
+                    السلة فارغة
+                </span>
+            </div>
         `;
 
+
         if (checkoutFinalTotal) {
+
             checkoutFinalTotal.textContent =
                 "0.00 $";
         }
 
+
+        updateMobileSummaryState(
+            false
+        );
+
         return;
     }
+
 
     let displayTotal =
         0;
@@ -666,10 +1542,9 @@ function displayCheckout() {
     entries.forEach(
         ({ id, quantity }) => {
 
-
-            // ==================================================
+            // ------------------------------------------------
             // Offer
-            // ==================================================
+            // ------------------------------------------------
 
             if (isOfferItem(id)) {
 
@@ -685,99 +1560,16 @@ function displayCheckout() {
                 const price =
                     Number(offer.price) || 0;
 
-                const subtotal =
-                    price * quantity;
-
                 displayTotal +=
-                    subtotal;
-
-                const offerName =
-                    escapeHtml(
-                        offer.name ||
-                        "عرض"
-                    );
-
-                const offerImage =
-                    escapeHtml(
-                        offer.image ||
-                        ""
-                    );
-
-                orderSummary.innerHTML += `
-
-                    <div
-                        class="order-item order-item-offer"
-                    >
-
-                        ${
-                            offerImage
-                                ? `
-                                    <img
-                                        src="${offerImage}"
-                                        alt="${offerName}"
-                                        class="order-item-image"
-                                    >
-                                  `
-                                : `
-                                    <div
-                                        class="
-                                            order-item-image
-                                            order-item-image-placeholder
-                                        "
-                                    >
-                                        عرض
-                                    </div>
-                                  `
-                        }
-
-                        <div
-                            class="order-item-content"
-                        >
-
-                            <h3>
-                                ${offerName}
-                            </h3>
-
-                            <p
-                                class="order-item-type"
-                            >
-                                النوع: عرض
-                            </p>
-
-                            <div
-                                class="order-item-meta"
-                            >
-
-                                <span>
-                                    الكمية: ${quantity}
-                                </span>
-
-                                <span>
-                                    سعر العرض:
-                                    ${formatPrice(price)}$
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                        <strong
-                            class="order-item-total"
-                        >
-                            ${formatPrice(subtotal)}$
-                        </strong>
-
-                    </div>
-
-                `;
+                    price * quantity;
 
                 return;
             }
 
 
-            // ==================================================
+            // ------------------------------------------------
             // Variant
-            // ==================================================
+            // ------------------------------------------------
 
             if (isVariantItem(id)) {
 
@@ -785,131 +1577,22 @@ function displayCheckout() {
                     getVariantSnapshot(id);
 
                 if (!snapshot) {
-
-                    console.warn(
-                        "لم يتم العثور على snapshot للـ Variant:",
-                        id
-                    );
-
                     return;
                 }
 
                 const price =
                     Number(snapshot.price) || 0;
 
-                const subtotal =
-                    price * quantity;
-
                 displayTotal +=
-                    subtotal;
-
-                const productName =
-                    escapeHtml(
-                        snapshot.productName ||
-                        "منتج"
-                    );
-
-                const image =
-                    escapeHtml(
-                        snapshot.image ||
-                        ""
-                    );
-
-                const sku =
-                    escapeHtml(
-                        snapshot.sku ||
-                        ""
-                    );
-
-                const selectionsHtml =
-                    formatVariantSelections(
-                        snapshot
-                    );
-
-              orderSummary.innerHTML += `
-
-    <div
-        class="
-            order-item
-            order-item-variant
-        "
-    >
-
-        ${
-            image
-                ? `
-                    <img
-                        src="${image}"
-                        alt="${productName}"
-                        class="order-item-image"
-                    >
-                  `
-                : `
-                    <div
-                        class="
-                            order-item-image
-                            order-item-image-placeholder
-                        "
-                    >
-                        منتج
-                    </div>
-                  `
-        }
-
-        <div
-            class="order-item-content"
-        >
-
-            <h3>
-                ${productName}
-            </h3>
-
-            <p
-                class="order-item-type"
-            >
-                النوع: خيار منتج
-            </p>
-
-            <div
-                class="order-item-meta"
-            >
-
-                <span>
-                    الكمية: ${quantity}
-                </span>
-
-                <span>
-                    سعر القطعة:
-                    ${formatPrice(price)}$
-                </span>
-
-            </div>
-
-        </div>
-
-        ${
-            selectionsHtml
-                ? selectionsHtml
-                : ""
-        }
-
-        <strong
-            class="order-item-total"
-        >
-            ${formatPrice(subtotal)}$
-        </strong>
-
-    </div>
-
-`;
+                    price * quantity;
 
                 return;
             }
 
 
-            // ==================================================
+            // ------------------------------------------------
             // Normal product
-            // ==================================================
+            // ------------------------------------------------
 
             const product =
                 getProduct(id);
@@ -921,73 +1604,30 @@ function displayCheckout() {
             const price =
                 Number(product.price) || 0;
 
-            const subtotal =
-                price * quantity;
-
             displayTotal +=
-                subtotal;
-
-            const productName =
-                escapeHtml(
-                    product.name ||
-                    "منتج"
-                );
-
-            const productImage =
-                escapeHtml(
-                    product.image ||
-                    product.main_image ||
-                    ""
-                );
-
-            orderSummary.innerHTML += `
-
-                <div
-                    class="order-item order-item-product"
-                >
-
-                    <img
-                        src="${productImage}"
-                        alt="${productName}"
-                        class="order-item-image"
-                    >
-
-                    <div
-                        class="order-item-content"
-                    >
-
-                        <h3>
-                            ${productName}
-                        </h3>
-
-                        <div
-                            class="order-item-meta"
-                        >
-
-                            <span>
-                                الكمية: ${quantity}
-                            </span>
-
-                            <span>
-                                سعر القطعة:
-                                ${formatPrice(price)}$
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <strong
-                        class="order-item-total"
-                    >
-                        ${formatPrice(subtotal)}$
-                    </strong>
-
-                </div>
-
-            `;
+                price * quantity;
         }
     );
+
+
+    // --------------------------------------------------------
+    // Build all cards from localStorage cart entries
+    // --------------------------------------------------------
+
+    const itemsHtml =
+        entries
+            .map(
+                ({ id, quantity }) =>
+                    buildOrderItemHtml(
+                        id,
+                        quantity
+                    )
+            )
+            .join("");
+
+
+    orderSummary.innerHTML =
+        itemsHtml;
 
 
     if (checkoutFinalTotal) {
@@ -995,11 +1635,16 @@ function displayCheckout() {
         checkoutFinalTotal.textContent =
             `${formatPrice(displayTotal)} $`;
     }
+
+
+    updateMobileSummaryState(
+        true
+    );
 }
 
 
 // ==========================================================
-// 12. prepareOrderItems
+// 18. prepareOrderItems
 // ==========================================================
 
 function prepareOrderItems() {
@@ -1016,8 +1661,10 @@ function prepareOrderItems() {
     return entries.map(
         ({ id, quantity }) => {
 
-
+            // ------------------------------------------------
             // Offer
+            // ------------------------------------------------
+
             if (isOfferItem(id)) {
 
                 const offer =
@@ -1041,7 +1688,10 @@ function prepareOrderItems() {
             }
 
 
+            // ------------------------------------------------
             // Variant
+            // ------------------------------------------------
+
             if (isVariantItem(id)) {
 
                 const snapshot =
@@ -1095,7 +1745,10 @@ function prepareOrderItems() {
             }
 
 
+            // ------------------------------------------------
             // Normal product
+            // ------------------------------------------------
+
             const product =
                 getProduct(id);
 
@@ -1124,7 +1777,7 @@ function prepareOrderItems() {
 
 
 // ==========================================================
-// 13. Customer
+// 19. Customer
 // ==========================================================
 
 function getCustomerData() {
@@ -1167,7 +1820,7 @@ function getCustomerData() {
 
 
 // ==========================================================
-// 14. Validate
+// 20. Validate
 // ==========================================================
 
 function validateCustomer(
@@ -1209,7 +1862,7 @@ function validateCustomer(
 
 
 // ==========================================================
-// 15. WhatsApp
+// 21. WhatsApp
 // ==========================================================
 
 function buildWhatsAppMessage(
@@ -1247,8 +1900,10 @@ function buildWhatsAppMessage(
     getCartEntries().forEach(
         ({ id, quantity }) => {
 
-
+            // ------------------------------------------------
             // Offer
+            // ------------------------------------------------
+
             if (isOfferItem(id)) {
 
                 const offer =
@@ -1287,7 +1942,10 @@ function buildWhatsAppMessage(
             }
 
 
+            // ------------------------------------------------
             // Variant
+            // ------------------------------------------------
+
             if (isVariantItem(id)) {
 
                 const snapshot =
@@ -1362,7 +2020,10 @@ function buildWhatsAppMessage(
             }
 
 
+            // ------------------------------------------------
             // Normal product
+            // ------------------------------------------------
+
             const product =
                 getProduct(id);
 
@@ -1414,7 +2075,7 @@ function buildWhatsAppMessage(
 
 
 // ==========================================================
-// 16. Buttons
+// 22. Buttons
 // ==========================================================
 
 function setOrderButtonsDisabled(
@@ -1434,7 +2095,7 @@ function setOrderButtonsDisabled(
 
 
 // ==========================================================
-// 17. Process order
+// 23. Process order
 // ==========================================================
 
 async function processOrder(
@@ -1696,7 +2357,7 @@ async function processOrder(
 
 
 // ==========================================================
-// 18. Buttons
+// 24. Buttons
 // ==========================================================
 
 if (confirmOrderBtn) {
@@ -1724,7 +2385,7 @@ if (whatsappOrderBtn) {
 
 
 // ==========================================================
-// 19. Products loaded
+// 25. Products loaded
 // ==========================================================
 
 document.addEventListener(
@@ -1736,12 +2397,14 @@ document.addEventListener(
 
 
 // ==========================================================
-// 20. DOMContentLoaded
+// 26. DOMContentLoaded
 // ==========================================================
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
+        setupMobileOrderSummary();
 
         loadCheckoutOffers();
 
@@ -1751,7 +2414,7 @@ document.addEventListener(
 
 
 // ==========================================================
-// 21. Already loaded
+// 27. Already loaded
 // ==========================================================
 
 if (
@@ -1766,7 +2429,7 @@ if (
 
 
 // ==========================================================
-// 22. Customer fields
+// 28. Customer fields
 // ==========================================================
 
 const customerFields = [
@@ -1825,7 +2488,7 @@ customerFields.forEach(
 
 
 // ==========================================================
-// 23. Back home
+// 29. Back home
 // ==========================================================
 
 if (backToHomeBtn) {
@@ -1842,7 +2505,7 @@ if (backToHomeBtn) {
 
 
 // ==========================================================
-// Checkout side menu
+// 30. Checkout side menu
 // ==========================================================
 
 function setupCheckoutSideMenu() {
