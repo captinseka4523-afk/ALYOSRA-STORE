@@ -21,7 +21,9 @@ html {
 
 body {
     margin: 0;
+
     font-family: inherit;
+
     background:
         radial-gradient(
             circle at top right,
@@ -29,8 +31,12 @@ body {
             transparent 32%
         ),
         #f4f7fb;
+
     color: #172033;
+
     -webkit-font-smoothing: antialiased;
+
+    overflow-x: hidden;
 }
 
 
@@ -40,14 +46,18 @@ body {
 
 .admin-container {
     width: 100%;
-    min-height: 100vh;
+
+    min-height: 0;
+
     padding: 32px 20px 50px;
 }
 
 
 .admin-header {
     width: 100%;
+
     max-width: 1220px;
+
     margin: 0 auto 28px;
 
     padding: 22px 28px;
@@ -61,6 +71,7 @@ body {
         );
 
     border: 1px solid rgba(255, 255, 255, 0.06);
+
     border-radius: 18px;
 
     box-shadow:
@@ -68,12 +79,15 @@ body {
         0 2px 8px rgba(15, 23, 42, 0.06);
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
 
     position: relative;
+
     overflow: hidden;
 }
 
@@ -101,9 +115,11 @@ body {
     margin: 0;
 
     position: relative;
+
     z-index: 1;
 
     font-size: 24px;
+
     font-weight: 850;
 
     color: #ffffff;
@@ -114,10 +130,13 @@ body {
 
 .admin-back-btn {
     position: relative;
+
     z-index: 1;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-height: 40px;
@@ -129,11 +148,13 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.14);
 
     color: #ffffff;
+
     text-decoration: none;
 
     border-radius: 10px;
 
     font-size: 13px;
+
     font-weight: 750;
 
     transition:
@@ -162,11 +183,13 @@ body {
 
 .admin-content {
     width: 100%;
+
     max-width: 1220px;
 
     margin: 0 auto;
 
     display: flex;
+
     flex-direction: column;
 
     gap: 24px;
@@ -179,6 +202,8 @@ body {
 
 .admin-card {
     width: 100%;
+
+    min-height: 0;
 
     padding: 28px;
 
@@ -204,6 +229,7 @@ body {
     color: #101827;
 
     font-size: 20px;
+
     font-weight: 850;
 
     line-height: 1.4;
@@ -216,6 +242,7 @@ body {
 
 #offerForm {
     display: flex;
+
     flex-direction: column;
 
     gap: 20px;
@@ -224,6 +251,7 @@ body {
 
 .form-group {
     display: flex;
+
     flex-direction: column;
 
     gap: 8px;
@@ -234,6 +262,7 @@ body {
     color: #475569;
 
     font-size: 12px;
+
     font-weight: 750;
 }
 
@@ -245,6 +274,7 @@ body {
     padding: 12px 15px;
 
     border: 1px solid #d7dee8;
+
     border-radius: 11px;
 
     background: #f9fbfd;
@@ -252,6 +282,7 @@ body {
     color: #172033;
 
     font-family: inherit;
+
     font-size: 14px;
 
     outline: none;
@@ -283,6 +314,7 @@ body {
 
 .form-group textarea {
     resize: vertical;
+
     min-height: 105px;
 }
 
@@ -322,6 +354,7 @@ body {
     overflow-y: auto;
 
     scrollbar-width: thin;
+
     scrollbar-color: #c7d0dc transparent;
 }
 
@@ -350,9 +383,12 @@ body {
 .offer-product-item {
     width: 100%;
 
+    min-width: 0;
+
     min-height: 70px;
 
     display: flex;
+
     align-items: center;
 
     gap: 12px;
@@ -422,6 +458,7 @@ body {
     flex: 1;
 
     display: flex;
+
     flex-direction: column;
 
     gap: 3px;
@@ -434,6 +471,7 @@ body {
     color: #172033;
 
     font-size: 13px;
+
     font-weight: 800;
 
     line-height: 1.45;
@@ -450,6 +488,7 @@ body {
     color: #9aa6b6;
 
     font-size: 10px;
+
     font-weight: 650;
 
     letter-spacing: 0.1px;
@@ -458,6 +497,8 @@ body {
 
 .offer-product-summary {
     width: fit-content;
+
+    max-width: 100%;
 
     margin-top: 1px;
 
@@ -470,9 +511,16 @@ body {
     color: #718096;
 
     font-size: 10px;
+
     font-weight: 700;
 
     line-height: 1.4;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 }
 
 
@@ -505,19 +553,6 @@ body {
 }
 
 
-/*
-   مهم:
-   الـJS الحالي يولد:
-
-   <label class="offer-product-checkbox-wrap">
-       <input class="offer-product-checkbox">
-       <span aria-hidden="true"></span>
-   </label>
-
-   لذلك يتم إخفاء الـinput فقط،
-   واستخدام الـspan الموجود بعده كمربع بصري.
-*/
-
 .offer-product-checkbox-wrap
 > input.offer-product-checkbox {
     position: absolute;
@@ -531,6 +566,7 @@ body {
     overflow: hidden;
 
     clip: rect(0 0 0 0);
+
     clip-path: inset(50%);
 
     white-space: nowrap;
@@ -543,6 +579,7 @@ body {
 > input.offer-product-checkbox
 + span {
     width: 18px;
+
     height: 18px;
 
     flex-shrink: 0;
@@ -550,6 +587,7 @@ body {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     border: 1.5px solid #a8b3c1;
@@ -592,6 +630,7 @@ body {
     content: "";
 
     width: 5px;
+
     height: 9px;
 
     margin-top: -2px;
@@ -625,46 +664,12 @@ body {
     gap: 9px;
 
     flex-shrink: 0;
+
+    min-width: 0;
 }
 
 
-.offer-product-quantity {
-    width: 68px;
-
-    min-height: 36px;
-
-    flex-shrink: 0;
-
-    padding: 7px 6px;
-
-    border: 1px solid #d2dae5;
-
-    border-radius: 9px;
-
-    background: #f8fafc;
-
-    color: #172033;
-
-    text-align: center;
-
-    font-family: inherit;
-
-    font-size: 12px;
-    font-weight: 800;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-/*
-   الـJS الحالي يستخدم هذا الـclass
-   على input الكمية البسيطة.
-*/
+.offer-product-quantity,
 .offer-simple-product-quantity {
     width: 68px;
 
@@ -687,6 +692,7 @@ body {
     font-family: inherit;
 
     font-size: 12px;
+
     font-weight: 800;
 
     outline: none;
@@ -768,6 +774,7 @@ body {
     font-family: inherit;
 
     font-size: 11px;
+
     font-weight: 800;
 
     white-space: nowrap;
@@ -838,6 +845,7 @@ body {
     color: #98a4b3;
 
     font-size: 10px;
+
     font-weight: 650;
 
     line-height: 1.5;
@@ -873,6 +881,7 @@ body {
     font-family: inherit;
 
     font-size: 14px;
+
     font-weight: 800;
 
     cursor: pointer;
@@ -912,6 +921,8 @@ body {
 ========================================== */
 
 #offersList {
+    width: 100%;
+
     display: grid;
 
     grid-template-columns:
@@ -920,9 +931,19 @@ body {
             minmax(235px, 1fr)
         );
 
+    grid-auto-rows: max-content;
+
+    align-items: start;
+
     gap: 18px;
 
     margin-top: 8px;
+
+    min-width: 0;
+
+    height: auto;
+
+    min-height: 0;
 }
 
 
@@ -933,6 +954,16 @@ body {
 .offer-admin-item {
     position: relative;
 
+    width: 100%;
+
+    min-width: 0;
+
+    min-height: 0;
+
+    height: auto;
+
+    align-self: start;
+
     background: #ffffff;
 
     border: 1px solid #e2e8f0;
@@ -942,6 +973,7 @@ body {
     padding: 16px;
 
     display: flex;
+
     flex-direction: column;
 
     overflow: hidden;
@@ -966,14 +998,22 @@ body {
 }
 
 
+/* ==========================================
+   صورة العرض
+========================================== */
+
 .offer-admin-image {
+    display: block;
+
     width: 100%;
+
+    max-width: 100%;
 
     aspect-ratio: 1 / 1;
 
     object-fit: contain;
 
-    margin-bottom: 13px;
+    margin: 0 0 13px;
 
     padding: 9px;
 
@@ -987,26 +1027,49 @@ body {
             #fafbfd,
             #f4f7fa
         );
+
+    flex-shrink: 0;
 }
 
 
+/* ==========================================
+   عنوان العرض
+========================================== */
+
 .offer-admin-item h3 {
+    width: 100%;
+
+    min-width: 0;
+
     margin: 0 0 6px;
 
     color: #111827;
 
     font-size: 16px;
+
     font-weight: 850;
+
+    line-height: 1.4;
 
     white-space: nowrap;
 
     overflow: hidden;
 
     text-overflow: ellipsis;
+
+    flex-shrink: 0;
 }
 
 
+/* ==========================================
+   وصف العرض
+========================================== */
+
 .offer-admin-item p {
+    width: 100%;
+
+    min-width: 0;
+
     margin: 0 0 12px;
 
     color: #667085;
@@ -1017,29 +1080,38 @@ body {
 
     display: -webkit-box;
 
-
-
     -webkit-box-orient: vertical;
+
+    -webkit-line-clamp: 3;
 
     overflow: hidden;
 
-    flex-grow: 1;
+    flex-grow: 0;
+
+    flex-shrink: 0;
 }
 
 
-.offer-admin-item strong {
+/* ==========================================
+   سعر العرض
+========================================== */
+
+.offer-admin-item > strong {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     width: fit-content;
+
+    max-width: 100%;
 
     min-width: 70px;
 
     padding: 6px 12px;
 
-    margin-bottom: 12px;
+    margin: 0 0 12px;
 
     border-radius: 8px;
 
@@ -1048,7 +1120,14 @@ body {
     color: #ffffff;
 
     font-size: 15px;
+
     font-weight: 850;
+
+    line-height: 1.35;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
 }
 
 
@@ -1057,6 +1136,10 @@ body {
 ========================================== */
 
 .offer-admin-products {
+    width: 100%;
+
+    min-width: 0;
+
     display: flex;
 
     flex-direction: column;
@@ -1065,11 +1148,15 @@ body {
 
     padding: 10px;
 
-    margin-bottom: 12px;
+    margin: 0 0 12px;
 
     max-height: 92px;
 
+    min-height: 0;
+
     overflow-y: auto;
+
+    overflow-x: hidden;
 
     background: #f8fafc;
 
@@ -1080,7 +1167,10 @@ body {
     font-size: 11px;
 
     scrollbar-width: thin;
+
     scrollbar-color: #cbd5e1 transparent;
+
+    flex-shrink: 0;
 }
 
 
@@ -1102,12 +1192,21 @@ body {
     color: #263244;
 
     font-size: 11px;
+
     font-weight: 750;
+
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
 }
 
 
 .offer-admin-products span {
     color: #697586;
+
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
 }
 
 
@@ -1116,6 +1215,10 @@ body {
 ========================================== */
 
 .offer-admin-meta {
+    width: 100%;
+
+    min-width: 0;
+
     display: flex;
 
     align-items: center;
@@ -1124,7 +1227,9 @@ body {
 
     gap: 8px;
 
-    margin-bottom: 15px;
+    margin: 0 0 15px;
+
+    flex-shrink: 0;
 }
 
 
@@ -1133,7 +1238,10 @@ body {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
+
+    min-width: 0;
 
     min-height: 26px;
 
@@ -1142,7 +1250,10 @@ body {
     border-radius: 8px;
 
     font-size: 10px;
+
     font-weight: 800;
+
+    line-height: 1.35;
 }
 
 
@@ -1169,21 +1280,31 @@ body {
 ========================================== */
 
 .offer-admin-actions {
+    width: 100%;
+
+    min-width: 0;
+
     display: grid;
 
     grid-template-columns: 1fr 1fr;
 
     gap: 6px;
 
-    margin-top: auto;
+    margin-top: 0;
 
     padding-top: 12px;
 
     border-top: 1px solid #edf1f5;
+
+    flex-shrink: 0;
 }
 
 
 .offer-admin-action {
+    width: 100%;
+
+    min-width: 0;
+
     min-height: 35px;
 
     padding: 7px 8px;
@@ -1195,6 +1316,7 @@ body {
     font-family: inherit;
 
     font-size: 11px;
+
     font-weight: 750;
 
     cursor: pointer;
@@ -1284,6 +1406,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 20px;
@@ -1293,6 +1416,7 @@ body {
     backdrop-filter: blur(9px);
 
     opacity: 1;
+
     visibility: visible;
 
     transition:
@@ -1302,6 +1426,8 @@ body {
 
 
 .offer-edit-modal[hidden] {
+    display: none !important;
+
     opacity: 0;
 
     visibility: hidden;
@@ -1336,6 +1462,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -1354,12 +1481,14 @@ body {
     color: #101827;
 
     font-size: 20px;
+
     font-weight: 850;
 }
 
 
 .offer-edit-close {
     width: 37px;
+
     height: 37px;
 
     flex-shrink: 0;
@@ -1379,6 +1508,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     transition:
@@ -1421,6 +1551,7 @@ body {
     font-family: inherit;
 
     font-size: 13px;
+
     font-weight: 750;
 }
 
@@ -1470,6 +1601,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 18px;
@@ -1479,6 +1611,7 @@ body {
     backdrop-filter: blur(10px);
 
     opacity: 1;
+
     visibility: visible;
 
     transition:
@@ -1488,6 +1621,8 @@ body {
 
 
 .offer-variant-modal[hidden] {
+    display: none !important;
+
     opacity: 0;
 
     visibility: hidden;
@@ -1504,6 +1639,7 @@ body {
     max-height: min(740px, 91vh);
 
     display: flex;
+
     flex-direction: column;
 
     overflow: hidden;
@@ -1529,6 +1665,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -1555,6 +1692,7 @@ body {
     color: #111827;
 
     font-size: 17px;
+
     font-weight: 850;
 
     line-height: 1.45;
@@ -1583,6 +1721,7 @@ body {
     background: #f8fafc;
 
     scrollbar-width: thin;
+
     scrollbar-color: #c8d1dd transparent;
 }
 
@@ -1610,6 +1749,8 @@ body {
 
 .offer-variant-row {
     width: 100%;
+
+    min-width: 0;
 
     min-height: 63px;
 
@@ -1676,30 +1817,11 @@ body {
    Checkbox الخاص بالـVariant
 ========================================== */
 
-/*
-   الـJS الحالي يولد:
-
-   <label class="offer-variant-checkbox">
-       <input
-           class="offer-variant-modal-checkbox"
-           ...
-       >
-       <span aria-hidden="true"></span>
-   </label>
-
-   لذلك لا يتم استخدام
-   .offer-variant-checkbox
-   كـcheckbox بصري.
-
-   الـlabel هو الحاوية،
-   والـinput هو checkbox الحقيقي،
-   والـspan هو الشكل البصري.
-*/
-
 .offer-variant-checkbox {
     position: relative;
 
     width: 19px;
+
     height: 19px;
 
     flex-shrink: 0;
@@ -1707,6 +1829,7 @@ body {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     margin: 0;
@@ -1720,14 +1843,17 @@ body {
     position: absolute;
 
     width: 1px;
+
     height: 1px;
 
     margin: -1px;
+
     padding: 0;
 
     overflow: hidden;
 
     clip: rect(0 0 0 0);
+
     clip-path: inset(50%);
 
     white-space: nowrap;
@@ -1740,11 +1866,13 @@ body {
 > input.offer-variant-modal-checkbox
 + span {
     width: 19px;
+
     height: 19px;
 
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     border: 1.5px solid #a8b3c1;
@@ -1787,6 +1915,7 @@ body {
     content: "";
 
     width: 5px;
+
     height: 9px;
 
     margin-top: -2px;
@@ -1831,6 +1960,7 @@ body {
     color: #1d2939;
 
     font-size: 12px;
+
     font-weight: 800;
 
     line-height: 1.45;
@@ -1847,6 +1977,7 @@ body {
     color: #98a2b3;
 
     font-size: 9px;
+
     font-weight: 650;
 }
 
@@ -1855,6 +1986,7 @@ body {
     color: #667085;
 
     font-size: 9px;
+
     font-weight: 650;
 }
 
@@ -1869,43 +2001,7 @@ body {
    كمية الخيار
 ========================================== */
 
-.offer-variant-quantity {
-    width: 67px;
-
-    min-height: 37px;
-
-    flex-shrink: 0;
-
-    padding: 7px 5px;
-
-    border: 1px solid #d1d9e3;
-
-    border-radius: 9px;
-
-    background: #f8fafc;
-
-    color: #172033;
-
-    text-align: center;
-
-    font-family: inherit;
-
-    font-size: 12px;
-    font-weight: 800;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-/*
-   الـJS الحالي يستخدم:
-   .offer-variant-modal-quantity
-*/
+.offer-variant-quantity,
 .offer-variant-modal-quantity {
     width: 67px;
 
@@ -1928,6 +2024,7 @@ body {
     font-family: inherit;
 
     font-size: 12px;
+
     font-weight: 800;
 
     outline: none;
@@ -2013,6 +2110,7 @@ body {
     color: #b45309;
 
     font-size: 8px;
+
     font-weight: 800;
 }
 
@@ -2061,6 +2159,7 @@ body {
     color: #dc2626;
 
     font-size: 11px;
+
     font-weight: 750;
 
     text-align: center;
@@ -2103,6 +2202,7 @@ body {
     font-family: inherit;
 
     font-size: 13px;
+
     font-weight: 800;
 
     cursor: pointer;
@@ -2138,10 +2238,6 @@ body {
 }
 
 
-/*
-   زر حفظ الخيارات الحالي في HTML/JS:
-   #saveOfferVariantSelection
-*/
 #saveOfferVariantSelection {
     border: 1px solid #172033;
 
@@ -2198,6 +2294,7 @@ body {
     position: fixed;
 
     left: 50%;
+
     bottom: 28px;
 
     z-index: 5000;
@@ -2217,6 +2314,7 @@ body {
     color: #ffffff;
 
     font-size: 13px;
+
     font-weight: 700;
 
     text-align: center;
@@ -2269,6 +2367,8 @@ body {
 @media (max-width: 768px) {
 
     .admin-container {
+        min-height: 0;
+
         padding: 14px 9px 35px;
     }
 
@@ -2386,11 +2486,25 @@ body {
                 minmax(160px, 1fr)
             );
 
+        grid-auto-rows: max-content;
+
+        align-items: start;
+
         gap: 11px;
+
+        margin-top: 6px;
     }
 
 
     .offer-admin-item {
+        width: 100%;
+
+        min-height: 0;
+
+        height: auto;
+
+        align-self: start;
+
         padding: 12px;
 
         border-radius: 13px;
@@ -2399,21 +2513,47 @@ body {
 
     .offer-admin-image {
         margin-bottom: 10px;
+
+        padding: 7px;
     }
 
 
     .offer-admin-item h3 {
         font-size: 14px;
+
+        line-height: 1.4;
     }
 
 
     .offer-admin-item p {
+        margin-bottom: 10px;
+
         font-size: 11px;
+
+        line-height: 1.5;
+
+        -webkit-line-clamp: 3;
     }
 
 
-    .offer-admin-item strong {
+    .offer-admin-item > strong {
+        margin-bottom: 10px;
+
         font-size: 14px;
+    }
+
+
+    .offer-admin-products {
+        max-height: 86px;
+
+        padding: 8px;
+
+        margin-bottom: 10px;
+    }
+
+
+    .offer-admin-meta {
+        margin-bottom: 11px;
     }
 
 
@@ -2421,6 +2561,8 @@ body {
         grid-template-columns: 1fr;
 
         gap: 5px;
+
+        padding-top: 10px;
     }
 
 
@@ -2545,6 +2687,8 @@ body {
 
     .admin-container {
         padding-inline: 7px;
+
+        padding-bottom: 28px;
     }
 
 
@@ -2594,6 +2738,97 @@ body {
     }
 
 
+    #offersList {
+        grid-template-columns:
+            repeat(
+                auto-fill,
+                minmax(145px, 1fr)
+            );
+
+        gap: 9px;
+    }
+
+
+    .offer-admin-item {
+        padding: 10px;
+    }
+
+
+    .offer-admin-image {
+        margin-bottom: 8px;
+
+        padding: 6px;
+    }
+
+
+    .offer-admin-item h3 {
+        font-size: 13px;
+    }
+
+
+    .offer-admin-item p {
+        font-size: 10px;
+
+        margin-bottom: 8px;
+    }
+
+
+    .offer-admin-item > strong {
+        min-width: 60px;
+
+        padding: 5px 9px;
+
+        margin-bottom: 8px;
+
+        font-size: 12px;
+    }
+
+
+    .offer-admin-products {
+        padding: 7px;
+
+        max-height: 78px;
+
+        margin-bottom: 8px;
+
+        font-size: 10px;
+    }
+
+
+    .offer-admin-products strong {
+        font-size: 10px;
+    }
+
+
+    .offer-admin-meta {
+        margin-bottom: 9px;
+    }
+
+
+    .offer-active,
+    .offer-inactive {
+        min-height: 23px;
+
+        padding: 3px 7px;
+
+        font-size: 9px;
+    }
+
+
+    .offer-admin-actions {
+        padding-top: 8px;
+    }
+
+
+    .offer-admin-action {
+        min-height: 32px;
+
+        padding: 6px;
+
+        font-size: 10px;
+    }
+
+
     .offer-variant-modal-header h2,
     .offer-variant-modal-header h3 {
         max-width: 230px;
@@ -2607,6 +2842,7 @@ body {
 
     .offer-variant-checkbox {
         width: 18px;
+
         height: 18px;
     }
 
@@ -2615,6 +2851,7 @@ body {
     > input.offer-variant-modal-checkbox
     + span {
         width: 18px;
+
         height: 18px;
     }
 
@@ -2630,3 +2867,10 @@ body {
 }
 
 
+/* ==========================================
+   حماية إضافية لعناصر hidden
+========================================== */
+
+[hidden] {
+    display: none !important;
+}
