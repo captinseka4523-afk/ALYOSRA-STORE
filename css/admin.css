@@ -55,6 +55,15 @@ body {
     gap: 10px;
 }
 
+
+.admin-nav-item,
+.admin-nav-item:visited,
+.admin-nav-item:hover,
+.admin-nav-item:active {
+    text-decoration: none;
+    color: inherit;
+}
+
 .admin-nav-item {
     width: 100%;
     padding: 14px 18px;
@@ -67,6 +76,7 @@ body {
     color: #475569;
     cursor: pointer;
     transition: all 0.3s ease;
+
 }
 
 .admin-nav-item:hover {

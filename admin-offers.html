@@ -16,6 +16,7 @@
         rel="stylesheet"
         href="css/admin.css"
     >
+
     <link
         rel="stylesheet"
         href="css/admin-offers.css"
@@ -27,48 +28,256 @@
 <body>
 
 
-    <div class="admin-container">
+<div class="admin-container">
 
 
-        <header class="admin-header">
+    <!-- ==========================================
+         Header
+    =========================================== -->
 
-            <h1>
-                إدارة العروض
-            </h1>
+    <header class="admin-header">
 
-            <a
-                href="admin-dashboard.html"
-                class="admin-back-btn"
-            >
-                العودة إلى لوحة التحكم
-            </a>
+        <h1>
+            إدارة العروض
+        </h1>
 
-        </header>
+        <a
+            href="admin-dashboard.html"
+            class="admin-back-btn"
+        >
+            العودة إلى لوحة التحكم
+        </a>
 
-
-
-        <main class="admin-content">
-
-
-            <section class="admin-card">
-
-                <h2>
-                    إضافة عرض جديد
-                </h2>
+    </header>
 
 
-                <form id="offerForm">
+
+    <main class="admin-content">
+
+
+        <!-- ==========================================
+             إضافة عرض جديد
+        =========================================== -->
+
+        <section class="admin-card">
+
+            <h2>
+                إضافة عرض جديد
+            </h2>
+
+
+            <form id="offerForm">
+
+
+                <div class="form-group">
+
+                    <label for="offerName">
+                        اسم العرض
+                    </label>
+
+                    <input
+                        type="text"
+                        id="offerName"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="offerDescription">
+                        وصف العرض
+                    </label>
+
+                    <textarea
+                        id="offerDescription"
+                        rows="4"
+                    ></textarea>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="offerPrice">
+                        سعر العرض بالدولار
+                    </label>
+
+                    <input
+                        type="number"
+                        id="offerPrice"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="offerQuantity">
+                        كمية العرض
+                    </label>
+
+                    <input
+                        type="number"
+                        id="offerQuantity"
+                        min="0"
+                        step="1"
+                        required
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="offerImageFile">
+                        صورة العرض
+                    </label>
+
+                    <input
+                        id="offerImageFile"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                    >
+
+                    <div
+                        id="offerImagePreview"
+                        class="admin-offer-image-preview"
+                        hidden
+                    >
+
+                        <img
+                            id="offerImagePreviewImage"
+                            src=""
+                            alt="معاينة صورة العرض"
+                        >
+
+                    </div>
+
+                    <small
+                        id="offerImageStatus"
+                        class="admin-form-help"
+                    >
+                        اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.
+                    </small>
+
+                </div>
+
+
+
+                <!-- ==========================================
+                     منتجات العرض
+                =========================================== -->
+
+                <div class="form-group">
+
+                    <label>
+                        المنتجات الموجودة في العرض
+                    </label>
+
+
+                    <div
+                        id="productsList"
+                        class="offer-products-list"
+                    >
+
+                        جاري تحميل المنتجات...
+
+                    </div>
+
+                </div>
+
+
+
+                <button
+                    type="submit"
+                    class="admin-btn"
+                >
+                    إضافة العرض
+                </button>
+
+
+            </form>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             العروض الحالية
+        =========================================== -->
+
+        <section class="admin-card">
+
+            <h2>
+                العروض الحالية
+            </h2>
+
+
+            <div id="offersList">
+
+                جاري تحميل العروض...
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             Offer Edit Modal
+        =========================================== -->
+
+        <div
+            id="offerEditModal"
+            class="offer-edit-modal"
+            hidden
+        >
+
+            <div class="offer-edit-modal-box">
+
+                <div class="offer-edit-header">
+
+                    <h2>
+                        تعديل العرض
+                    </h2>
+
+                    <button
+                        type="button"
+                        id="closeOfferEditModal"
+                        class="offer-edit-close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <form id="offerEditForm">
+
+                    <input
+                        type="hidden"
+                        id="editOfferId"
+                    >
 
 
                     <div class="form-group">
 
-                        <label for="offerName">
+                        <label for="editOfferName">
                             اسم العرض
                         </label>
 
                         <input
                             type="text"
-                            id="offerName"
+                            id="editOfferName"
                             required
                         >
 
@@ -78,12 +287,12 @@
 
                     <div class="form-group">
 
-                        <label for="offerDescription">
+                        <label for="editOfferDescription">
                             وصف العرض
                         </label>
 
                         <textarea
-                            id="offerDescription"
+                            id="editOfferDescription"
                             rows="4"
                         ></textarea>
 
@@ -93,13 +302,13 @@
 
                     <div class="form-group">
 
-                        <label for="offerPrice">
+                        <label for="editOfferPrice">
                             سعر العرض بالدولار
                         </label>
 
                         <input
                             type="number"
-                            id="offerPrice"
+                            id="editOfferPrice"
                             min="0"
                             step="0.01"
                             required
@@ -107,70 +316,76 @@
 
                     </div>
 
-<div class="form-group">
-
-    <label for="offerQuantity">
-        كمية العرض
-    </label>
-
-    <input
-        type="number"
-        id="offerQuantity"
-        min="0"
-        step="1"
-        required
-    >
-
-</div>
 
 
+                    <div class="form-group">
 
+                        <label for="editOfferQuantity">
+                            كمية العرض
+                        </label>
 
+                        <input
+                            type="number"
+                            id="editOfferQuantity"
+                            min="0"
+                            step="1"
+                            required
+                        >
 
-                 <div class="form-group">
-
-    <label for="offerImageFile">
-        صورة العرض
-    </label>
-
-    <input
-        id="offerImageFile"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-    >
-
-    <div
-        id="offerImagePreview"
-        class="admin-offer-image-preview"
-        hidden
-    >
-        <img
-            id="offerImagePreviewImage"
-            src=""
-            alt="معاينة صورة العرض"
-        >
-    </div>
-
-    <small
-        id="offerImageStatus"
-        class="admin-form-help"
-    >
-        اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.
-    </small>
-
-</div>
+                    </div>
 
 
 
                     <div class="form-group">
 
+                        <label for="editOfferImageFile">
+                            صورة العرض
+                        </label>
+
+                        <input
+                            id="editOfferImageFile"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                        >
+
+                        <div
+                            id="editOfferImagePreview"
+                            class="admin-offer-image-preview"
+                            hidden
+                        >
+
+                            <img
+                                id="editOfferImagePreviewImage"
+                                src=""
+                                alt="معاينة صورة العرض"
+                            >
+
+                        </div>
+
+                        <small
+                            id="editOfferImageStatus"
+                            class="admin-form-help"
+                        >
+                            إذا لم تختر صورة جديدة، ستبقى الصورة الحالية كما هي.
+                        </small>
+
+                    </div>
+
+
+
+                    <!-- ==========================================
+                         منتجات العرض في التعديل
+                    =========================================== -->
+
+                    <div class="form-group">
+
                         <label>
-                            المنتجات الموجودة في العرض
+                            منتجات العرض
                         </label>
 
 
                         <div
-                            id="productsList"
+                            id="editOfferProductsList"
                             class="offer-products-list"
                         >
 
@@ -182,229 +397,147 @@
 
 
 
-                    <button
-                        type="submit"
-                        class="admin-btn"
-                    >
-                        إضافة العرض
-                    </button>
+                    <div
+                        id="offerEditMessage"
+                        class="offer-edit-message"
+                    ></div>
 
+
+
+                    <div class="offer-edit-actions">
+
+                        <button
+                            type="button"
+                            id="cancelOfferEdit"
+                            class="admin-secondary-button"
+                        >
+                            إلغاء
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="admin-btn"
+                        >
+                            حفظ التعديلات
+                        </button>
+
+                    </div>
 
                 </form>
 
-            </section>
-
-
-
-            <section class="admin-card">
-
-                <h2>
-                    العروض الحالية
-                </h2>
-
-
-                <div id="offersList">
-
-                    جاري تحميل العروض...
-
-                </div>
-
-            </section>
-<!-- ================================= -->
-<!-- Offer Edit Modal -->
-<!-- ================================= -->
-
-<div
-    id="offerEditModal"
-    class="offer-edit-modal"
-    hidden
->
-
-    <div class="offer-edit-modal-box">
-
-        <div class="offer-edit-header">
-
-            <h2>
-                تعديل العرض
-            </h2>
-
-            <button
-                type="button"
-                id="closeOfferEditModal"
-                class="offer-edit-close"
-            >
-                ×
-            </button>
+            </div>
 
         </div>
 
 
-        <form id="offerEditForm">
 
-            <input
-                type="hidden"
-                id="editOfferId"
+        <!-- ==========================================
+             Variant Selection Modal
+             يستخدم للإضافة والتعديل
+        =========================================== -->
+
+        <div
+            id="offerVariantModal"
+            class="offer-variant-modal"
+            hidden
+        >
+
+            <div
+                class="offer-variant-modal-box"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="offerVariantModalTitle"
             >
 
+                <div class="offer-variant-modal-header">
 
-            <div class="form-group">
+                    <div>
 
-                <label for="editOfferName">
-                    اسم العرض
-                </label>
+                        <span class="offer-variant-modal-label">
+                            خيارات المنتج
+                        </span>
 
-                <input
-                    type="text"
-                    id="editOfferName"
-                    required
-                >
+                        <h2
+                            id="offerVariantModalTitle"
+                        >
+                            اختر الخيارات
+                        </h2>
 
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="editOfferDescription">
-                    وصف العرض
-                </label>
-
-                <textarea
-                    id="editOfferDescription"
-                    rows="4"
-                ></textarea>
-
-            </div>
+                    </div>
 
 
-            <div class="form-group">
+                    <button
+                        type="button"
+                        id="closeOfferVariantModal"
+                        class="offer-variant-modal-close"
+                        aria-label="إغلاق"
+                    >
+                        ×
+                    </button>
 
-                <label for="editOfferPrice">
-                    سعر العرض بالدولار
-                </label>
-
-                <input
-                    type="number"
-                    id="editOfferPrice"
-                    min="0"
-                    step="0.01"
-                    required
-                >
-
-            </div>
-
-            <div class="form-group">
-    <label for="editOfferQuantity">
-        كمية العرض
-    </label>
-
-    <input
-        type="number"
-        id="editOfferQuantity"
-        min="0"
-        step="1"
-        required
-    >
-</div>
+                </div>
 
 
-
-        <div class="form-group">
-
-    <label for="editOfferImageFile">
-        صورة العرض
-    </label>
-
-    <input
-        id="editOfferImageFile"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-    >
-
-    <div
-        id="editOfferImagePreview"
-        class="admin-offer-image-preview"
-        hidden
-    >
-        <img
-            id="editOfferImagePreviewImage"
-            src=""
-            alt="معاينة صورة العرض"
-        >
-    </div>
-
-    <small
-        id="editOfferImageStatus"
-        class="admin-form-help"
-    >
-        إذا لم تختر صورة جديدة، ستبقى الصورة الحالية كما هي.
-    </small>
-
-</div>
-
-
-            <div class="form-group">
-
-                <label>
-                    منتجات العرض
-                </label>
 
                 <div
-                    id="editOfferProductsList"
-                    class="offer-products-list"
+                    id="offerVariantModalContent"
+                    class="offer-variant-modal-content"
                 >
-                    جاري تحميل المنتجات...
+                    <!--
+                        يتم إنشاء خيارات المنتج هنا بواسطة JavaScript.
+                    -->
+                </div>
+
+
+
+                <div
+                    id="offerVariantModalMessage"
+                    class="offer-variant-modal-message"
+                ></div>
+
+
+
+                <div class="offer-variant-modal-actions">
+
+                    <button
+                        type="button"
+                        id="cancelOfferVariantModal"
+                        class="admin-secondary-button"
+                    >
+                        إلغاء
+                    </button>
+
+                    <button
+                        type="button"
+                        id="saveOfferVariantSelection"
+                        class="admin-btn"
+                    >
+                        حفظ الخيارات
+                    </button>
+
                 </div>
 
             </div>
 
-
-            <div
-                id="offerEditMessage"
-                class="offer-edit-message"
-            ></div>
+        </div>
 
 
-            <div class="offer-edit-actions">
+    </main>
 
-                <button
-                    type="button"
-                    id="cancelOfferEdit"
-                    class="admin-secondary-button"
-                >
-                    إلغاء
-                </button>
-
-                <button
-                    type="submit"
-                    class="admin-btn"
-                >
-                    حفظ التعديلات
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
 
 </div>
 
-        </main>
 
 
-    </div>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
 
+<script src="js/supabase-client.js"></script>
 
+<script src="js/admin-auth.js"></script>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
-
-    <script src="js/supabase-client.js"></script>
-
-    <script src="js/admin-auth.js"></script>
-
-    <script src="js/admin-offers.js"></script>
+<script src="js/admin-offers.js"></script>
 
 
 </body>

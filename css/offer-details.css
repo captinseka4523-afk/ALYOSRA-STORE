@@ -26,8 +26,6 @@
 
 /* =========================================================
    NAVIGATION
-   Page-specific navigation only.
-   This is NOT the main site navbar.
 ========================================================= */
 
 .offer-details-navigation {
@@ -627,13 +625,6 @@
 }
 
 
-/* =========================================================
-   HERO DESCRIPTION
-   Kept only as a fallback for existing HTML.
-   The redesigned page should preferably use
-   .offer-description-section below.
-========================================================= */
-
 .offer-detail-description {
 
     max-width: 620px;
@@ -842,8 +833,6 @@
 
 /* =========================================================
    DESCRIPTION SECTION
-   Long descriptions are isolated here so they cannot
-   push the title / price / cart button.
 ========================================================= */
 
 .offer-description-section {
@@ -1206,6 +1195,10 @@
 }
 
 
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
 .offer-detail-product {
 
     position: relative;
@@ -1215,7 +1208,7 @@
     grid-template-columns:
         32px minmax(0, 1fr) auto;
 
-    align-items: center;
+    align-items: start;
 
     gap: 14px;
 
@@ -1406,6 +1399,10 @@
 }
 
 
+/* =========================================================
+   PRODUCT TOTAL / SUMMARY QUANTITY
+========================================================= */
+
 .offer-product-quantity {
 
     flex-shrink: 0;
@@ -1459,6 +1456,543 @@
     line-height: 1;
 
     font-weight: 900;
+
+}
+
+
+/* =========================================================
+   VARIANT DETAILS PANEL
+========================================================= */
+
+.offer-product-variants {
+
+    grid-column: 2 / -1;
+
+    min-width: 0;
+
+    margin-top: 2px;
+
+    padding: 11px;
+
+    border:
+        1px solid rgba(7, 26, 43, 0.065);
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(249, 248, 244, 0.92),
+            rgba(255, 255, 255, 0.86)
+        );
+
+    box-sizing: border-box;
+
+}
+
+
+.offer-product-variants-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    min-width: 0;
+
+    margin-bottom: 8px;
+
+}
+
+
+.offer-product-variants-header > div {
+
+    min-width: 0;
+
+}
+
+
+.offer-product-variants-overline {
+
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #a07c40;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+}
+
+
+.offer-product-variants-header strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color: #263443;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    font-weight: 850;
+
+    text-overflow: ellipsis;
+
+}
+
+
+.offer-product-variants-count {
+
+    flex-shrink: 0;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 25px;
+
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(7, 26, 43, 0.07);
+
+    color: #4c5965;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   INNER VARIANT SCROLL
+========================================================= */
+
+.offer-product-variants-scroll {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    max-height: 230px;
+
+    overflow-y: auto;
+
+    overflow-x: hidden;
+
+    padding-left: 3px;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        rgba(7, 26, 43, 0.22)
+        transparent;
+
+}
+
+
+.offer-product-variants-scroll::-webkit-scrollbar {
+
+    width: 5px;
+
+}
+
+
+.offer-product-variants-scroll::-webkit-scrollbar-track {
+
+    background: transparent;
+
+}
+
+
+.offer-product-variants-scroll::-webkit-scrollbar-thumb {
+
+    border-radius: 999px;
+
+    background:
+        rgba(7, 26, 43, 0.20);
+
+}
+
+
+.offer-product-variants-scroll::-webkit-scrollbar-thumb:hover {
+
+    background:
+        rgba(7, 26, 43, 0.32);
+
+}
+
+
+/* =========================================================
+   SINGLE VARIANT ROW
+========================================================= */
+
+.offer-variant-detail-row {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-width: 0;
+
+    padding: 9px 10px;
+
+    border:
+        1px solid rgba(7, 26, 43, 0.06);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.88);
+
+    box-sizing: border-box;
+
+}
+
+
+.offer-variant-detail-main {
+
+    min-width: 0;
+
+}
+
+
+.offer-variant-detail-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    min-width: 0;
+
+    margin-bottom: 6px;
+
+}
+
+
+.offer-variant-detail-dot {
+
+    flex-shrink: 0;
+
+    width: 6px;
+
+    height: 6px;
+
+    border-radius: 50%;
+
+    background:
+        #b28b45;
+
+}
+
+
+.offer-variant-detail-heading strong {
+
+    color: #334150;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+
+    font-weight: 850;
+
+}
+
+
+.offer-variant-detail-sku {
+
+    max-width: 130px;
+
+    overflow: hidden;
+
+    padding: 2px 6px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(7, 26, 43, 0.045);
+
+    color: #8a949d;
+
+    font-size: 8px;
+
+    line-height: 1.4;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.offer-variant-detail-status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 17px;
+
+    padding: 2px 6px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(180, 83, 83, 0.09);
+
+    color: #a05050;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+}
+
+
+.offer-variant-detail-options {
+
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   OPTION CHIPS
+========================================================= */
+
+.offer-variant-options {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    min-width: 0;
+
+}
+
+
+.offer-variant-option {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 3px;
+
+    min-height: 25px;
+
+    max-width: 100%;
+
+    padding: 4px 7px;
+
+    border-radius: 7px;
+
+    background:
+        #f4f5f5;
+
+    border:
+        1px solid rgba(7, 26, 43, 0.055);
+
+    box-sizing: border-box;
+
+}
+
+
+.offer-variant-option-name {
+
+    color: #7a858f;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+}
+
+
+.offer-variant-option-separator {
+
+    color: #a9946a;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+}
+
+
+.offer-variant-option-value {
+
+    overflow: hidden;
+
+    color: #243444;
+
+    font-size: 9px;
+
+    font-weight: 850;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.offer-variant-no-options {
+
+    color: #8a949d;
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+}
+
+
+/* =========================================================
+   VARIANT QUANTITY
+========================================================= */
+
+.offer-variant-detail-quantity {
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 43px;
+
+    min-height: 43px;
+
+    padding: 4px;
+
+    border-radius: 8px;
+
+    background:
+        #071a2b;
+
+    box-sizing: border-box;
+
+}
+
+
+.offer-variant-detail-quantity span {
+
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 7px;
+
+    line-height: 1.3;
+
+    font-weight: 700;
+
+}
+
+
+.offer-variant-detail-quantity strong {
+
+    margin-top: 2px;
+
+    color: #f0d38f;
+
+    font-size: 14px;
+
+    line-height: 1;
+
+    font-weight: 900;
+
+}
+
+
+/* =========================================================
+   INACTIVE VARIANT
+========================================================= */
+
+.offer-variant-detail-inactive {
+
+    border-color:
+        rgba(160, 80, 80, 0.13);
+
+    background:
+        rgba(250, 246, 246, 0.88);
+
+}
+
+
+.offer-variant-detail-inactive
+.offer-variant-detail-dot {
+
+    background:
+        #a05050;
+
+}
+
+
+.offer-variant-detail-legacy {
+
+    border-style: dashed;
+
+    background:
+        rgba(250, 249, 246, 0.88);
+
+}
+
+
+.offer-variant-detail-legacy-status {
+
+    background:
+        rgba(190, 158, 91, 0.10);
+
+    color:
+        #987638;
+
+}
+
+
+.offer-variant-detail-legacy-text {
+
+    display: block;
+
+    color: #8a949d;
+
+    font-size: 9px;
+
+    line-height: 1.6;
 
 }
 
@@ -2258,7 +2792,7 @@
     }
 
 
-    /* Description section */
+    /* Description */
 
     .offer-description-section {
 
@@ -2375,6 +2909,8 @@
     }
 
 
+    /* Product card */
+
     .offer-detail-product {
 
         grid-template-columns:
@@ -2464,6 +3000,179 @@
     .offer-product-quantity strong {
 
         font-size: 13px;
+
+    }
+
+
+    /* Variant panel */
+
+    .offer-product-variants {
+
+        grid-column: 2;
+
+        margin-top: 1px;
+
+        padding: 9px;
+
+        border-radius: 11px;
+
+    }
+
+
+    .offer-product-variants-header {
+
+        gap: 8px;
+
+        margin-bottom: 7px;
+
+    }
+
+
+    .offer-product-variants-overline {
+
+        font-size: 8px;
+
+    }
+
+
+    .offer-product-variants-header strong {
+
+        font-size: 10px;
+
+    }
+
+
+    .offer-product-variants-count {
+
+        min-height: 22px;
+
+        padding: 3px 7px;
+
+        font-size: 8px;
+
+    }
+
+
+    .offer-product-variants-scroll {
+
+        max-height: 205px;
+
+        gap: 6px;
+
+    }
+
+
+    .offer-variant-detail-row {
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+
+        gap: 7px;
+
+        padding: 8px;
+
+        border-radius: 9px;
+
+    }
+
+
+    .offer-variant-detail-heading {
+
+        gap: 5px;
+
+        margin-bottom: 5px;
+
+    }
+
+
+    .offer-variant-detail-heading strong {
+
+        font-size: 9px;
+
+    }
+
+
+    .offer-variant-detail-sku {
+
+        max-width: 90px;
+
+        font-size: 7px;
+
+    }
+
+
+    .offer-variant-detail-status {
+
+        min-height: 15px;
+
+        padding: 2px 5px;
+
+        font-size: 7px;
+
+    }
+
+
+    .offer-variant-option {
+
+        min-height: 23px;
+
+        padding: 3px 6px;
+
+        border-radius: 6px;
+
+    }
+
+
+    .offer-variant-option-name {
+
+        font-size: 7px;
+
+    }
+
+
+    .offer-variant-option-separator {
+
+        font-size: 7px;
+
+    }
+
+
+    .offer-variant-option-value {
+
+        font-size: 8px;
+
+    }
+
+
+    .offer-variant-detail-quantity {
+
+        min-width: 39px;
+
+        min-height: 39px;
+
+        border-radius: 7px;
+
+    }
+
+
+    .offer-variant-detail-quantity span {
+
+        font-size: 6px;
+
+    }
+
+
+    .offer-variant-detail-quantity strong {
+
+        font-size: 12px;
+
+    }
+
+
+    .offer-variant-detail-legacy-text {
+
+        font-size: 8px;
 
     }
 
@@ -2628,6 +3337,34 @@
 
     }
 
+
+    .offer-product-variants {
+
+        padding: 8px;
+
+    }
+
+
+    .offer-product-variants-scroll {
+
+        max-height: 180px;
+
+    }
+
+
+    .offer-variant-detail-row {
+
+        padding: 7px;
+
+    }
+
+
+    .offer-variant-option {
+
+        max-width: 100%;
+
+    }
+
 }
 
 
@@ -2726,6 +3463,13 @@
     .offer-detail-products {
 
         padding-top: 30px;
+
+    }
+
+
+    .offer-product-variants {
+
+        grid-column: 2 / -1;
 
     }
 

@@ -1,40 +1,50 @@
-  // ==========================================
-    // عناصر الصفحة
-    // ==========================================
-
-    const offerDetails =
-        document.getElementById(
-            "offerDetails"
-        );
+// ==========================================================
+// AL YOSRA STORE
+// OFFER DETAILS
+// ==========================================================
 
 
-    const offerToast =
-        document.getElementById(
-            "offerToast"
-        );
+// ==========================================
+// عناصر الصفحة
+// ==========================================
+
+const offerDetails =
+    document.getElementById(
+        "offerDetails"
+    );
 
 
-    const offerToastText =
-        document.getElementById(
-            "offerToastText"
-        );
+const offerToast =
+    document.getElementById(
+        "offerToast"
+    );
 
 
-
-    // ==========================================
-    // قراءة رقم العرض من الرابط
-    // ==========================================
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+const offerToastText =
+    document.getElementById(
+        "offerToastText"
+    );
 
 
-    const offerId =
-        params.get("id");
+// ==========================================
+// قراءة رقم العرض من الرابط
+// ==========================================
 
-        const OFFER_CART_SNAPSHOTS_KEY =
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const offerId =
+    params.get("id");
+
+
+// ==========================================
+// لقطة بيانات العرض المحلية للسلة
+// ==========================================
+
+const OFFER_CART_SNAPSHOTS_KEY =
     "alYosraOfferCartSnapshots_v1";
 
 
@@ -42,20 +52,25 @@ function saveOfferCartSnapshot(
     offer,
     quantity
 ) {
+
     try {
+
         const raw =
             localStorage.getItem(
                 OFFER_CART_SNAPSHOTS_KEY
             );
+
 
         const snapshots =
             raw
                 ? JSON.parse(raw)
                 : {};
 
+
         snapshots[
             `offer_${offer.id}`
         ] = {
+
             offerId:
                 String(offer.id),
 
@@ -73,77 +88,1022 @@ function saveOfferCartSnapshot(
 
             savedAt:
                 Date.now()
+
         };
+
 
         localStorage.setItem(
             OFFER_CART_SNAPSHOTS_KEY,
             JSON.stringify(snapshots)
         );
 
+
     } catch (error) {
+
         console.warn(
             "تعذر حفظ بيانات العرض المحلية:",
             error
         );
+
     }
+
 }
 
 
-    // ==========================================
-    // رسالة النجاح
-    // ==========================================
+// ==========================================
+// رسالة النجاح
+// ==========================================
 
-    let toastTimer;
-
-
-    function showOfferToast(message) {
-
-        if (!offerToast) {
-            return;
-        }
+let toastTimer;
 
 
-        if (offerToastText) {
+function showOfferToast(message) {
 
-            offerToastText.textContent =
-                message;
-
-        }
-
-
-        offerToast.classList.add(
-            "show"
-        );
+    if (!offerToast) {
+        return;
+    }
 
 
-        clearTimeout(
-            toastTimer
-        );
+    if (offerToastText) {
 
-
-        toastTimer =
-            setTimeout(
-                () => {
-
-                    offerToast.classList.remove(
-                        "show"
-                    );
-
-                },
-                3000
-            );
+        offerToastText.textContent =
+            message;
 
     }
 
 
+    offerToast.classList.add(
+        "show"
+    );
 
-    // ==========================================
-    // تحميل تفاصيل العرض
-    // ==========================================
 
-    async function loadOfferDetails() {
+    clearTimeout(
+        toastTimer
+    );
 
-        if (!offerId) {
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                offerToast.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
+}
+
+
+// ==========================================
+// أدوات مساعدة
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function normalizeId(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return null;
+
+    }
+
+
+    return String(value);
+
+}
+
+
+// ==========================================
+// تحميل Variants الخاصة بعناصر العرض
+// ==========================================
+//
+// يتم استدعاء هذه الدالة مرة واحدة فقط بعد
+// تحميل offer_items.
+//
+// لا يوجد طلب منفصل لكل Variant.
+// ==========================================
+
+async function loadOfferVariants(
+    offerItems
+) {
+
+    const variantIds = [
+        ...new Set(
+            offerItems
+                .map(
+                    item =>
+                        normalizeId(
+                            item.variant_id
+                        )
+                )
+                .filter(Boolean)
+        )
+    ];
+
+
+    if (!variantIds.length) {
+
+        return new Map();
+
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("product_variants")
+
+        .select(`
+            id,
+            product_id,
+            sku,
+            price,
+            quantity,
+            active,
+            product_variant_options (
+                option_value_id,
+                product_option_values (
+                    id,
+                    value,
+                    option_group_id,
+                    product_option_groups (
+                        id,
+                        name,
+                        sort_order
+                    )
+                )
+            )
+        `)
+
+        .in(
+            "id",
+            variantIds
+        );
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    const variantMap =
+        new Map();
+
+
+    (data || []).forEach(
+        variant => {
+
+            const optionRows =
+                Array.isArray(
+                    variant.product_variant_options
+                )
+                    ? variant.product_variant_options
+                    : [];
+
+
+            const options = [];
+
+
+            optionRows.forEach(
+                row => {
+
+                    const optionValue =
+                        row.product_option_values;
+
+
+                    if (!optionValue) {
+                        return;
+                    }
+
+
+                    const group =
+                        optionValue.product_option_groups;
+
+
+                    options.push({
+
+                        groupId:
+                            optionValue.option_group_id,
+
+                        groupName:
+                            group?.name ||
+                            "الخيار",
+
+                        groupSortOrder:
+                            Number(
+                                group?.sort_order
+                            ) || 0,
+
+                        valueId:
+                            optionValue.id,
+
+                        value:
+                            optionValue.value || ""
+
+                    });
+
+                }
+            );
+
+
+            options.sort(
+                (a, b) => {
+
+                    if (
+                        a.groupSortOrder !==
+                        b.groupSortOrder
+                    ) {
+
+                        return (
+                            a.groupSortOrder -
+                            b.groupSortOrder
+                        );
+
+                    }
+
+
+                    return String(
+                        a.groupName
+                    ).localeCompare(
+                        String(
+                            b.groupName
+                        ),
+                        "ar"
+                    );
+
+                }
+            );
+
+
+            variantMap.set(
+                normalizeId(
+                    variant.id
+                ),
+                {
+                    ...variant,
+                    options
+                }
+            );
+
+        }
+    );
+
+
+    return variantMap;
+
+}
+
+
+// ==========================================
+// إنشاء اسم مختصر للـVariant
+// للاستخدام في الحالات الاحتياطية فقط
+// ==========================================
+
+function getVariantOptionsSummary(
+    variant
+) {
+
+    if (
+        !variant ||
+        !Array.isArray(variant.options) ||
+        !variant.options.length
+    ) {
+
+        return "";
+
+    }
+
+
+    return variant.options
+        .map(
+            option =>
+                `${option.groupName}: ${option.value}`
+        )
+        .join(" • ");
+
+}
+
+
+// ==========================================
+// إنشاء HTML للخيارات الخاصة بـVariant
+// ==========================================
+
+function createVariantOptionsHTML(
+    variant
+) {
+
+    if (
+        !variant ||
+        !Array.isArray(variant.options) ||
+        !variant.options.length
+    ) {
+
+        return `
+
+            <div class="offer-variant-no-options">
+
+                <span>
+                    خيار المنتج
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div
+            class="offer-variant-options"
+            aria-label="خيارات المنتج"
+        >
+
+            ${variant.options
+                .map(
+                    option => `
+
+                        <span
+                            class="offer-variant-option"
+                        >
+
+                            <span
+                                class="offer-variant-option-name"
+                            >
+                                ${escapeHTML(
+                                    option.groupName
+                                )}
+                            </span>
+
+                            <span
+                                class="offer-variant-option-separator"
+                            >
+                                :
+                            </span>
+
+                            <strong
+                                class="offer-variant-option-value"
+                            >
+                                ${escapeHTML(
+                                    option.value
+                                )}
+                            </strong>
+
+                        </span>
+
+                    `
+                )
+                .join("")}
+
+        </div>
+
+    `;
+
+}
+
+
+// ==========================================
+// إنشاء صف Variant
+// ==========================================
+
+function createOfferVariantRow(
+    item,
+    variant
+) {
+
+    const quantity =
+        Number(
+            item.quantity
+        ) || 0;
+
+
+    const isLegacy =
+        !item.variant_id;
+
+
+    const inactiveClass =
+        variant &&
+        variant.active === false
+            ? " offer-variant-detail-inactive"
+            : "";
+
+
+    const skuHTML =
+        variant?.sku
+
+            ? `
+
+                <span
+                    class="offer-variant-detail-sku"
+                >
+                    SKU:
+                    ${escapeHTML(
+                        variant.sku
+                    )}
+                </span>
+
+              `
+
+            : "";
+
+
+    const inactiveHTML =
+        variant &&
+        variant.active === false
+
+            ? `
+
+                <span
+                    class="offer-variant-detail-status"
+                >
+                    غير فعال
+                </span>
+
+              `
+
+            : "";
+
+
+    if (isLegacy) {
+
+        return `
+
+            <div
+                class="offer-variant-detail-row offer-variant-detail-legacy"
+            >
+
+                <div
+                    class="offer-variant-detail-main"
+                >
+
+                    <div
+                        class="offer-variant-detail-heading"
+                    >
+
+                        <span
+                            class="offer-variant-detail-dot"
+                        ></span>
+
+                        <strong>
+                            المنتج الأساسي
+                        </strong>
+
+                        <span
+                            class="offer-variant-detail-status offer-variant-detail-legacy-status"
+                        >
+                            سجل قديم
+                        </span>
+
+                    </div>
+
+                    <span
+                        class="offer-variant-detail-legacy-text"
+                    >
+                        هذا العنصر محفوظ في العرض دون تحديد خيار محدد.
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="offer-variant-detail-quantity"
+                >
+
+                    <span>
+                        الكمية
+                    </span>
+
+                    <strong>
+                        ${quantity}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div
+            class="offer-variant-detail-row${inactiveClass}"
+        >
+
+            <div
+                class="offer-variant-detail-main"
+            >
+
+                <div
+                    class="offer-variant-detail-heading"
+                >
+
+                    <span
+                        class="offer-variant-detail-dot"
+                    ></span>
+
+                    <strong>
+                        ${getVariantOptionsSummary(variant)
+                            ? "الخيار المحدد"
+                            : "تفاصيل المنتج"}
+                    </strong>
+
+                    ${skuHTML}
+
+                    ${inactiveHTML}
+
+                </div>
+
+
+                ${createVariantOptionsHTML(
+                    variant
+                )}
+
+            </div>
+
+
+            <div
+                class="offer-variant-detail-quantity"
+            >
+
+                <span>
+                    الكمية
+                </span>
+
+                <strong>
+                    ${quantity}
+                </strong>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+// ==========================================
+// تجميع عناصر العرض حسب المنتج
+// ==========================================
+
+function groupOfferItemsByProduct(
+    items
+) {
+
+    const groups =
+        new Map();
+
+
+    items.forEach(
+        item => {
+
+            const product =
+                item.products;
+
+
+            const productId =
+                normalizeId(
+                    product?.id
+                );
+
+
+            if (!productId) {
+                return;
+            }
+
+
+            if (!groups.has(productId)) {
+
+                groups.set(
+                    productId,
+                    {
+                        product,
+                        items: []
+                    }
+                );
+
+            }
+
+
+            groups
+                .get(productId)
+                .items
+                .push(item);
+
+        }
+    );
+
+
+    return [
+        ...groups.values()
+    ];
+
+}
+
+
+// ==========================================
+// إنشاء بطاقة المنتج
+// ==========================================
+
+function createOfferProductCard(
+    group,
+    index,
+    variantMap
+) {
+
+    const product =
+        group.product;
+
+
+    const items =
+        group.items;
+
+
+    const variantItems =
+        items.filter(
+            item =>
+                Boolean(
+                    item.variant_id
+                )
+        );
+
+
+    const hasVariants =
+        variantItems.length > 0;
+
+
+    const productDescription =
+        product?.description;
+
+
+    const variantRowsHTML =
+        items
+            .map(
+                item => {
+
+                    const variant =
+                        item.variant_id
+                            ? variantMap.get(
+                                normalizeId(
+                                    item.variant_id
+                                )
+                            )
+                            : null;
+
+
+                    return createOfferVariantRow(
+                        item,
+                        variant
+                    );
+
+                }
+            )
+            .join("");
+
+
+    const variantCount =
+        items.length;
+
+
+    const quantityLabel =
+        variantCount === 1
+            ? "تفصيل واحد"
+            : `${variantCount} تفاصيل`;
+
+
+    return `
+
+        <article
+            class="offer-detail-product"
+        >
+
+            <div
+                class="offer-product-number"
+            >
+                ${String(
+                    index + 1
+                ).padStart(2, "0")}
+            </div>
+
+
+            <div
+                class="offer-product-detail-info"
+            >
+
+                ${
+                    product?.main_image
+
+                        ? `
+
+                            <div
+                                class="offer-product-image-wrap"
+                            >
+
+                                <img
+                                    src="${escapeHTML(
+                                        product.main_image
+                                    )}"
+                                    alt="${escapeHTML(
+                                        product?.name ||
+                                        "منتج"
+                                    )}"
+                                    class="offer-product-detail-image"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+
+                            </div>
+
+                          `
+
+                        : `
+
+                            <div
+                                class="offer-product-image-wrap offer-product-image-empty"
+                            >
+                                <span>
+                                    اليُسرى
+                                </span>
+                            </div>
+
+                          `
+                }
+
+
+                <div
+                    class="offer-product-text"
+                >
+
+                    <span
+                        class="offer-product-label"
+                    >
+                        منتج ضمن العرض
+                    </span>
+
+
+                    <strong>
+                        ${escapeHTML(
+                            product?.name ||
+                            "منتج"
+                        )}
+                    </strong>
+
+
+                    ${
+                        productDescription
+
+                            ? `
+
+                                <p>
+                                    ${escapeHTML(
+                                        productDescription
+                                    )}
+                                </p>
+
+                              `
+
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="offer-product-quantity"
+            >
+
+                <span>
+                    ${hasVariants
+                        ? quantityLabel
+                        : "الكمية"}
+                </span>
+
+                <strong>
+                    ${
+                        hasVariants
+                            ? variantCount
+                            : (
+                                Number(
+                                    items[0]?.quantity
+                                ) || 0
+                            )
+                    }
+                </strong>
+
+            </div>
+
+
+            <div
+                class="offer-product-variants"
+            >
+
+                <div
+                    class="offer-product-variants-header"
+                >
+
+                    <div>
+
+                        <span
+                            class="offer-product-variants-overline"
+                        >
+                            ${
+                                hasVariants
+                                    ? "الخيارات المحددة"
+                                    : "تفاصيل الكمية"
+                            }
+                        </span>
+
+                        <strong>
+                            ${
+                                hasVariants
+                                    ? "تفاصيل هذا المنتج"
+                                    : "الكمية ضمن العرض"
+                            }
+                        </strong>
+
+                    </div>
+
+
+                    ${
+                        hasVariants
+
+                            ? `
+
+                                <span
+                                    class="offer-product-variants-count"
+                                >
+                                    ${variantCount}
+                                    ${
+                                        variantCount === 1
+                                            ? "خيار"
+                                            : "خيارات"
+                                    }
+                                </span>
+
+                              `
+
+                            : ""
+                    }
+
+                </div>
+
+
+                <div
+                    class="offer-product-variants-scroll"
+                >
+
+                    ${variantRowsHTML}
+
+                </div>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+// ==========================================
+// تحميل تفاصيل العرض
+// ==========================================
+
+async function loadOfferDetails() {
+
+    if (!offerId) {
+
+        offerDetails.innerHTML = `
+
+            <div class="offer-details-state">
+
+                <div class="offer-state-icon">
+                    !
+                </div>
+
+                <h1>
+                    العرض غير موجود
+                </h1>
+
+                <p>
+                    لم يتم العثور على العرض المطلوب.
+                </p>
+
+                <a
+                    href="offers.html"
+                    class="offer-state-button"
+                >
+                    العودة إلى العروض
+                </a>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    try {
+
+        // ==================================
+        // بيانات العرض + عناصره
+        // ==================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from("offers")
+
+            .select(`
+                id,
+                name,
+                description,
+                price,
+                image,
+                quantity,
+                active,
+                offer_items (
+                    quantity,
+                    variant_id,
+                    products (
+                        id,
+                        name,
+                        description,
+                        price,
+                        main_image
+                    )
+                )
+            `)
+
+            .eq(
+                "id",
+                offerId
+            )
+
+            .eq(
+                "active",
+                true
+            )
+
+            .single();
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        if (!data) {
 
             offerDetails.innerHTML = `
 
@@ -158,14 +1118,14 @@ function saveOfferCartSnapshot(
                     </h1>
 
                     <p>
-                        لم يتم العثور على العرض المطلوب.
+                        قد يكون العرض انتهى أو لم يعد متاحًا.
                     </p>
 
                     <a
                         href="offers.html"
                         class="offer-state-button"
                     >
-                        العودة إلى العروض
+                        استكشاف العروض
                     </a>
 
                 </div>
@@ -177,12 +1137,505 @@ function saveOfferCartSnapshot(
         }
 
 
+        // ==================================
+        // منتجات العرض
+        // ==================================
+
+        const offerItems =
+            Array.isArray(
+                data.offer_items
+            )
+                ? data.offer_items
+                : [];
+
+
+        // ==================================
+        // تحميل بيانات الـVariants
+        // ==================================
+
+        const variantMap =
+            await loadOfferVariants(
+                offerItems
+            );
+
+
+        // ==================================
+        // تجميع المنتجات
+        // ==================================
+
+        const productGroups =
+            groupOfferItemsByProduct(
+                offerItems
+            );
+
+
+        // ==================================
+        // إنشاء بطاقات المنتجات
+        // ==================================
+
+        const productsHTML =
+            productGroups
+
+                .map(
+                    (group, index) =>
+                        createOfferProductCard(
+                            group,
+                            index,
+                            variantMap
+                        )
+                )
+
+                .join("");
+
+
+        // ==================================
+        // عرض الصفحة
+        // ==================================
+
+        offerDetails.innerHTML = `
+
+            <article class="offer-details-shell">
+
+
+                <!-- =================================
+                     Hero / المعلومات الرئيسية
+                ================================== -->
+
+                <section
+                    class="offer-details-hero"
+                >
+
+                    <div
+                        class="offer-details-visual"
+                    >
+
+                        <div
+                            class="offer-visual-frame"
+                        >
+
+                            <div
+                                class="offer-visual-glow"
+                            ></div>
+
+
+                            ${
+                                data.image
+
+                                    ? `
+
+                                        <img
+                                            src="${escapeHTML(
+                                                data.image
+                                            )}"
+                                            alt="${escapeHTML(
+                                                data.name
+                                            )}"
+                                            class="offer-detail-image"
+                                            fetchpriority="high"
+                                            decoding="async"
+                                        >
+
+                                      `
+
+                                    : `
+
+                                        <div
+                                            class="offer-no-image"
+                                        >
+                                            <span>
+                                                متجر اليُسرى
+                                            </span>
+                                        </div>
+
+                                      `
+                            }
+
+
+                            <div
+                                class="offer-image-badge"
+                            >
+                                عرض خاص
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="offer-details-info"
+                    >
+
+                        <div
+                            class="offer-details-eyebrow"
+                        >
+
+                            <span
+                                class="offer-eyebrow-line"
+                            ></span>
+
+                            <span>
+                                عرض متجر اليُسرى
+                            </span>
+
+                        </div>
+
+
+                        <span
+                            class="offer-details-label"
+                        >
+                            عرض مميز
+                        </span>
+
+
+                        <h1>
+                            ${escapeHTML(
+                                data.name
+                            )}
+                        </h1>
+
+
+                        <div
+                            class="offer-detail-divider"
+                        ></div>
+
+
+                        <div
+                            class="offer-price-area"
+                        >
+
+                            <span
+                                class="offer-price-label"
+                            >
+                                سعر العرض
+                            </span>
+
+
+                            <div
+                                class="offer-detail-price"
+                            >
+
+                                <span
+                                    class="offer-price-currency"
+                                >
+                                    $
+                                </span>
+
+                                <span>
+                                    ${Number(
+                                        data.price
+                                    ).toFixed(2)}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            class="offer-cart-button"
+                            type="button"
+                            data-offer-id="${escapeHTML(
+                                data.id
+                            )}"
+                        >
+
+                            <span
+                                class="offer-cart-button-icon"
+                            >
+                                🛒
+                            </span>
+
+                            <span>
+                                أضف العرض إلى السلة
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================
+                     وصف العرض
+                ================================== -->
+
+                ${
+                    data.description
+
+                        ? `
+
+                            <section
+                                class="offer-description-section"
+                            >
+
+                                <div
+                                    class="offer-description-heading"
+                                >
+
+                                    <div>
+
+                                        <span
+                                            class="offer-description-overline"
+                                        >
+                                            تفاصيل العرض
+                                        </span>
+
+                                        <h2>
+                                            عن هذا العرض
+                                        </h2>
+
+                                    </div>
+
+
+                                    <span
+                                        class="offer-description-mark"
+                                    >
+                                        DESCRIPTION
+                                    </span>
+
+                                </div>
+
+
+                                <div
+                                    class="offer-description-box"
+                                >
+
+                                    <div
+                                        class="offer-description-scroll"
+                                    >
+
+                                        <p>
+                                            ${escapeHTML(
+                                                data.description
+                                            )}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+                          `
+
+                        : ""
+                }
+
+
+                <!-- =================================
+                     فاصل زخرفي
+                ================================== -->
+
+                <div
+                    class="offer-details-section-divider"
+                >
+
+                    <span></span>
+
+                    <div
+                        class="offer-divider-diamond"
+                    >
+                        ◆
+                    </div>
+
+                    <span></span>
+
+                </div>
+
+
+                <!-- =================================
+                     محتويات العرض
+                ================================== -->
+
+                <section
+                    class="offer-detail-products"
+                >
+
+                    <div
+                        class="offer-products-heading"
+                    >
+
+                        <div>
+
+                            <span
+                                class="offer-products-overline"
+                            >
+                                مكونات العرض
+                            </span>
+
+                            <h2>
+                                ما الذي يتضمنه هذا العرض؟
+                            </h2>
+
+                            <p>
+                                منتجات مختارة بعناية ضمن عرض واحد.
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            class="offer-products-count"
+                        >
+
+                            <strong>
+                                ${productGroups.length}
+                            </strong>
+
+                            <span>
+                                ${
+                                    productGroups.length === 1
+                                        ? "منتج"
+                                        : "منتجات"
+                                }
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="offer-products-list"
+                    >
+
+                        ${
+                            productsHTML
+
+                                ||
+
+                            `
+
+                                <div
+                                    class="offer-products-empty"
+                                >
+                                    لا توجد منتجات ضمن هذا العرض حاليًا.
+                                </div>
+
+                            `
+                        }
+
+                    </div>
+
+                </section>
+
+
+            </article>
+
+        `;
+
+
+    } catch (error) {
+
+        console.error(
+            "خطأ في تحميل تفاصيل العرض:",
+            error
+        );
+
+
+        offerDetails.innerHTML = `
+
+            <div class="offer-details-state">
+
+                <div class="offer-state-icon">
+                    !
+                </div>
+
+                <h1>
+                    تعذر تحميل العرض
+                </h1>
+
+                <p>
+                    حدث خطأ أثناء تحميل تفاصيل العرض. يرجى المحاولة مرة أخرى.
+                </p>
+
+                <button
+                    type="button"
+                    class="offer-state-button"
+                    onclick="loadOfferDetails()"
+                >
+                    المحاولة مرة أخرى
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+// ==========================================
+// إضافة العرض إلى السلة
+// ==========================================
+
+document.addEventListener(
+    "click",
+    async function(event) {
+
+        const button =
+            event.target.closest(
+                ".offer-cart-button"
+            );
+
+
+        if (!button) {
+            return;
+        }
+
+
+        const selectedOfferId =
+            button.dataset.offerId;
+
+
+        if (!selectedOfferId) {
+            return;
+        }
+
+
+        // ==================================
+        // منع الضغط المتكرر
+        // ==================================
+
+        if (button.disabled) {
+            return;
+        }
+
+
+        button.disabled = true;
+
+
+        const originalText =
+            button.innerHTML;
+
+
+        button.innerHTML = `
+
+            <span
+                class="offer-cart-button-icon"
+            >
+                …
+            </span>
+
+            <span>
+                جاري التحقق...
+            </span>
+
+        `;
+
 
         try {
 
+            // ==================================
+            // جلب مخزون العرض فقط
+            // ==================================
+
             const {
-                data,
-                error
+                data: offerData,
+                error: offerError
             } = await supabaseClient
 
                 .from("offers")
@@ -190,26 +1643,15 @@ function saveOfferCartSnapshot(
                 .select(`
                     id,
                     name,
-                    description,
-                    price,
                     image,
+                    price,
                     quantity,
-                    active,
-                    offer_items (
-                        quantity,
-                        products (
-                            id,
-                            name,
-                            description,
-                            price,
-                            main_image
-                        )
-                    )
+                    active
                 `)
 
                 .eq(
                     "id",
-                    offerId
+                    selectedOfferId
                 )
 
                 .eq(
@@ -220,831 +1662,200 @@ function saveOfferCartSnapshot(
                 .single();
 
 
+            if (offerError) {
 
-            if (error) {
-
-                throw error;
+                throw offerError;
 
             }
 
 
+            if (!offerData) {
 
-            if (!data) {
+                throw new Error(
+                    "تعذر العثور على بيانات العرض."
+                );
 
-                offerDetails.innerHTML = `
+            }
 
-                    <div class="offer-details-state">
 
-                        <div class="offer-state-icon">
-                            !
-                        </div>
+            // ==================================
+            // مخزون العرض
+            // ==================================
 
-                        <h1>
-                            العرض غير موجود
-                        </h1>
+            const maxOfferQuantity =
+                Number(
+                    offerData.quantity
+                ) || 0;
 
-                        <p>
-                            قد يكون العرض انتهى أو لم يعد متاحًا.
-                        </p>
 
-                        <a
-                            href="offers.html"
-                            class="offer-state-button"
-                        >
-                            استكشاف العروض
-                        </a>
+            // ==================================
+            // قراءة السلة الحالية
+            // ==================================
 
-                    </div>
+            const cart =
+                JSON.parse(
+                    localStorage.getItem(
+                        "cart"
+                    )
+                ) || {};
 
-                `;
+
+            const cartKey =
+                "offer_" +
+                selectedOfferId;
+
+
+            const currentQuantity =
+                Number(
+                    cart[cartKey]
+                ) || 0;
+
+
+            // ==================================
+            // التحقق من المخزون
+            // ==================================
+
+            if (
+                maxOfferQuantity <= 0
+            ) {
+
+                showOfferToast(
+                    "هذا العرض غير متوفر حاليًا."
+                );
 
                 return;
 
             }
 
 
+            if (
+                currentQuantity >=
+                maxOfferQuantity
+            ) {
 
-            // ==================================
-            // منتجات العرض
-            // ==================================
+                showOfferToast(
+                    `لا يمكنك إضافة أكثر من ${maxOfferQuantity} من هذا العرض.`
+                );
 
-            const products =
-                data.offer_items || [];
+                return;
 
-
-
-            const productsHTML =
-                products
-
-                    .map(
-                        (item, index) => `
-
-                            <article
-                                class="offer-detail-product"
-                            >
-
-                                <div class="offer-product-number">
-                                    ${String(index + 1).padStart(2, "0")}
-                                </div>
-
-
-                                <div
-                                    class="offer-product-detail-info"
-                                >
-
-                                    ${
-                                        item.products?.main_image
-
-                                            ? `
-
-                                                <div
-                                                    class="offer-product-image-wrap"
-                                                >
-
-                                                    <img
-                                                        src="${item.products.main_image}"
-                                                        alt="${item.products?.name || "منتج"}"
-                                                        class="offer-product-detail-image"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                    >
-
-                                                </div>
-
-                                              `
-
-                                            : `
-
-                                                <div
-                                                    class="offer-product-image-wrap offer-product-image-empty"
-                                                >
-                                                    <span>اليُسرى</span>
-                                                </div>
-
-                                              `
-                                    }
-
-
-                                    <div
-                                        class="offer-product-text"
-                                    >
-
-                                        <span
-                                            class="offer-product-label"
-                                        >
-                                            منتج ضمن العرض
-                                        </span>
-
-
-                                        <strong>
-                                            ${
-                                                item.products?.name ||
-                                                "منتج"
-                                            }
-                                        </strong>
-
-
-                                        ${
-                                            item.products?.description
-
-                                                ? `
-
-                                                    <p>
-                                                        ${item.products.description}
-                                                    </p>
-
-                                                  `
-
-                                                : ""
-                                        }
-
-                                    </div>
-
-                                </div>
-
-
-                                <div
-                                    class="offer-product-quantity"
-                                >
-
-                                    <span>
-                                        الكمية
-                                    </span>
-
-                                    <strong>
-                                        ${item.quantity}
-                                    </strong>
-
-                                </div>
-
-                            </article>
-
-                        `
-                    )
-
-                    .join("");
-
+            }
 
 
             // ==================================
-            // عرض الصفحة
+            // إضافة العرض
             // ==================================
 
-            offerDetails.innerHTML = `
+            cart[cartKey] =
+                currentQuantity + 1;
 
-                <article class="offer-details-shell">
 
+            saveOfferCartSnapshot(
+                {
+                    id:
+                        offerData.id,
 
-                    <!-- =================================
-                         Hero / المعلومات الرئيسية
-                    ================================== -->
+                    name:
+                        offerData.name,
 
-                    <section
-                        class="offer-details-hero"
-                    >
+                    image:
+                        offerData.image,
 
+                    price:
+                        offerData.price,
 
-                        <div
-                            class="offer-details-visual"
-                        >
+                    quantity:
+                        offerData.quantity
+                },
+                currentQuantity + 1
+            );
 
-                            <div
-                                class="offer-visual-frame"
-                            >
 
-                                <div
-                                    class="offer-visual-glow"
-                                ></div>
+            // ==================================
+            // حفظ السلة
+            // ==================================
 
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(cart)
+            );
 
-                                ${
-                                    data.image
 
-                                        ? `
+            // ==================================
+            // تحديث عداد السلة
+            // ==================================
 
-                                            <img
-                                                src="${data.image}"
-                                                alt="${data.name}"
-                                                class="offer-detail-image"
-                                                fetchpriority="high"
-                                                decoding="async"
-                                            >
+            if (
+                typeof updateCartCount ===
+                "function"
+            ) {
 
-                                          `
+                updateCartCount();
 
-                                        : `
+            }
 
-                                            <div
-                                                class="offer-no-image"
-                                            >
-                                                <span>
-                                                    متجر اليُسرى
-                                                </span>
-                                            </div>
 
-                                          `
-                                }
+            // ==================================
+            // رسالة النجاح
+            // ==================================
 
+            const remaining =
+                maxOfferQuantity -
+                (
+                    currentQuantity +
+                    1
+                );
 
-                                <div
-                                    class="offer-image-badge"
-                                >
-                                    عرض خاص
-                                </div>
 
-                            </div>
+            if (remaining > 0) {
 
-                        </div>
+                showOfferToast(
+                    `تمت إضافة العرض إلى السلة. يمكنك إضافة ${remaining} عرض إضافي.`
+                );
 
+            } else {
 
+                showOfferToast(
+                    "تمت إضافة العرض إلى السلة."
+                );
 
-                        <div
-                            class="offer-details-info"
-                        >
-
-                            <div
-                                class="offer-details-eyebrow"
-                            >
-
-                                <span class="offer-eyebrow-line"></span>
-
-                                <span>
-                                    عرض متجر اليُسرى
-                                </span>
-
-                            </div>
-
-
-                            <span
-                                class="offer-details-label"
-                            >
-                                عرض مميز
-                            </span>
-
-
-                            <h1>
-                                ${data.name}
-                            </h1>
-
-
-                            <div
-                                class="offer-detail-divider"
-                            ></div>
-
-
-
-                            <div
-                                class="offer-price-area"
-                            >
-
-                                <span
-                                    class="offer-price-label"
-                                >
-                                    سعر العرض
-                                </span>
-
-
-                                <div
-                                    class="offer-detail-price"
-                                >
-
-                                    <span class="offer-price-currency">
-                                        $
-                                    </span>
-
-                                    <span>
-                                        ${Number(data.price).toFixed(2)}
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-
-
-                            <button
-                                class="offer-cart-button"
-                                type="button"
-                                data-offer-id="${data.id}"
-                            >
-
-                                <span class="offer-cart-button-icon">
-                                    🛒
-                                </span>
-
-                                <span>
-                                    أضف العرض إلى السلة
-                                </span>
-
-                            </button>
-
-
-                        </div>
-
-
-                    </section>
-
-
-
-                    <!-- =================================
-                         وصف العرض
-                    ================================== -->
-
-                    ${
-                        data.description
-
-                            ? `
-
-                                <section
-                                    class="offer-description-section"
-                                >
-
-                                    <div
-                                        class="offer-description-heading"
-                                    >
-
-                                        <div>
-
-                                            <span
-                                                class="offer-description-overline"
-                                            >
-                                                تفاصيل العرض
-                                            </span>
-
-                                            <h2>
-                                                عن هذا العرض
-                                            </h2>
-
-                                        </div>
-
-
-                                        <span
-                                            class="offer-description-mark"
-                                        >
-                                            DESCRIPTION
-                                        </span>
-
-                                    </div>
-
-
-                                    <div
-                                        class="offer-description-box"
-                                    >
-
-                                        <div
-                                            class="offer-description-scroll"
-                                        >
-
-                                            <p>
-                                                ${data.description}
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                </section>
-
-                              `
-
-                            : ""
-                    }
-
-
-
-                    <!-- =================================
-                         فاصل زخرفي
-                    ================================== -->
-
-                    <div
-                        class="offer-details-section-divider"
-                    >
-
-                        <span></span>
-
-                        <div class="offer-divider-diamond">
-                            ◆
-                        </div>
-
-                        <span></span>
-
-                    </div>
-
-
-
-                    <!-- =================================
-                         محتويات العرض
-                    ================================== -->
-
-                    <section
-                        class="offer-detail-products"
-                    >
-
-
-                        <div
-                            class="offer-products-heading"
-                        >
-
-                            <div>
-
-                                <span
-                                    class="offer-products-overline"
-                                >
-                                    مكونات العرض
-                                </span>
-
-                                <h2>
-                                    ما الذي يتضمنه هذا العرض؟
-                                </h2>
-
-                                <p>
-                                    منتجات مختارة بعناية ضمن عرض واحد.
-                                </p>
-
-                            </div>
-
-
-                            <div
-                                class="offer-products-count"
-                            >
-
-                                <strong>
-                                    ${products.length}
-                                </strong>
-
-                                <span>
-                                    ${
-                                        products.length === 1
-                                            ? "منتج"
-                                            : "منتجات"
-                                    }
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <div
-                            class="offer-products-list"
-                        >
-
-                            ${
-                                productsHTML
-
-                                    ||
-
-                                `
-
-                                    <div
-                                        class="offer-products-empty"
-                                    >
-
-                                        لا توجد منتجات ضمن هذا العرض حاليًا.
-
-                                    </div>
-
-                                `
-                            }
-
-                        </div>
-
-
-                    </section>
-
-
-                </article>
-
-            `;
+            }
 
 
         } catch (error) {
 
             console.error(
-                "خطأ في تحميل تفاصيل العرض:",
+                "خطأ أثناء التحقق من مخزون العرض:",
                 error
             );
 
 
-            offerDetails.innerHTML = `
+            showOfferToast(
+                "تعذر التحقق من مخزون العرض حاليًا."
+            );
 
-                <div class="offer-details-state">
 
-                    <div class="offer-state-icon">
-                        !
-                    </div>
+        } finally {
 
-                    <h1>
-                        تعذر تحميل العرض
-                    </h1>
+            // ==================================
+            // إعادة الزر
+            // ==================================
 
-                    <p>
-                        حدث خطأ أثناء تحميل تفاصيل العرض. يرجى المحاولة مرة أخرى.
-                    </p>
+            button.disabled =
+                false;
 
-                    <button
-                        type="button"
-                        class="offer-state-button"
-                        onclick="loadOfferDetails()"
-                    >
-                        المحاولة مرة أخرى
-                    </button>
 
-                </div>
-
-            `;
+            button.innerHTML =
+                originalText;
 
         }
 
     }
-
-
-
-    // ==========================================
-    // إضافة العرض إلى السلة
-    // ==========================================
-
-    document.addEventListener(
-        "click",
-        async function(event) {
-
-            const button =
-                event.target.closest(
-                    ".offer-cart-button"
-                );
-
-
-            if (!button) {
-                return;
-            }
-
-
-            const selectedOfferId =
-                button.dataset.offerId;
-
-
-            if (!selectedOfferId) {
-                return;
-            }
-
-
-            // ==================================
-            // منع الضغط المتكرر
-            // ==================================
-
-            if (button.disabled) {
-                return;
-            }
-
-
-            button.disabled = true;
-
-
-            const originalText =
-                button.innerHTML;
-
-
-            button.innerHTML = `
-
-                <span class="offer-cart-button-icon">
-                    …
-                </span>
-
-                <span>
-                    جاري التحقق...
-                </span>
-
-            `;
-
-
-            try {
-
-                // ==================================
-                // جلب مخزون العرض فقط
-                // ==================================
-
-              const {
-    data: offerData,
-    error: offerError
-} = await supabaseClient
-
-    .from("offers")
-
-    .select(`
-        id,
-        name,
-        image,
-        price,
-        quantity,
-        active
-    `)
-
-    .eq(
-        "id",
-        selectedOfferId
-    )
-
-    .eq(
-        "active",
-        true
-    )
-
-    .single();
-
-
-                if (offerError) {
-
-                    throw offerError;
-
-                }
-
-
-                if (!offerData) {
-
-                    throw new Error(
-                        "تعذر العثور على بيانات العرض."
-                    );
-
-                }
-
-
-                // ==================================
-                // مخزون العرض
-                // ==================================
-
-                const maxOfferQuantity =
-                    Number(
-                        offerData.quantity
-                    ) || 0;
-
-
-                // ==================================
-                // قراءة السلة الحالية
-                // ==================================
-
-                const cart =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "cart"
-                        )
-                    ) || {};
-
-
-                const cartKey =
-                    "offer_" +
-                    selectedOfferId;
-
-
-                const currentQuantity =
-                    Number(
-                        cart[cartKey]
-                    ) || 0;
-
-
-                // ==================================
-                // التحقق من المخزون
-                // ==================================
-
-                if (
-                    maxOfferQuantity <= 0
-                ) {
-
-                    showOfferToast(
-                        "هذا العرض غير متوفر حاليًا."
-                    );
-
-                    return;
-
-                }
-
-
-                if (
-                    currentQuantity >=
-                    maxOfferQuantity
-                ) {
-
-                    showOfferToast(
-                        `لا يمكنك إضافة أكثر من ${maxOfferQuantity} من هذا العرض.`
-                    );
-
-                    return;
-
-                }
-
-
-                // ==================================
-                // إضافة العرض
-                // ==================================
-
-                cart[cartKey] =
-                    currentQuantity + 1;
-
-
-saveOfferCartSnapshot(
-    {
-        id:
-            offerData.id,
-
-        name:
-            offerData.name,
-
-        image:
-            offerData.image,
-
-        price:
-            offerData.price,
-
-        quantity:
-            offerData.quantity
-    },
-    currentQuantity + 1
 );
 
-                // ==================================
-                // حفظ السلة
-                // ==================================
 
-                localStorage.setItem(
-                    "cart",
-                    JSON.stringify(cart)
-                );
+// ==========================================
+// بدء التحميل
+// ==========================================
 
-
-                // ==================================
-                // تحديث عداد السلة
-                // ==================================
-
-                if (
-                    typeof updateCartCount ===
-                    "function"
-                ) {
-
-                    updateCartCount();
-
-                }
-
-
-                // ==================================
-                // رسالة النجاح
-                // ==================================
-
-                const remaining =
-                    maxOfferQuantity -
-                    (currentQuantity + 1);
-
-
-                if (remaining > 0) {
-
-                    showOfferToast(
-                        `تمت إضافة العرض إلى السلة. يمكنك إضافة ${remaining} عرض إضافي.`
-                    );
-
-                } else {
-
-                    showOfferToast(
-                        "تمت إضافة العرض إلى السلة."
-                    );
-
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "خطأ أثناء التحقق من مخزون العرض:",
-                    error
-                );
-
-
-                showOfferToast(
-                    "تعذر التحقق من مخزون العرض حاليًا."
-                );
-
-
-            } finally {
-
-                // ==================================
-                // إعادة الزر
-                // ==================================
-
-                button.disabled =
-                    false;
-
-
-                button.innerHTML =
-                    originalText;
-
-            }
-
-        }
-    );
-
-
-
-    // ==========================================
-    // بدء التحميل
-    // ==========================================
-
-    loadOfferDetails();
-    
+loadOfferDetails();
