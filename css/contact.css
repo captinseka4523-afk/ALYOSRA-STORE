@@ -1,342 +1,382 @@
-.contact-page {
+/* =========================================================
+   AL YOSRA STORE — LUXURY FULL-WIDTH CONTACT CSS
+   ========================================================= */
 
-    min-height:100vh;
-
-    padding:120px 20px 60px;
-
-    display:flex;
-
-    justify-content:center;
-
+body.contact-body {
+    margin: 0;
+    font-family: inherit;
+    background: #f4f6f9;
+    color: #071a2b;
+    box-sizing: border-box;
 }
 
+* {
+    box-sizing: border-box;
+}
 
+/* =========================================================
+   PAGE CONTAINER
+   ========================================================= */
+
+.contact-page {
+    min-height: 100vh;
+    padding: 120px 16px 80px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: 
+        radial-gradient(circle at 15% 15%, rgba(7, 26, 43, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(178, 139, 69, 0.06) 0%, transparent 45%),
+        #f4f6f9;
+    font-family: inherit;
+}
 
 .contact-box {
-
-    width:100%;
-
-    max-width:1200px;
-
-    padding:50px;
-
-
-    background:rgba(255,255,255,.22);
-
-    border:1px solid rgba(255,255,255,.45);
-
-    border-radius:35px;
-
-
-    backdrop-filter:blur(20px);
-
-
-    box-shadow:
-    0 25px 70px rgba(0,0,0,.15);
-
-
-    text-align:center;
-
+    width: 100%;
+    max-width: 1000px;
+    padding: 40px 45px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 32px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 25px 60px rgba(7, 26, 43, 0.08),
+        0 4px 15px rgba(7, 26, 43, 0.03);
 }
 
+.contact-header-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
-
-
+.contact-eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #b28b45;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    font-family: inherit;
+}
 
 .contact-box h1 {
-
-    font-size:48px;
-
-    color:#111827;
-
-    margin-bottom:15px;
-
+    margin: 0 0 10px;
+    font-size: 40px;
+    font-weight: 900;
+    color: #071a2b;
+    letter-spacing: -0.5px;
+    font-family: inherit;
 }
 
-
-
-
-
-.contact-box > p {
-
-    font-size:20px;
-
-    line-height:1.8;
-
-    color:#4b5563;
-
-    margin-bottom:45px;
-
+.contact-box > .contact-header-section > p {
+    margin: 0;
+    color: #64707d;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: inherit;
 }
 
+/* =========================================================
+   CONTACT ROWS CONTAINER & ANIMATIONS (FULL WIDTH)
+   ========================================================= */
 
-
-
-
-.contact-cards {
-
-    display:grid;
-
-    grid-template-columns:
-    repeat(auto-fit,minmax(240px,1fr));
-
-    gap:25px;
-
+.contact-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 45px;
 }
 
-
-
-
-
-.contact-card {
-
-    background:#d6d9ff;
-
-    padding:35px 25px;
-
-    border-radius:30px;
-
-
-    box-shadow:
-    0 15px 35px rgba(0,0,0,.12);
-
-
-    transition:.3s;
-
+.contact-row-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 20px;
+    padding: 22px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 8px 25px rgba(7, 26, 43, 0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+    opacity: 0;
 }
 
-
-
-
-
-.contact-card:hover {
-
-    transform:translateY(-8px);
-
+/* حركة الدخول بالتبادل: اليمين ثم اليسار */
+.contact-row-card.row-right {
+    animation: slideInFromRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-
-
-
-
-.contact-card h3 {
-
-    font-size:25px;
-
-    color:#111827;
-
-    margin-bottom:15px;
-
+.contact-row-card.row-left {
+    animation: slideInFromLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* تأخير زمني متسلسل لكل صف */
+.contact-rows-container .contact-row-card:nth-child(1) { animation-delay: 0.1s; }
+.contact-rows-container .contact-row-card:nth-child(2) { animation-delay: 0.22s; }
+.contact-rows-container .contact-row-card:nth-child(3) { animation-delay: 0.34s; }
+.contact-rows-container .contact-row-card:nth-child(4) { animation-delay: 0.46s; }
+.contact-rows-container .contact-row-card:nth-child(5) { animation-delay: 0.58s; }
 
-
-
-
-.contact-card p {
-
-    font-size:18px;
-
-    color:#6b7280;
-
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-
-
-
-
-.contact-card a {
-
-    display:inline-block;
-
-    margin-top:20px;
-
-
-    padding:12px 30px;
-
-
-    border-radius:25px;
-
-
-    background:linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-    );
-
-
-    color:white;
-
-    text-decoration:none;
-
-
-    transition:.3s;
-
+@keyframes slideInFromLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-80px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-
-
-
-
-.contact-card a:hover {
-
-    transform:scale(1.05);
-
+.contact-row-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(178, 139, 69, 0.35);
+    box-shadow: 0 14px 35px rgba(7, 26, 43, 0.07);
 }
 
+/* الأيقونات الرسمية (SVGs) مع خلفيات أنيقة */
+.contact-icon-box {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
 
+.whatsapp-bg { background: #25d366; }
+.instagram-bg { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+.phone-bg { background: #071a2b; }
+.email-bg { background: #b28b45; }
+.location-bg { background: #ef4444; }
 
+.brand-svg {
+    width: 26px;
+    height: 26px;
+}
 
+.contact-row-content {
+    flex: 1;
+    text-align: right;
+    min-width: 0;
+    padding: 0 10px;
+}
+
+.contact-row-content h3 {
+    font-size: 18px;
+    font-weight: 850;
+    color: #071a2b;
+    margin: 0 0 4px;
+    font-family: inherit;
+}
+
+.contact-row-content p {
+    font-size: 13px;
+    color: #64707d;
+    margin: 0 0 6px;
+    font-family: inherit;
+}
+
+.contact-highlight {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #b28b45;
+    direction: ltr;
+    font-family: inherit;
+}
+
+.contact-subtext {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 13px;
+    color: #64707d;
+    direction: ltr;
+    font-family: inherit;
+}
+
+.contact-row-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 22px;
+    border-radius: 12px;
+    background: #071a2b;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 800;
+    transition: background 0.2s ease, transform 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.contact-row-btn:hover {
+    background: #b28b45;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   MESSAGE BOX SECTION
+   ========================================================= */
 
 .message-box {
-
-    margin-top:55px;
-
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:18px;
-
+    background: #ffffff;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 28px;
+    padding: 35px 40px;
+    box-shadow: 0 10px 30px rgba(7, 26, 43, 0.04);
+    text-align: right;
+    font-family: inherit;
 }
-
-
-
-
 
 .message-box h2 {
-
-    color:#111827;
-
-    font-size:30px;
-
+    color: #071a2b;
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0 0 6px;
+    font-family: inherit;
 }
 
+.message-box p {
+    color: #64707d;
+    font-size: 14px;
+    margin: 0 0 22px;
+    font-family: inherit;
+}
 
-
-
+.message-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
 
 .message-box input,
 .message-box textarea {
-
-
-    padding:16px;
-
-
-    border:none;
-
-
-    border-radius:18px;
-
-
-    font-size:17px;
-
-
-    background:rgb(209, 222, 255);
-
-
-    box-shadow:
-    0 8px 20px rgba(0,0,0,.08);
-
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid rgba(7, 26, 43, 0.12);
+    border-radius: 14px;
+    font-size: 15px;
+    background: #f8fafc;
+    color: #071a2b;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-
-
-
+.message-box input:focus,
+.message-box textarea:focus {
+    border-color: #b28b45;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(178, 139, 69, 0.12);
+}
 
 .message-box textarea {
-
-    height:160px;
-
-    resize:none;
-
+    height: 130px;
+    resize: vertical;
+    margin-bottom: 20px;
 }
 
-
-
-
-
-.message-box button {
-
-
-    padding:17px;
-
-
-    border:none;
-
-
-    border-radius:25px;
-
-
-    background:linear-gradient(
-    135deg,
-    #111827,
-    #2563eb
-    );
-
-
-    color:white;
-
-
-    font-size:20px;
-
-    font-weight:bold;
-
-
-    cursor:pointer;
-
-
-    transition:.3s;
-
+.message-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #071a2b, #0c2a42);
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(7, 26, 43, 0.2);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
 }
 
-
-
-
-
-.message-box button:hover {
-
-
-    transform:translateY(-4px);
-
-
-    box-shadow:
-    0 15px 30px rgba(37,99,235,.3);
-
-
+.message-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(7, 26, 43, 0.28);
+    background: linear-gradient(135deg, #0b263d, #123750);
 }
 
+/* =========================================================
+   RESPONSIVE DESIGN (MOBILE)
+   ========================================================= */
 
-
-
-
-
-@media(max-width:700px){
-
+@media (max-width: 768px) {
+    .contact-page {
+        padding: 95px 12px 50px;
+    }
 
     .contact-box {
-
-        padding:25px;
-
+        padding: 22px 14px;
+        border-radius: 20px;
     }
-
-
 
     .contact-box h1 {
-
-        font-size:34px;
-
+        font-size: 28px;
     }
 
-
-
-    .contact-box > p {
-
-        font-size:17px;
-
+    .contact-box > .contact-header-section > p {
+        font-size: 13px;
     }
 
+    .contact-row-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
+        gap: 14px;
+        border-radius: 16px;
+    }
 
+    .contact-row-content {
+        padding: 0;
+        width: 100%;
+    }
 
+    .contact-row-btn {
+        width: 100%;
+        min-height: 40px;
+    }
+
+    .message-box {
+        padding: 20px 14px;
+        border-radius: 18px;
+    }
+
+    .message-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .message-box h2 {
+        font-size: 20px;
+    }
+
+    .message-box p {
+        font-size: 12px;
+    }
 }

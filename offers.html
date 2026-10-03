@@ -1,185 +1,424 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
 
-<head>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>العروض - متجر اليُسرى</title>
+<title>العروض - متجر اليُسرى</title>
 
 <link rel="stylesheet" href="css/style.css">
 
-<link rel="stylesheet" href="css/products.css">
 <link rel="stylesheet" href="css/offers.css">
 
+
+<link rel="icon" type="image/png" href="/images/LOGO.png">
+
+
+<meta property="og:type" content="website">
+
+<meta property="og:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta property="og:description"
+      content="">
+
+<meta property="og:image"
+   content="https://alyosra-store.netlify.app/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta property="og:site_name"
+      content="AL YOSRA STORE">
+
+<meta property="og:locale"
+      content="ar_AR">
+
+
+
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="twitter:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta name="twitter:description"
+      content="">
+
+<meta name="twitter:image"
+     content="https://alyosra-store.netlify.app/images/og-image.png">
+
+
+
+
+<meta name="description"
+      content="اكتشف أحدث العروض والخصومات على أدوات ومستلزمات طب الأسنان في AL YOSRA STORE، واختر ما يناسب احتياجاتك.">
+
+
 </head>
-
-
 <body>
+    <!-- =====================================================
+     NAVBAR
+====================================================== -->
+
+<nav class="navbar">
+
+    <button
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="فتح القائمة"
+        type="button"
+    >
+        ☰
+    </button>
 
 
-    <nav class="navbar">
+    <button
+        class="search-toggle"
+        id="offerSearchToggle"
+        type="button"
+        aria-label="البحث"
+        aria-expanded="false"
+    >
+
+        <svg
+            class="search-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+
+    </button>
+
+
+    <div class="nav-logo">
+
+        <span class="nav-logo-ar">
+            متجر اليُسرى
+        </span>
+
+    </div>
+
+
+    <ul class="nav-links">
+
+        <li>
+            <a href="index.html">
+                الرئيسية
+            </a>
+        </li>
+
+        <li>
+            <a href="products.html">
+                المنتجات
+            </a>
+        </li>
+
+        <li>
+            <a
+                class="active"
+                href="offers.html"
+            >
+                العروض
+            </a>
+        </li>
+
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
+
+    </ul>
+
+
+    <a
+        href="cart.html"
+        class="cart-icon"
+        aria-label="السلة"
+    >
+
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+
+            <path d="M6 6h15l-2 8H8L6 6Z"></path>
+
+            <path d="M6 6L5 3H2"></path>
+
+            <circle cx="9" cy="20" r="1.5"></circle>
+
+            <circle cx="18" cy="20" r="1.5"></circle>
+
+        </svg>
+
+        <span id="cartCount">
+            0
+        </span>
+
+    </a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     SEARCH
+====================================================== -->
+
+<div id="offerSearchPopover" class="search-popover-modern" aria-hidden="true">
+    <div class="search-popover-field">
+        <svg class="search-popover-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+        </svg>
+        <input id="offerSearchInput" type="search" placeholder="ابحث هنا..." autocomplete="off" dir="rtl">
+    </div>
+</div>
+
+
+
+<!-- =====================================================
+     MOBILE NAV
+====================================================== -->
+
+<nav
+    class="mobile-bottom-nav"
+    aria-label="التنقل الرئيسي"
+>
+
+    <a href="index.html">
+        الرئيسية
+    </a>
+
+    <a href="products.html">
+        المنتجات
+    </a>
+
+    <a
+        class="active"
+        href="offers.html"
+    >
+        العروض
+    </a>
+
+    <a href="cart.html">
+        السلة
+    </a>
+
+    <a href="contact.html">
+        تواصل معنا
+    </a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     SIDE MENU
+====================================================== -->
+
+<div
+    class="side-menu-overlay"
+    id="sideMenuOverlay"
+>
+</div>
+
+
+<aside
+    class="side-menu"
+    id="sideMenu"
+    aria-hidden="true"
+    inert
+>
+
+    <div class="side-menu-header">
+
+        <span>
+          الأقسام
+        </span>
 
         <button
-            class="menu-toggle"
-            id="menuToggle"
-            aria-label="فتح القائمة"
+            class="side-menu-close"
+            id="sideMenuClose"
             type="button"
+            aria-label="إغلاق القائمة"
         >
-            ☰
+            ×
         </button>
 
-
-        <div class="nav-logo">
-            متجر اليُسرى
-        </div>
+    </div>
 
 
-        <ul class="nav-links">
+    <ul class="side-menu-links">
 
-            <li>
-                <a href="index.html">
-                    الرئيسية
-                </a>
-            </li>
+        <li>
+            <a href="index.html">
+                الرئيسية
+            </a>
+        </li>
 
-            <li>
-                <a href="products.html">
-                    المنتجات
-                </a>
-            </li>
+        <li>
+            <a href="products.html">
+                المنتجات
+            </a>
+        </li>
 
-            <li>
-                <a class="active" href="offers.html">
-                    العروض
-                </a>
-            </li>
-
-            <li>
-                <a href="cart.html">
-                    السلة
-                </a>
-            </li>
-
-            <li>
-                <a href="contact.html">
-                    تواصل معنا
-                </a>
-            </li>
-
-        </ul>
-
-
-        <a
-            href="cart.html"
-            class="cart-icon"
-        >
-
-            <svg
-                class="cart-svg"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+        <li>
+            <a
+                class="active"
+                href="offers.html"
             >
+                العروض
+            </a>
+        </li>
 
-                <path d="M6 6h15l-2 8H8L6 6Z"></path>
-
-                <path d="M6 6L5 3H2"></path>
-
-                <circle cx="9" cy="20" r="1.5"></circle>
-
-                <circle cx="18" cy="20" r="1.5"></circle>
-
-            </svg>
-
-
-            <span id="cartCount">
-                0
-            </span>
-
-        </a>
-
-    </nav>
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
 
 
+           <li>
+            <a href="clinic-setup.html">
+          تجهيز العيادات
+            </a>
+
+        </li>
+
+
+       <li>
+            <a href="student-consultation.html">
+             استشارات الطلاب
+            </a>
+
+        </li>
+
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
+
+    </ul>
+
+</aside>
+
+
+
+<!-- =====================================================
+     FULL WIDTH HERO
+====================================================== -->
+
+<section
+    class="offers-hero"
+    aria-labelledby="offersHeroTitle"
+>
 
     <div
-        class="side-menu-overlay"
-        id="sideMenuOverlay"
+        class="offers-hero-background"
+        aria-hidden="true"
     ></div>
 
 
-    <aside
-        class="side-menu"
-        id="sideMenu"
-    >
+    <div
+        class="offers-hero-glow offers-hero-glow-one"
+        aria-hidden="true"
+    ></div>
 
-        <div class="side-menu-header">
 
-            <span>
-                القائمة
+    <div
+        class="offers-hero-glow offers-hero-glow-two"
+        aria-hidden="true"
+    ></div>
+
+
+    <div class="offers-hero-content">
+
+   
+
+
+        <div class="offers-hero-offer">
+
+            <span class="offers-hero-up-to">
+                UP TO
             </span>
 
-            <button
-                class="side-menu-close"
-                id="sideMenuClose"
-                type="button"
-                aria-label="إغلاق القائمة"
+
+            <strong
+                class="offers-hero-discount"
+                id="offersHeroTitle"
             >
-                ×
-            </button>
+                20%
+            </strong>
+
+
+            <span class="offers-hero-off">
+                OFF
+            </span>
 
         </div>
 
 
-        <ul class="side-menu-links">
+     
 
-            <li>
-                <a href="index.html">
-                    الرئيسية
-                </a>
-            </li>
 
-            <li>
-                <a href="products.html">
-                    المنتجات
-                </a>
-            </li>
+<div class="offers-hero-bottom-text">
+    <p class="offers-hero-description">
+        اكتشف عروضنا واستفد من أسعار مميزة
+    </p>
 
-            <li>
-                <a class="active" href="offers.html">
-                    العروض
-                </a>
-            </li>
+    <span class="offers-hero-caption">
+        عروض مختارة بعناية للطلاب والأطباء
+    </span>
+</div>
 
-            <li>
-                <a href="cart.html">
-                    السلة
-                </a>
-            </li>
+        
 
-            <li>
-                <a href="contact.html">
-                    تواصل معنا
-                </a>
-            </li>
-
-        </ul>
-
-    </aside>
+    </div>
 
 
 
-    <main class="container offers-page">
+
+</section>
+
+
+
+<!-- =====================================================
+     OFFERS SECTION
+====================================================== -->
+
+<main class="offers-section">
+
+    <div class="offers-section-heading reveal-section">
+
+        <span class="offers-section-eyebrow">
+            SPECIAL OFFERS
+        </span>
+
 
         <h1>
             العروض
@@ -190,226 +429,38 @@
             استفد من عروض وباقات متجر اليُسرى
         </p>
 
+    </div>
 
-        <div id="offersContainer">
 
+    <div
+        id="offersContainer"
+        class="offers-grid reveal-section"
+    >
+
+        <div class="offers-loading">
             جاري تحميل العروض...
-
-        </div>
-
-    </main>
-
-
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
-
-    <script src="js/supabase-client.js"></script>
-
-    <script src="js/cart-count.js"></script>
-
-
-    <script>
-
-        const menuToggle =
-            document.getElementById("menuToggle");
-
-        const sideMenu =
-            document.getElementById("sideMenu");
-
-        const sideMenuClose =
-            document.getElementById("sideMenuClose");
-
-        const sideMenuOverlay =
-            document.getElementById("sideMenuOverlay");
-
-
-        menuToggle.addEventListener(
-            "click",
-            () => {
-
-                sideMenu.classList.add("open");
-                sideMenuOverlay.classList.add("open");
-
-            }
-        );
-
-
-        sideMenuClose.addEventListener(
-            "click",
-            () => {
-
-                sideMenu.classList.remove("open");
-                sideMenuOverlay.classList.remove("open");
-
-            }
-        );
-
-
-        sideMenuOverlay.addEventListener(
-            "click",
-            () => {
-
-                sideMenu.classList.remove("open");
-                sideMenuOverlay.classList.remove("open");
-
-            }
-        );
-
-    </script>
-
-
-
-    <script>
-
-        const offersContainer =
-            document.getElementById("offersContainer");
-
-
-        async function loadOffers() {
-
-            const {
-                data,
-                error
-            } = await supabaseClient
-                .from("offers")
-                .select(`
-                    id,
-                    name,
-                    description,
-                    price,
-                    image,
-                    active,
-                    offer_items (
-                        quantity,
-                        products (
-                            name
-                        )
-                    )
-                `)
-                .eq(
-                    "active",
-                    true
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-            if (error) {
-
-                console.error(error);
-
-                offersContainer.textContent =
-                    "حدث خطأ أثناء تحميل العروض.";
-
-                return;
-
-            }
-
-
-            if (
-                !data ||
-                data.length === 0
-            ) {
-
-                offersContainer.textContent =
-                    "لا توجد عروض حاليًا.";
-
-                return;
-
-            }
-
-
-            offersContainer.innerHTML = "";
-
-
-            data.forEach(
-                (offer) => {
-
-                   const card =
-    document.createElement("div");
-
-card.className =
-    "offer-card";
-
-card.style.cursor =
-    "pointer";
-
-card.addEventListener(
-    "click",
-    () => {
-
-        window.location.href =
-            `offer-details.html?id=${offer.id}`;
-
-    }
-);
-
-                
-
-
-                    const productsText =
-                        (offer.offer_items || [])
-                            .map(
-                                (item) =>
-                                    `${item.products?.name || "منتج"} × ${item.quantity}`
-                            )
-                            .join("، ");
-
-
-                   card.innerHTML = `
-
-    ${
-        offer.image
-            ? `
-                <img
-                    src="${offer.image}"
-                    alt="${offer.name}"
-                    class="offer-image"
-                >
-              `
-            : ""
-    }
-
-
-    <div class="offer-content">
-
-        <h2>
-            ${offer.name}
-        </h2>
-
-
-        <div class="offer-price">
-
-            $${Number(
-                offer.price
-            ).toFixed(2)}
-
         </div>
 
     </div>
 
-`;
+</main>
 
 
-                    offersContainer.appendChild(card);
 
-                }
-            );
+<!-- =====================================================
+     SCRIPTS
+====================================================== -->
 
-        }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script src="js/supabase-client.js"></script>
 
-        loadOffers();
+<script src="js/offers.js"></script>
 
-    </script>
+<script src="js/cart-count.js"></script>
+
+<script src="js/navbar.js"></script>
 
 
 </body>
-
 </html>

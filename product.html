@@ -14,6 +14,51 @@
 
 <link rel="stylesheet" href="css/product.css">
 
+
+<link rel="icon" type="image/png" href="/images/LOGO.png">
+
+
+<meta property="og:type" content="website">
+
+<meta property="og:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta property="og:description"
+      content="">
+
+<meta property="og:image"
+   content="https://alyosra-store.netlify.app/images/og-image.png">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta property="og:site_name"
+      content="AL YOSRA STORE">
+
+<meta property="og:locale"
+      content="ar_AR">
+
+
+
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="twitter:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta name="twitter:description"
+      content="">
+
+<meta name="twitter:image"
+        content="https://alyosra-store.netlify.app/images/og-image.png">
+
+
+
+
+<meta name="description"
+      content="تصفح منتجات AL YOSRA STORE من أدوات ومستلزمات طب الأسنان، واختر ما يناسب الدراسة والعمل السريري بسهولة.">
+
+
+
 </head>
 
 
@@ -22,6 +67,7 @@
 
 <nav class="navbar">
 
+    
 
 <div class="nav-logo">
     متجر اليُسرى
@@ -45,6 +91,11 @@
 </a>
 </li>
 
+ <li>
+            <a href="offers.html">
+                العروض
+            </a>
+        </li>
 
 <li>
 <a href="cart.html">
@@ -140,11 +191,6 @@ stroke-width="2">
 
 
 
-<p id="productDescription">
-</p>
-
-
-
 <div class="product-price">
 
 <span id="productPrice">
@@ -154,11 +200,59 @@ stroke-width="2">
 
 
 
-<div class="product-stock">
+<div class="product-stock" id="productStock">
 
 متوفر في المخزون
 
 </div>
+
+
+<!-- ==========================================
+     خيارات المنتج - Variants
+     ========================================== -->
+
+<div
+    id="variantSelector"
+    class="variant-selector"
+    hidden
+>
+
+    <div
+        id="variantProgress"
+        class="variant-progress"
+    ></div>
+
+
+    <div
+        id="variantChoices"
+        class="variant-choices"
+    ></div>
+
+
+    <div
+        id="variantSelectedSummary"
+        class="variant-selected-summary"
+    ></div>
+
+
+    <div
+        id="variantNavigation"
+        class="variant-navigation"
+    >
+
+        <button
+            id="variantPreviousBtn"
+            type="button"
+            hidden
+        >
+            السابق
+        </button>
+
+    </div>
+
+</div>
+
+
 <div class="quantity-box">
 
 
@@ -212,8 +306,7 @@ min="1">
 
 
 <h2>
-
-مواصفات المنتج
+وصف المنتج
 
 </h2>
 
@@ -250,7 +343,7 @@ min="1">
 <script src="js/products.js"></script>
 <script src="js/product.js"></script>
 <script src="js/cart-count.js"></script>
-
+<script src="js/navbar.js"></script>
 
 
 

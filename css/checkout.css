@@ -1,309 +1,897 @@
-/* ==========================================
-   AL YOSRA STORE
-   CHECKOUT PAGE
-========================================== */
+/* =========================================================
+   AL YOSRA STORE — LUXURY CHECKOUT CSS
+   MOBILE-FIRST / RTL SAFE / COLLAPSIBLE ORDER SUMMARY
+   ========================================================= */
 
-* {
+
+/* =========================================================
+   GLOBAL SAFETY
+   ========================================================= */
+
+body.checkout-body {
+    margin: 0;
+    font-family: inherit;
+    background: #f4f6f9;
+    color: #071a2b;
+    box-sizing: border-box;
+
+    overflow-x: hidden;
+
+    /*
+     * IMPORTANT:
+     * Do not disable vertical scrolling here.
+     * The page itself must remain vertically scrollable.
+     */
+    overflow-y: auto;
+
+    /*
+     * Allow normal vertical touch scrolling on mobile.
+     */
+    touch-action: pan-y;
+}
+
+body.checkout-body.checkout-summary-open {
+    /*
+     * Only lock the page while the mobile summary drawer
+     * is actually open.
+     */
+    overflow: hidden;
+}
+
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
+.checkout-body img,
+.checkout-body svg,
+.checkout-body video,
+.checkout-body iframe {
+    max-width: 100%;
+}
 
-/* ==========================================
-   PAGE
-========================================== */
+.checkout-body button,
+.checkout-body input,
+.checkout-body textarea {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   MAIN CHECKOUT PAGE
+   ========================================================= */
 
 .checkout-page {
-
+    width: 100%;
     min-height: 100vh;
 
-    padding: 120px 20px 60px;
+    padding: 120px 16px 80px;
 
     display: flex;
-
     justify-content: center;
+    align-items: flex-start;
 
     background:
-        linear-gradient(
-            135deg,
-            #6caafc,
-            #ffffff,
-            #e479f0
-        );
+        radial-gradient(
+            circle at 10% 15%,
+            rgba(7, 26, 43, 0.05) 0%,
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 90% 85%,
+            rgba(178, 139, 69, 0.06) 0%,
+            transparent 45%
+        ),
+        #f4f6f9;
+
+    font-family: inherit;
+
+    overflow-x: hidden;
+
+    /*
+     * Keep normal page scrolling available.
+     */
+    touch-action: pan-y;
 }
 
 
-/* ==========================================
-   MAIN BOX
-========================================== */
+/* =========================================================
+   MAIN CHECKOUT BOX
+   ========================================================= */
 
 .checkout-box {
-
-    width: 92%;
-
+    width: 100%;
     max-width: 850px;
+    min-width: 0;
 
-    padding: 40px;
+    padding: 35px 40px;
 
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.9);
 
-    border: 1px solid rgba(255, 255, 255, 0.55);
-
-    border-radius: 32px;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 30px;
 
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 
     box-shadow:
-        0 25px 60px rgba(0, 0, 0, 0.15);
+        0 25px 60px rgba(7, 26, 43, 0.08),
+        0 4px 15px rgba(7, 26, 43, 0.03);
+
+    overflow: hidden;
+
+    /*
+     * Never capture the entire mobile page as a custom
+     * touch-scroll container.
+     */
+    touch-action: pan-y;
 }
 
 
-/* ==========================================
-   TITLE
-========================================== */
+/* =========================================================
+   HEADER
+   ========================================================= */
 
-.checkout-box h1 {
+.checkout-header-section {
+    width: 100%;
+    min-width: 0;
 
     text-align: center;
+    margin-bottom: 25px;
+}
 
-    font-size: 42px;
+.checkout-eyebrow {
+    display: inline-block;
 
-    color: #111827;
+    max-width: 100%;
 
-    margin: 0 0 25px;
+    margin-bottom: 6px;
+
+    color: #b28b45;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-box h1 {
+    max-width: 100%;
+
+    margin: 0 0 8px;
+
+    font-size: 34px;
+    font-weight: 900;
+
+    color: #071a2b;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-header-section p {
+    max-width: 100%;
+
+    margin: 0;
+
+    color: #64707d;
+    font-size: 15px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
 }
 
 
-/* ==========================================
-   NAVIGATION BUTTONS
-========================================== */
+/* =========================================================
+   TOP ACTIONS
+   ========================================================= */
 
-.checkout-actions {
+.checkout-actions-top {
+    width: 100%;
+    min-width: 0;
 
     display: flex;
-
     justify-content: center;
-
-    align-items: center;
+    align-items: stretch;
 
     gap: 12px;
-
     margin-bottom: 30px;
 }
 
-
-.checkout-actions a {
-
+.checkout-nav-link {
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
 
-    min-height: 45px;
+    min-width: 0;
+    max-width: 100%;
 
-    padding: 10px 22px;
+    min-height: 40px;
 
-    border-radius: 14px;
+    padding: 8px 18px;
 
-    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 12px;
 
-    background: rgba(255, 255, 255, 0.65);
-
-    color: #1d4ed8;
+    background: #f1f3f5;
+    color: #071a2b;
 
     text-decoration: none;
 
-    font-size: 15px;
-
+    font-size: 14px;
     font-weight: 700;
 
+    border: 1px solid rgba(7, 26, 43, 0.08);
+
     transition:
-        background 0.25s ease,
-        color 0.25s ease,
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
+        background 0.2s ease,
+        transform 0.2s ease;
+
+    overflow-wrap: anywhere;
+    text-align: center;
+
+    /*
+     * Links must remain normal touch targets.
+     */
+    touch-action: manipulation;
 }
 
-
-.checkout-actions a:hover {
-
-    background: #2563eb;
-
-    color: #ffffff;
-
+.checkout-nav-link:hover {
+    background: #e2e8f0;
     transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 18px rgba(37, 99, 235, 0.25);
 }
 
 
-/* ==========================================
-   INTERNAL SECTIONS
-========================================== */
+/* =========================================================
+   SECTIONS
+   ========================================================= */
 
 .order-summary-box,
 .customer-box {
-
     width: 100%;
+    min-width: 0;
 
-    padding: 28px;
-
+    padding: 26px 28px;
     margin-bottom: 25px;
 
-    background: rgba(255, 255, 255, 0.92);
+    background: #ffffff;
 
-    border-radius: 25px;
+    border: 1px solid rgba(7, 26, 43, 0.08);
+    border-radius: 22px;
 
     box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.09);
-}
+        0 8px 25px rgba(7, 26, 43, 0.03);
 
+    overflow: hidden;
+
+    /*
+     * Keep these sections part of the normal page scroll.
+     */
+    touch-action: pan-y;
+}
 
 .order-summary-box h2,
 .customer-box h2 {
+    max-width: 100%;
 
-    text-align: center;
+    color: #071a2b;
 
-    color: #111827;
+    font-size: 20px;
+    font-weight: 850;
 
-    font-size: 24px;
+    margin: 0 0 18px;
 
-    margin: 0 0 22px;
+    text-align: right;
+
+    overflow-wrap: anywhere;
 }
 
 
-/* ==========================================
-   ORDER SUMMARY
-========================================== */
+/* =========================================================
+   ORDER SUMMARY — BASE
+   ========================================================= */
 
 #orderSummary {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+
+    /*
+     * Desktop summary remains a normal internal scroll area.
+     */
+    height: 320px;
+    max-height: 320px;
+    min-height: 320px;
+
+    flex: 0 0 320px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+
+    overscroll-behavior: contain;
+
+    padding-right: 3px;
+
+    /*
+     * This is intentionally a vertical scroll container
+     * only for the order list itself.
+     */
+    touch-action: pan-y;
+}
+
+
+/* =========================================================
+   ORDER ITEM
+   ========================================================= */
+
+.order-item {
+    width: 100%;
+    min-width: 0;
+
+    flex: 0 0 auto;
+
+    min-height: 89px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 12px;
+
+    background: #f8fafc;
+
+    border: 1px solid rgba(7, 26, 43, 0.06);
+    border-radius: 14px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   ORDER ITEM CONTENT
+   ========================================================= */
+
+.order-item-content {
+    flex: 1 1 auto;
+
+    min-width: 0;
+    max-width: 100%;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   ORDER ITEM IMAGE
+   ========================================================= */
+
+.order-item img,
+.order-item-image {
+    width: 65px;
+    height: 65px;
+
+    max-width: 65px;
+    min-width: 65px;
+
+    object-fit: contain;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    padding: 4px;
+
+    flex: 0 0 65px;
+}
+
+.order-item-image-placeholder {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #64707d;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   PRODUCT TITLE
+   ========================================================= */
+
+.order-item h3 {
+    max-width: 100%;
+
+    margin: 0 0 4px;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    color: #071a2b;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   PRODUCT DETAILS
+   ========================================================= */
+
+.order-item p {
+    max-width: 100%;
+
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.6;
+
+    color: #64707d;
+
+    overflow-wrap: anywhere;
+}
+
+.order-item-type {
+    margin-bottom: 3px !important;
+}
+
+
+/* =========================================================
+   ITEM META
+   ========================================================= */
+
+.order-item-meta {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px 12px;
+
+    max-width: 100%;
+
+    color: #64707d;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+.order-item-meta span {
+    min-width: 0;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   SKU
+   ========================================================= */
+
+.order-item-sku {
+    display: block;
+
+    margin-top: 3px;
+
+    max-width: 100%;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ITEM PRICE
+   ========================================================= */
+
+.order-item strong {
+    flex: 0 0 auto;
+
+    min-width: 0;
+    max-width: 35%;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    color: #b28b45;
+
+    text-align: center;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   MISSING ITEM
+   ========================================================= */
+
+.order-item-missing {
+    min-height: 89px;
+
+    justify-content: center;
+
+    background: #fff7ed;
+
+    border-color: #fed7aa;
+
+    color: #9a3412;
+}
+
+.order-item-missing-content {
+    width: 100%;
+
+    color: #9a3412;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1.7;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   VARIANT
+   ========================================================= */
+
+.order-item-variant {
+    display: flex;
+    align-items: stretch;
+
+    gap: 14px;
+
+    min-height: 140px;
+    max-height: 140px;
+
+    padding: 12px;
+
+    overflow: hidden;
+}
+
+.order-item-variant .order-item-content {
+    flex: 1 1 0;
+
+    min-width: 145px;
+    max-width: none;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   VARIANT DETAILS PANEL
+   ========================================================= */
+
+.variant-details-panel {
+    flex: 1 1 245px;
+
+    width: 245px;
+
+    min-width: 190px;
+    max-width: 300px;
+
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+
+    border: 1px solid rgba(7, 26, 43, 0.09);
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    direction: rtl;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(7, 26, 43, 0.015);
+}
+
+.variant-details-title {
+    flex: 0 0 auto;
+
+    padding: 7px 9px;
+
+    background: #f1f5f9;
+
+    color: #071a2b;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    line-height: 1.4;
+
+    border-bottom: 1px solid rgba(7, 26, 43, 0.07);
+
+    text-align: right;
+}
+
+.variant-details-list {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    width: 100%;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+
+    overscroll-behavior: contain;
+
+    scrollbar-width: thin;
+
+    touch-action: pan-y;
+}
+
+.variant-detail-row {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.9fr)
+        minmax(0, 1.1fr);
+
+    align-items: center;
+
+    min-height: 27px;
+
+    padding: 5px 9px;
+
+    border-bottom:
+        1px solid rgba(7, 26, 43, 0.05);
+
+    column-gap: 8px;
+}
+
+.variant-detail-row:last-child {
+    border-bottom: none;
+}
+
+.variant-detail-name {
+    min-width: 0;
+
+    color: #64707d;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    text-align: right;
+}
+
+.variant-detail-value {
+    min-width: 0;
+
+    color: #071a2b;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    line-height: 1.4;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    text-align: right;
+}
+
+.variant-details-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.variant-details-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.variant-details-list::-webkit-scrollbar-thumb {
+    background: rgba(7, 26, 43, 0.20);
+
+    border-radius: 10px;
+}
+
+.variant-details-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(7, 26, 43, 0.30);
+}
+
+.order-item-variant img {
+    flex: 0 0 65px;
+
+    width: 65px;
+    height: 65px;
+
+    min-width: 65px;
+    max-width: 65px;
+
+    align-self: center;
+}
+
+.order-item-variant .order-item-total,
+.order-item-variant strong {
+    flex: 0 0 auto;
+
+    min-width: 65px;
+
+    max-width: 90px;
+
+    align-self: center;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   EMPTY SUMMARY
+   ========================================================= */
+
+.checkout-empty-summary {
+    width: 100%;
+    min-height: 110px;
 
     display: flex;
 
     flex-direction: column;
 
-    gap: 12px;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    color: #64707d;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-align: center;
+}
+
+.checkout-empty-summary-icon {
+    font-size: 25px;
 }
 
 
-/* ==========================================
-   ORDER ITEM
-========================================== */
+/* =========================================================
+   MOBILE SUMMARY CONTROLS
+   Hidden by default.
+   ========================================================= */
 
-.order-item {
+.mobile-summary-preview-fade,
+.mobile-summary-toggle,
+.mobile-order-summary-backdrop,
+.mobile-order-summary-drawer {
+    display: none;
+}
 
+
+/* =========================================================
+   TOTAL
+   ========================================================= */
+
+.checkout-total-row {
     width: 100%;
-
-    min-height: 105px;
-
-    padding: 15px;
+    min-width: 0;
 
     display: flex;
 
-    align-items: center;
+    justify-content: space-between;
+    align-items: baseline;
 
     gap: 15px;
 
-    background: #eff6ff;
+    margin-top: 18px;
+    padding-top: 15px;
 
-    border: 1px solid #dbeafe;
-
-    border-radius: 18px;
-
-    color: #111827;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-.order-item:hover {
-
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 18px rgba(37, 99, 235, 0.08);
-}
-
-
-.order-item img {
-
-    flex-shrink: 0;
-
-    width: 82px !important;
-
-    height: 82px !important;
-
-    object-fit: contain;
-
-    border-radius: 14px;
-
-    background: #ffffff;
-
-    padding: 7px;
-}
-
-
-.order-item h3 {
-
-    margin: 0 0 7px;
+    border-top: 1px solid rgba(7, 26, 43, 0.08);
 
     font-size: 18px;
+    font-weight: 800;
 
-    color: #111827;
+    color: #64707d;
+
+    overflow: hidden;
+}
+
+.checkout-total-row > * {
+    min-width: 0;
+    max-width: 100%;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-total-row strong {
+    flex: 0 1 auto;
+
+    font-size: 26px;
+
+    color: #071a2b;
+
+    text-align: left;
 }
 
 
-.order-item p {
-
-    margin: 3px 0;
-
-    font-size: 14px;
-
-    color: #6b7280;
-}
-
-
-.order-item strong {
-
-    flex-shrink: 0;
-
-    font-size: 18px;
-
-    color: #2563eb;
-
-    white-space: nowrap;
-}
-
-
-/* ==========================================
+/* =========================================================
    CUSTOMER FORM
-========================================== */
+   ========================================================= */
 
-.checkout-box input,
-.checkout-box textarea {
+.checkout-form-group {
+    width: 100%;
+    min-width: 0;
 
+    margin-bottom: 16px;
+}
+
+.checkout-form-group label {
+    display: block;
+
+    max-width: 100%;
+
+    margin-bottom: 6px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    color: #334155;
+
+    overflow-wrap: anywhere;
+}
+
+.customer-box input,
+.customer-box textarea {
     display: block;
 
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
 
-    padding: 14px 16px;
+    padding: 13px 16px;
 
-    margin-bottom: 13px;
+    border: 1px solid rgba(7, 26, 43, 0.12);
+    border-radius: 12px;
 
-    border: 1px solid #dbeafe;
+    font-size: 15px;
+
+    background: #f8fafc;
+    color: #071a2b;
 
     outline: none;
-
-    border-radius: 14px;
-
-    background: #f8fbff;
-
-    color: #111827;
-
-    font-size: 16px;
 
     font-family: inherit;
 
@@ -311,245 +899,1656 @@
         border-color 0.2s ease,
         box-shadow 0.2s ease,
         background 0.2s ease;
+
+    /*
+     * Inputs must remain native touch/scroll areas.
+     */
+    touch-action: manipulation;
 }
 
-
-.checkout-box input::placeholder,
-.checkout-box textarea::placeholder {
-
-    color: #9ca3af;
-}
-
-
-.checkout-box input:focus,
-.checkout-box textarea:focus {
-
-    border-color: #60a5fa;
+.customer-box input:focus,
+.customer-box textarea:focus {
+    border-color: #b28b45;
 
     background: #ffffff;
 
     box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.12);
+        0 0 0 3px rgba(178, 139, 69, 0.12);
 }
 
+.customer-box textarea {
+    height: 100px;
 
-.checkout-box textarea {
-
-    height: 120px;
+    min-height: 100px;
 
     resize: vertical;
 
-    min-height: 90px;
+    line-height: 1.7;
 
-    max-height: 220px;
+    touch-action: pan-y;
 }
 
-
 #customerPhone {
-
     direction: rtl;
-
     text-align: right;
 }
 
 
-/* ==========================================
-   CONFIRM BUTTON
-========================================== */
+/* =========================================================
+   SUBMIT BUTTONS
+   ========================================================= */
 
-#confirmOrder {
-
-    display: block;
-
+.checkout-submit-actions {
     width: 100%;
+    min-width: 0;
 
-    padding: 16px;
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 15px;
+
+    margin-top: 30px;
+}
+
+.primary-confirm-btn,
+.whatsapp-confirm-btn {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 52px;
+
+    padding: 12px 20px;
 
     border: none;
+    border-radius: 14px;
 
-    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 800;
 
+    cursor: pointer;
+
+    font-family: inherit;
+
+    text-align: center;
+
+    overflow-wrap: anywhere;
+
+    touch-action: manipulation;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.primary-confirm-btn {
     background:
         linear-gradient(
             135deg,
-            #111827,
-            #2563eb
+            #071a2b,
+            #0c2a42
         );
 
     color: #ffffff;
 
-    font-family: inherit;
+    box-shadow:
+        0 10px 25px rgba(7, 26, 43, 0.2);
+}
 
-    font-size: 19px;
+.primary-confirm-btn:hover {
+    transform: translateY(-2px);
 
-    font-weight: 700;
+    box-shadow:
+        0 14px 30px rgba(7, 26, 43, 0.28);
+}
+
+.whatsapp-confirm-btn {
+    background: #25d366;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 10px 25px rgba(37, 211, 102, 0.25);
+}
+
+.whatsapp-confirm-btn:hover {
+    transform: translateY(-2px);
+
+    background: #22bf5b;
+
+    box-shadow:
+        0 14px 30px rgba(37, 211, 102, 0.32);
+}
+
+
+/* =========================================================
+   PAYMENT NOTE
+   ========================================================= */
+
+.checkout-payment-note {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-top: 18px;
+    margin-bottom: 24px;
+
+    padding: 15px 17px;
+
+    background: #fff5f5;
+
+    border: 1px solid #f3caca;
+
+    border-right: 4px solid #c62828;
+
+    border-radius: 12px;
+
+    color: #8f1d1d;
+
+    overflow: hidden;
+}
+
+.checkout-payment-note-icon {
+    flex: 0 0 30px;
+
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #fde2e2;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+
+    flex-shrink: 0;
+}
+
+.checkout-payment-note p {
+    flex: 1 1 auto;
+
+    min-width: 0;
+    max-width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    font-size: 14px;
+    line-height: 1.8;
+
+    font-weight: 500;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.checkout-payment-note strong {
+    font-weight: 800;
+
+    color: #b71c1c;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   SUCCESS MODAL
+   ========================================================= */
+
+.checkout-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 3000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 20px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    touch-action: pan-y;
+}
+
+.checkout-modal[hidden] {
+    display: none !important;
+
+    pointer-events: none !important;
+}
+
+.checkout-modal-backdrop {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(7, 26, 43, 0.6);
+
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    pointer-events: auto;
+}
+
+.checkout-modal-content {
+    position: relative;
+
+    z-index: 1;
+
+    width: 100%;
+    max-width: 440px;
+    min-width: 0;
+
+    max-height: calc(100vh - 40px);
+
+    padding: 35px 30px;
+
+    background: #ffffff;
+
+    border-radius: 24px;
+
+    text-align: center;
+
+    box-shadow:
+        0 25px 60px rgba(7, 26, 43, 0.3);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    touch-action: pan-y;
+}
+
+.success-icon {
+    width: 65px;
+    height: 65px;
+
+    max-width: 100%;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #dcfce7;
+    color: #16a34a;
+
+    font-size: 32px;
+    font-weight: 900;
+
+    flex-shrink: 0;
+}
+
+.checkout-modal-content h2 {
+    max-width: 100%;
+
+    margin: 0 0 10px;
+
+    font-size: 22px;
+
+    color: #071a2b;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-modal-content p {
+    max-width: 100%;
+
+    margin: 0 0 24px;
+
+    color: #64707d;
+
+    font-size: 14px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-modal-btn {
+    display: block;
+
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    min-height: 48px;
+
+    padding: 10px 16px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #071a2b;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 800;
 
     cursor: pointer;
 
-    transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        opacity 0.25s ease;
+    font-family: inherit;
+
+    overflow-wrap: anywhere;
+
+    touch-action: manipulation;
 }
 
 
-#confirmOrder:hover {
+/* =========================================================
+   TOAST
+   ========================================================= */
 
-    transform: translateY(-3px);
+.checkout-toast {
+    position: fixed;
+
+    bottom: 25px;
+    left: 50%;
+
+    z-index: 9999;
+
+    width: max-content;
+
+    max-width: calc(100vw - 30px);
+
+    padding: 12px 22px;
+
+    transform:
+        translateX(-50%)
+        translateY(20px);
+
+    background: rgba(7, 26, 43, 0.95);
+
+    color: white;
+
+    border-radius: 12px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1.6;
 
     box-shadow:
-        0 14px 28px rgba(37, 99, 235, 0.30);
+        0 10px 25px rgba(7, 26, 43, 0.2);
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        visibility 0.25s ease;
+
+    text-align: center;
+
+    overflow-wrap: anywhere;
+}
+
+.checkout-toast.show {
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
 }
 
 
-#confirmOrder:active {
-
-    transform: translateY(0);
-}
-
-
-#confirmOrder:disabled {
-
-    opacity: 0.65;
-
-    cursor: not-allowed;
-
-    transform: none;
-
-    box-shadow: none;
-}
-
-
-/* ==========================================
+/* =========================================================
    MOBILE
-========================================== */
+   ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 
     .checkout-page {
+        width: 100%;
 
-        padding: 100px 12px 40px;
+        padding:
+            95px
+            10px
+            110px;
+
+        /*
+         * Explicitly keep page-level vertical touch scrolling.
+         */
+        touch-action: pan-y;
     }
-
 
     .checkout-box {
-
         width: 100%;
+        max-width: 100%;
 
-        padding: 20px 15px;
-
-        border-radius: 25px;
-    }
-
-
-    .checkout-box h1 {
-
-        font-size: 31px;
-
-        margin-bottom: 22px;
-    }
-
-
-    .checkout-actions {
-
-        flex-direction: column;
-
-        width: 100%;
-
-        gap: 9px;
-
-        margin-bottom: 22px;
-    }
-
-
-    .checkout-actions a {
-
-        width: 100%;
-
-        min-height: 44px;
-    }
-
-
-    .order-summary-box,
-    .customer-box {
-
-        padding: 18px 14px;
+        padding:
+            22px
+            14px;
 
         border-radius: 20px;
 
-        margin-bottom: 18px;
+        touch-action: pan-y;
+    }
+
+    .checkout-box h1 {
+        font-size: 26px;
+        line-height: 1.35;
+    }
+
+    .checkout-header-section p {
+        font-size: 14px;
+    }
+
+    .checkout-actions-top {
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    .checkout-nav-link {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .order-summary-box,
+    .customer-box {
+        width: 100%;
+
+        padding:
+            18px
+            14px;
+
+        border-radius: 18px;
     }
 
 
-    .order-summary-box h2,
-    .customer-box h2 {
+    /* =====================================================
+       COMPACT MOBILE SUMMARY
+       ===================================================== */
 
-        font-size: 21px;
+    .order-summary-box {
+        position: relative;
 
-        margin-bottom: 17px;
+        overflow: visible;
+
+        padding-bottom: 14px;
+
+        /*
+         * The compact summary itself must NOT become
+         * a page-blocking touch layer.
+         */
+        touch-action: pan-y;
+    }
+
+    .order-summary-box h2 {
+        margin-bottom: 12px;
     }
 
 
-    .order-item {
+    /*
+     * Compact preview.
+     *
+     * IMPORTANT:
+     * This is NOT a scroll container.
+     * It is only a clipped preview.
+     */
+    #orderSummary {
+        height: 132px;
+        max-height: 132px;
+        min-height: 0;
 
-        min-height: 90px;
+        flex: 0 0 132px;
 
-        padding: 10px;
+        overflow: hidden;
+
+        padding-right: 0;
+
+        gap: 9px;
+
+        position: relative;
+
+        scrollbar-width: none;
+
+        /*
+         * Allow the browser to continue normal page
+         * vertical scrolling outside the actual drawer.
+         */
+        touch-action: pan-y;
+    }
+
+    #orderSummary::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    /*
+     * Slightly taller preview when a variant card is shown.
+     */
+    #orderSummary .order-item-variant {
+        min-height: 118px;
+        max-height: 118px;
+    }
+
+
+    /* =====================================================
+       PREVIEW FADE
+       ===================================================== */
+
+    .mobile-summary-preview-fade {
+        display: block;
+
+        position: relative;
+
+        z-index: 2;
+
+        width: 100%;
+
+        height: 35px;
+
+        margin-top: -35px;
+
+        pointer-events: none;
+
+        background:
+            linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                #ffffff
+            );
+    }
+
+
+    /* =====================================================
+       VIEW FULL ORDER BUTTON
+       ===================================================== */
+
+    .mobile-summary-toggle {
+        width: 100%;
+
+        min-height: 40px;
+
+        margin-top: 3px;
+
+        padding: 8px 10px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 8px;
+
+        border: 1px solid rgba(7, 26, 43, 0.08);
+        border-radius: 11px;
+
+        background: #f8fafc;
+        color: #071a2b;
+
+        font-family: inherit;
+
+        font-size: 13px;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        /*
+         * Button should react to taps normally.
+         */
+        touch-action: manipulation;
+
+        transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+    }
+
+    .mobile-summary-toggle:hover {
+        background: #f1f5f9;
+    }
+
+    .mobile-summary-toggle:active {
+        transform: scale(0.99);
+    }
+
+    .mobile-summary-toggle-icon {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 22px;
+        height: 22px;
+
+        border-radius: 50%;
+
+        background: #071a2b;
+        color: #ffffff;
+
+        font-size: 13px;
+
+        line-height: 1;
+    }
+
+
+    /* =====================================================
+       MOBILE DRAWER BACKDROP
+       ===================================================== */
+
+    .mobile-order-summary-backdrop {
+        /*
+         * IMPORTANT:
+         * Hidden state must truly remove the backdrop
+         * from hit-testing.
+         */
+        display: none;
+
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 5000;
+
+        background:
+            rgba(7, 26, 43, 0.46);
+
+        opacity: 0;
+
+        transition:
+            opacity 0.25s ease;
+
+        pointer-events: none;
+
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+
+        touch-action: none;
+    }
+
+    /*
+     * The backdrop is only displayed when open.
+     */
+    .mobile-order-summary-backdrop.is-open {
+        display: block;
+
+        opacity: 1;
+
+        pointer-events: auto;
+    }
+
+    /*
+     * CRITICAL FIX:
+     * A hidden backdrop must NEVER remain as a visible
+     * display layer or touch target.
+     */
+    .mobile-order-summary-backdrop[hidden] {
+        display: none !important;
+
+        pointer-events: none !important;
+    }
+
+
+    /* =====================================================
+       MOBILE DRAWER
+       ===================================================== */
+
+    .mobile-order-summary-drawer {
+        /*
+         * CRITICAL FIX:
+         *
+         * The old CSS used:
+         *     .drawer[hidden] { display:flex; }
+         *
+         * That caused an invisible fixed drawer to remain
+         * above the page and intercept touch events.
+         *
+         * The default state is now truly removed.
+         */
+        display: none;
+
+        position: fixed;
+
+        left: 10px;
+        right: 10px;
+
+        bottom: 10px;
+
+        z-index: 5001;
+
+        width: auto;
+
+        max-width: 850px;
+
+        height: min(68vh, 620px);
+
+        min-height: 300px;
+
+        margin: 0 auto;
+
+        flex-direction: column;
+
+        background: #ffffff;
+
+        border:
+            1px solid rgba(7, 26, 43, 0.10);
+
+        border-radius: 22px;
+
+        box-shadow:
+            0 25px 70px rgba(7, 26, 43, 0.28);
+
+        overflow: hidden;
+
+        opacity: 0;
+
+        transform:
+            translateY(24px);
+
+        pointer-events: none;
+
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+
+        touch-action: pan-y;
+    }
+
+    /*
+     * Only an actually-open drawer is displayed and interactive.
+     */
+    .mobile-order-summary-drawer.is-open {
+        display: flex;
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+        pointer-events: auto;
+    }
+
+    /*
+     * CRITICAL FIX:
+     * Hidden must always win.
+     */
+    .mobile-order-summary-drawer[hidden] {
+        display: none !important;
+
+        pointer-events: none !important;
+    }
+
+    /*
+     * Defensive rule:
+     * If JS removes the is-open class while the drawer is
+     * still mounted, it must not intercept the page.
+     */
+    .mobile-order-summary-drawer:not(.is-open) {
+        pointer-events: none;
+    }
+
+
+    /* =====================================================
+       DRAWER HEADER
+       ===================================================== */
+
+    .mobile-order-summary-header {
+        flex: 0 0 auto;
+
+        width: 100%;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 12px;
+
+        padding:
+            15px
+            16px;
+
+        background: #ffffff;
+
+        border-bottom:
+            1px solid rgba(7, 26, 43, 0.07);
+
+        touch-action: pan-y;
+    }
+
+    .mobile-order-summary-eyebrow {
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: #b28b45;
+
+        font-size: 9px;
+        font-weight: 900;
+
+        letter-spacing: 0.12em;
+    }
+
+    .mobile-order-summary-header h2 {
+        margin: 0;
+
+        color: #071a2b;
+
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .mobile-order-summary-close {
+        flex: 0 0 auto;
+
+        width: 38px;
+        height: 38px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border:
+            1px solid rgba(7, 26, 43, 0.09);
+
+        border-radius: 11px;
+
+        background: #f8fafc;
+        color: #071a2b;
+
+        font-family: inherit;
+
+        font-size: 25px;
+        font-weight: 400;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        touch-action: manipulation;
+    }
+
+
+    /* =====================================================
+       DRAWER BODY
+       ===================================================== */
+
+    .mobile-order-summary-body {
+        flex: 1 1 auto;
+
+        min-height: 0;
+
+        width: 100%;
+
+        padding:
+            12px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 9px;
+
+        /*
+         * ONLY the expanded order list scrolls.
+         */
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        -webkit-overflow-scrolling: touch;
+
+        overscroll-behavior: contain;
+
+        scrollbar-width: thin;
+
+        touch-action: pan-y;
+    }
+
+    .mobile-order-summary-body::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .mobile-order-summary-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .mobile-order-summary-body::-webkit-scrollbar-thumb {
+        background: rgba(7, 26, 43, 0.20);
+
+        border-radius: 10px;
+    }
+
+
+    /* =====================================================
+       DRAWER FOOTER
+       ===================================================== */
+
+    .mobile-order-summary-footer {
+        flex: 0 0 auto;
+
+        width: 100%;
+
+        padding:
+            11px
+            12px
+            calc(11px + env(safe-area-inset-bottom));
+
+        background: #ffffff;
+
+        border-top:
+            1px solid rgba(7, 26, 43, 0.07);
+    }
+
+    .mobile-order-summary-total {
+        width: 100%;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
 
         gap: 10px;
 
-        border-radius: 15px;
+        margin-bottom: 9px;
+
+        color: #64707d;
+
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .mobile-order-summary-total strong {
+        color: #071a2b;
+
+        font-size: 19px;
+        font-weight: 900;
+    }
+
+    .mobile-order-summary-close-footer {
+        width: 100%;
+
+        min-height: 43px;
+
+        border: none;
+
+        border-radius: 11px;
+
+        background: #071a2b;
+        color: #ffffff;
+
+        font-family: inherit;
+
+        font-size: 14px;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        touch-action: manipulation;
     }
 
 
-    .order-item img {
+    /* =====================================================
+       MOBILE ORDER CARDS
+       ===================================================== */
 
-        width: 65px !important;
+    .order-item {
+        min-height: 89px;
 
-        height: 65px !important;
+        gap: 9px;
+
+        padding: 9px;
     }
 
+    .order-item img,
+    .order-item-image {
+        width: 55px;
+        height: 55px;
+
+        min-width: 55px;
+        max-width: 55px;
+
+        flex-basis: 55px;
+    }
 
     .order-item h3 {
-
-        font-size: 15px;
-
-        margin-bottom: 4px;
+        font-size: 14px;
     }
-
 
     .order-item p {
-
         font-size: 12px;
-
-        margin: 2px 0;
     }
 
+    .order-item-meta {
+        font-size: 11px;
+
+        gap: 3px 8px;
+    }
 
     .order-item strong {
+        max-width: 30%;
+
+        font-size: 13px;
+    }
+
+
+    /* =====================================================
+       VARIANT — MOBILE
+       ===================================================== */
+
+    .order-item-variant {
+        min-height: 115px;
+        max-height: 115px;
+
+        gap: 7px;
+
+        padding: 8px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 82px;
+    }
+
+    .order-item-variant img {
+        flex: 0 0 52px;
+
+        width: 52px;
+        height: 52px;
+
+        min-width: 52px;
+        max-width: 52px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 135px;
+
+        width: 135px;
+
+        min-width: 105px;
+        max-width: 160px;
+
+        height: 100%;
+        max-height: 100%;
+
+        border-radius: 8px;
+    }
+
+    .variant-details-title {
+        padding: 5px 6px;
+
+        font-size: 9px;
+    }
+
+    .variant-detail-row {
+        min-height: 23px;
+
+        padding: 4px 6px;
+
+        column-gap: 4px;
+    }
+
+    .variant-detail-name {
+        font-size: 9px;
+    }
+
+    .variant-detail-value {
+        font-size: 9.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 48px;
+
+        max-width: 62px;
+
+        font-size: 12px;
+    }
+
+
+    /* =====================================================
+       MOBILE SUBMIT
+       ===================================================== */
+
+    .checkout-submit-actions {
+        grid-template-columns:
+            minmax(0, 1fr);
+    }
+
+    .primary-confirm-btn,
+    .whatsapp-confirm-btn {
+        width: 100%;
+    }
+
+    .checkout-total-row {
+        gap: 10px;
+
+        font-size: 16px;
+    }
+
+    .checkout-total-row strong {
+        font-size: 22px;
+    }
+
+    .checkout-payment-note {
+        gap: 10px;
+
+        padding:
+            13px
+            14px;
+
+        margin-top: 16px;
+        margin-bottom: 20px;
+
+        border-radius: 10px;
+    }
+
+    .checkout-payment-note-icon {
+        flex-basis: 28px;
+
+        width: 28px;
+        height: 28px;
 
         font-size: 15px;
     }
 
+    .checkout-payment-note p {
+        font-size: 13px;
 
-    .checkout-box input,
-    .checkout-box textarea {
+        line-height: 1.75;
+    }
+}
 
-        font-size: 15px;
 
-        padding: 13px 14px;
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
 
-        border-radius: 13px;
+@media (max-width: 480px) {
+
+    .checkout-page {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .checkout-box {
+        padding:
+            20px
+            12px;
+
+        border-radius: 18px;
+    }
+
+    .checkout-box h1 {
+        font-size: 24px;
+    }
+
+    .order-summary-box,
+    .customer-box {
+        padding:
+            16px
+            12px;
     }
 
 
-    #confirmOrder {
+    /* -----------------------------------------------------
+       Smaller compact preview
+       ----------------------------------------------------- */
 
+    #orderSummary {
+        height: 124px;
+        max-height: 124px;
+        min-height: 0;
+
+        flex: 0 0 124px;
+    }
+
+    #orderSummary .order-item {
+        min-height: 76px;
+
+        gap: 7px;
+
+        padding: 8px;
+    }
+
+
+    .mobile-order-summary-drawer {
+        left: 7px;
+        right: 7px;
+        bottom: 7px;
+
+        height: min(70vh, 620px);
+
+        min-height: 285px;
+
+        border-radius: 20px;
+    }
+
+    .mobile-order-summary-header {
+        padding:
+            13px
+            13px;
+    }
+
+    .mobile-order-summary-close {
+        width: 36px;
+        height: 36px;
+    }
+
+    .mobile-order-summary-body {
+        padding:
+            10px;
+    }
+
+    .mobile-order-summary-footer {
+        padding:
+            10px
+            10px
+            calc(10px + env(safe-area-inset-bottom));
+    }
+
+    .mobile-order-summary-total {
+        font-size: 13px;
+    }
+
+    .mobile-order-summary-total strong {
+        font-size: 18px;
+    }
+
+
+    .order-item img,
+    .order-item-image {
+        width: 52px;
+        height: 52px;
+
+        max-width: 52px;
+        min-width: 52px;
+
+        flex-basis: 52px;
+    }
+
+    .order-item h3 {
+        font-size: 13px;
+    }
+
+    .order-item p {
+        font-size: 11px;
+    }
+
+    .order-item strong {
+        font-size: 12px;
+    }
+
+
+    /* -----------------------------------------------------
+       Variant
+       ----------------------------------------------------- */
+
+    .order-item-variant {
+        min-height: 110px;
+        max-height: 110px;
+
+        gap: 6px;
+
+        padding: 7px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 72px;
+    }
+
+    .order-item-variant img {
+        width: 49px;
+        height: 49px;
+
+        min-width: 49px;
+        max-width: 49px;
+
+        flex-basis: 49px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 120px;
+
+        width: 120px;
+
+        min-width: 95px;
+        max-width: 145px;
+    }
+
+    .variant-details-title {
+        padding: 4px 5px;
+
+        font-size: 8px;
+    }
+
+    .variant-detail-row {
+        min-height: 22px;
+
+        padding: 3px 5px;
+
+        column-gap: 3px;
+    }
+
+    .variant-detail-name {
+        font-size: 8px;
+    }
+
+    .variant-detail-value {
+        font-size: 8.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 44px;
+
+        max-width: 58px;
+
+        font-size: 11px;
+    }
+
+
+    .checkout-total-row strong {
+        font-size: 20px;
+    }
+
+    .checkout-modal {
+        padding:
+            12px;
+    }
+
+    .checkout-modal-content {
+        max-height: calc(100vh - 24px);
+
+        padding:
+            28px
+            18px;
+
+        border-radius: 20px;
+    }
+
+    .checkout-toast {
+        max-width: calc(100vw - 20px);
+
+        padding:
+            11px
+            16px;
+
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .checkout-page {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .checkout-box {
+        padding:
+            18px
+            10px;
+    }
+
+    .order-summary-box,
+    .customer-box {
+        padding:
+            14px
+            10px;
+    }
+
+
+    #orderSummary {
+        height: 112px;
+        max-height: 112px;
+        min-height: 0;
+
+        flex: 0 0 112px;
+    }
+
+    #orderSummary .order-item {
+        min-height: 64px;
+
+        gap: 6px;
+
+        padding: 7px;
+    }
+
+
+    .mobile-summary-toggle {
+        min-height: 38px;
+
+        font-size: 12px;
+    }
+
+    .mobile-order-summary-drawer {
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+
+        height: min(72vh, 600px);
+
+        min-height: 270px;
+
+        border-radius: 18px;
+    }
+
+    .mobile-order-summary-header {
+        padding:
+            11px
+            11px;
+    }
+
+    .mobile-order-summary-header h2 {
         font-size: 17px;
-
-        padding: 14px;
-
-        border-radius: 15px;
     }
 
+    .mobile-order-summary-body {
+        padding:
+            8px;
+    }
+
+    .mobile-order-summary-footer {
+        padding:
+            8px
+            8px
+            calc(8px + env(safe-area-inset-bottom));
+    }
+
+    .mobile-order-summary-close-footer {
+        min-height: 40px;
+    }
+
+
+    .order-item img,
+    .order-item-image {
+        width: 48px;
+        height: 48px;
+
+        max-width: 48px;
+        min-width: 48px;
+
+        flex-basis: 48px;
+    }
+
+    .order-item h3 {
+        font-size: 12px;
+    }
+
+    .order-item p {
+        font-size: 10px;
+    }
+
+    .order-item-meta {
+        font-size: 10px;
+    }
+
+    .order-item strong {
+        max-width: 28%;
+
+        font-size: 11px;
+    }
+
+
+    /* -----------------------------------------------------
+       Variant
+       ----------------------------------------------------- */
+
+    .order-item-variant {
+        min-height: 103px;
+        max-height: 103px;
+
+        gap: 5px;
+
+        padding: 6px;
+    }
+
+    .order-item-variant .order-item-content {
+        min-width: 62px;
+    }
+
+    .order-item-variant img {
+        width: 45px;
+        height: 45px;
+
+        min-width: 45px;
+        max-width: 45px;
+
+        flex-basis: 45px;
+    }
+
+    .variant-details-panel {
+        flex: 1 1 105px;
+
+        width: 105px;
+
+        min-width: 82px;
+        max-width: 118px;
+    }
+
+    .variant-details-title {
+        padding: 3px 4px;
+
+        font-size: 7px;
+    }
+
+    .variant-detail-row {
+        min-height: 20px;
+
+        padding: 3px 4px;
+
+        column-gap: 2px;
+    }
+
+    .variant-detail-name {
+        font-size: 7px;
+    }
+
+    .variant-detail-value {
+        font-size: 7.5px;
+    }
+
+    .order-item-variant .order-item-total,
+    .order-item-variant strong {
+        min-width: 39px;
+
+        max-width: 51px;
+
+        font-size: 10px;
+    }
+
+
+    .checkout-total-row {
+        gap: 8px;
+
+        font-size: 15px;
+    }
+
+    .checkout-total-row strong {
+        font-size: 18px;
+    }
+
+    .checkout-modal-content {
+        padding:
+            24px
+            15px;
+    }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY / REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .checkout-nav-link,
+    .primary-confirm-btn,
+    .whatsapp-confirm-btn,
+    .checkout-toast,
+    .customer-box input,
+    .customer-box textarea,
+    .mobile-summary-toggle,
+    .mobile-order-summary-backdrop,
+    .mobile-order-summary-drawer {
+        transition: none;
+    }
+
+    .checkout-nav-link:hover,
+    .primary-confirm-btn:hover,
+    .whatsapp-confirm-btn:hover {
+        transform: none;
+    }
+
+    .mobile-order-summary-drawer {
+        transform: none;
+    }
+}
+
+
+/* =========================================================
+   DESKTOP:
+   Mobile drawer controls remain hidden.
+   ========================================================= */
+
+@media (min-width: 769px) {
+
+    .mobile-summary-preview-fade,
+    .mobile-summary-toggle,
+    .mobile-order-summary-backdrop,
+    .mobile-order-summary-drawer {
+        display: none !important;
+    }
 }

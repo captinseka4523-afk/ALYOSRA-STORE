@@ -1,276 +1,1563 @@
 /* =========================================================
    AL YOSRA STORE
    OFFERS PAGE
-========================================================= */
+   ========================================================= */
 
 
 /* =========================================================
    PAGE
-========================================================= */
+   ========================================================= */
 
 .offers-page {
-    width: 92%;
-    max-width: 1200px;
-
-    margin: 120px auto 60px;
-
-    padding: 30px 20px;
-}
-
-
-.offers-page > h1 {
-    text-align: center;
-
-    margin: 0 0 10px;
-
-    font-size: 42px;
-
-    color: #111827;
-}
-
-
-.offers-page > p {
-    text-align: center;
-
-    margin: 0 0 40px;
-
-    color: #6b7280;
-
-    font-size: 18px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 
 /* =========================================================
-   OFFERS GRID
-========================================================= */
+   HERO
+   ========================================================= */
+
+.offers-hero {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 72vh;
+    min-height: 72svh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+    isolation: isolate;
+
+    background: #071a2b;
+}
+
+
+/* =========================================================
+   HERO BACKGROUND
+   ========================================================= */
+
+.offers-hero-background {
+    position: absolute;
+    inset: 0;
+
+    z-index: -4;
+
+    background:
+        radial-gradient(
+            circle at 78% 32%,
+            rgba(35, 76, 109, 0.55),
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at 18% 78%,
+            rgba(20, 55, 82, 0.55),
+            transparent 36%
+        ),
+        linear-gradient(
+            135deg,
+            #04111d 0%,
+            #071a2b 45%,
+            #0b2942 100%
+        );
+}
+
+
+/* =========================================================
+   HERO GLOW
+   ========================================================= */
+
+.offers-hero-glow {
+    position: absolute;
+
+    z-index: -3;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    filter: blur(70px);
+
+    opacity: 0.32;
+}
+
+
+.offers-hero-glow-one {
+    width: 380px;
+    height: 380px;
+
+    top: -170px;
+    right: -80px;
+
+    background: #245779;
+}
+
+
+.offers-hero-glow-two {
+    width: 320px;
+    height: 320px;
+
+    bottom: -170px;
+    left: -100px;
+
+    background: #123a58;
+}
+
+
+/* =========================================================
+   HERO DECORATIVE RINGS
+   ========================================================= */
+
+.offers-hero::before {
+    content: "";
+
+    position: absolute;
+
+    z-index: -2;
+
+    width: 520px;
+    height: 520px;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255, 255, 255, 0.035);
+
+    box-shadow:
+        0 0 0 70px rgba(255, 255, 255, 0.012),
+        0 0 0 140px rgba(255, 255, 255, 0.008);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   HERO CONTENT
+   ========================================================= */
+
+.offers-hero-content {
+    position: relative;
+
+    width: min(900px, 94%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    /*
+     * The extra bottom padding keeps the main offer
+     * visually above the separate bottom text box.
+     */
+    padding:
+        75px 20px 170px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   HERO EYEBROW
+   ========================================================= */
+
+.offers-hero-eyebrow {
+    display: block;
+
+    margin-bottom: 18px;
+
+    font-size:
+        clamp(0.82rem, 1.4vw, 1rem);
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    color: rgba(255, 255, 255, 0.72);
+
+    opacity: 0;
+
+    transform: translateY(24px);
+
+    animation:
+        offersHeroItemIn 0.75s ease forwards;
+
+    animation-delay: 0.1s;
+}
+
+
+/* =========================================================
+   HERO MAIN OFFER
+   ========================================================= */
+
+.offers-hero-offer {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap:
+        clamp(8px, 1.5vw, 18px);
+
+    direction: ltr;
+
+    white-space: nowrap;
+
+    opacity: 0;
+
+    animation:
+        offersHeroOfferContainerIn 0.7s ease forwards;
+
+    animation-delay: 0.2s;
+}
+
+
+/* =========================================================
+   UP TO
+   ========================================================= */
+
+.offers-hero-up-to {
+    align-self: flex-start;
+
+    margin-top:
+        clamp(14px, 2vw, 30px);
+
+    font-size:
+        clamp(0.95rem, 2vw, 1.5rem);
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    opacity: 0;
+
+    animation:
+        offersHeroItemIn 0.7s ease forwards;
+
+    animation-delay: 0.35s;
+}
+
+
+/* =========================================================
+   DISCOUNT
+   ========================================================= */
+
+.offers-hero-discount {
+    position: relative;
+
+    display: inline-block;
+
+    font-size:
+        clamp(5rem, 14vw, 10.5rem);
+
+    font-weight: 950;
+
+    line-height: 0.9;
+
+    letter-spacing: -0.06em;
+
+    color: #D6B36A;
+
+    text-shadow:
+        1px 1px 0 #F4D995,
+        2px 2px 0 #EBCB7B,
+        3px 3px 0 #E2BD62,
+        4px 4px 0 #D6AE50,
+        5px 5px 0 #C69A3C,
+        6px 6px 0 #B98A31,
+        7px 7px 0 #A87927,
+        0 16px 30px rgba(0, 0, 0, 0.38);
+
+    opacity: 0;
+
+    transform:
+        translateY(-42px)
+        scale(1.025);
+
+    animation:
+        offersHeroDiscountLuxury
+        1s
+        cubic-bezier(0.19, 0.9, 0.25, 1)
+        0.25s
+        forwards;
+}
+
+
+@keyframes offersHeroDiscountLuxury {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translateY(-42px)
+            scale(1.025);
+    }
+
+    58% {
+        opacity: 1;
+
+        transform:
+            translateY(3px)
+            scale(0.998);
+    }
+
+    72% {
+        transform:
+            translateY(-1px)
+            scale(1.001);
+    }
+
+    100% {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================================
+   OFF
+   ========================================================= */
+
+.offers-hero-off {
+    position: relative;
+
+    align-self: flex-end;
+
+    left: 14px;
+    top: 28px;
+
+    margin-bottom:
+        clamp(8px, 1.5vw, 24px);
+
+    font-size:
+        clamp(1.15rem, 2.8vw, 2rem);
+
+    font-weight: 900;
+
+    letter-spacing: 0.07em;
+
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    opacity: 0;
+
+    transform: translateY(20px);
+
+    animation:
+        offersHeroItemIn 0.7s ease forwards;
+
+    animation-delay: 0.85s;
+}
+
+
+/* =========================================================
+   HERO BOTTOM TEXT
+   ========================================================= */
+
+.offers-hero-bottom-text {
+    position: absolute;
+    left: 50%;
+    bottom: 48px;
+    width: min(650px, 88%);
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 15px 22px;
+    box-sizing: border-box;
+    text-align: center;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   HERO DESCRIPTION
+   ========================================================= */
+
+.offers-hero-description {
+    max-width: 650px;
+
+    margin:
+        0 auto;
+
+    font-size:
+        clamp(1rem, 1.8vw, 1.25rem);
+
+    line-height: 1.85;
+
+    font-weight: 600;
+
+    color:
+        rgba(255, 255, 255, 0.9);
+
+    opacity: 0;
+
+    transform: translateY(22px);
+
+    animation:
+        offersHeroItemIn 0.8s ease forwards;
+
+    animation-delay: 0.95s;
+}
+
+
+/* =========================================================
+   HERO CAPTION
+   ========================================================= */
+
+.offers-hero-caption {
+    display: block;
+
+    margin-top: 8px;
+
+    font-size:
+        clamp(0.78rem, 1.4vw, 0.95rem);
+
+    line-height: 1.8;
+
+    color: #ffffff;
+
+    opacity: 0;
+
+    transform: translateY(18px);
+
+    animation:
+        offersHeroItemIn 0.8s ease forwards;
+
+    animation-delay: 1.08s;
+}
+
+
+/* =========================================================
+   HERO ANIMATIONS
+   ========================================================= */
+
+@keyframes offersHeroItemIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+@keyframes offersHeroOfferContainerIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   OFFERS SECTION
+   ========================================================= */
+
+.offers-section {
+    position: relative;
+
+    width: min(1400px, 100%);
+
+    margin: 0 auto;
+
+    padding:
+        clamp(60px, 7vw, 100px)
+        clamp(14px, 3.5vw, 45px)
+        clamp(70px, 8vw, 110px);
+
+    box-sizing: border-box;
+    
+}
+
+
+/* =========================================================
+   SECTION SEPARATOR
+   ========================================================= */
+
+.offers-section::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 50%;
+
+    width: 100vw;
+    height: 40px;
+
+    transform:
+        translateX(-50%);
+
+    background: #e7d9d4;
+}
+
+
+/* =========================================================
+   SECTION HEADING
+   ========================================================= */
+
+.offers-section-heading {
+    margin-bottom:
+        clamp(32px, 4vw, 52px);
+
+    text-align: center;
+}
+
+
+.offers-section-eyebrow {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    font-size:
+        clamp(0.7rem, 1.2vw, 0.88rem);
+
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    color: #17344d;
+}
+
+
+.offers-section-heading h1 {
+    position: relative;
+
+    width: fit-content;
+
+    margin: 0 auto;
+
+    padding-bottom: 13px;
+
+    font-size:
+        clamp(2rem, 4vw, 3rem);
+
+    line-height: 1.3;
+
+    font-weight: 900;
+
+    color: #071a2b;
+}
+
+
+.offers-section-heading h1::after {
+    content: "";
+
+    position: absolute;
+
+    right: 50%;
+    bottom: 0;
+
+    width: 52px;
+    height: 3px;
+
+    transform:
+        translateX(50%);
+
+    border-radius: 999px;
+
+    background: #071a2b;
+}
+
+
+.offers-section-heading p {
+    max-width: 650px;
+
+    margin:
+        16px auto 0;
+
+    font-size:
+        clamp(0.92rem, 1.6vw, 1.08rem);
+
+    line-height: 1.85;
+
+    font-weight: 600;
+
+    color: #687784;
+}
+
+
+/* =========================================================
+   OFFERS CONTAINER
+   ========================================================= */
 
 #offersContainer {
+    width: 100%;
+
     display: grid;
 
     grid-template-columns:
-        repeat(auto-fit, minmax(280px, 1fr));
+        repeat(4, minmax(0, 1fr));
 
-    gap: 28px;
+    gap:
+        clamp(18px, 2vw, 28px);
+
+    align-items: start;
+    padding-bottom: 40px;
 }
 
 
 /* =========================================================
    OFFER CARD
-========================================================= */
+   ========================================================= */
 
 .offer-card {
     position: relative;
 
-    background: rgba(255, 255, 255, 0.96);
+    display: flex;
+    flex-direction: column;
 
-    border: 1px solid rgba(37, 99, 235, 0.12);
+    width: 100%;
+    min-width: 0;
 
-    border-radius: 24px;
+    align-self: start;
 
     overflow: hidden;
 
-    box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.10);
+    border:
+        1px solid rgba(7, 26, 43, 0.32);
 
-    transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 4px 14px rgba(7, 26, 43, 0.08);
 
     cursor: pointer;
+
+    transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
 }
 
 
-.offer-card::before {
-    content: "عرض خاص";
+/* =========================================================
+   CARD HOVER
+   ========================================================= */
+
+.offer-card:hover {
+    transform: none;
+
+    border-color:
+        rgba(7, 26, 43, 0.48);
+
+    box-shadow:
+        0 6px 18px rgba(7, 26, 43, 0.14);
+}
+
+
+.offer-card:focus-visible {
+    outline:
+        2px solid #071a2b;
+
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.offer-image-wrapper {
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    background: #f3f5f7;
+}
+
+
+.offer-image-wrapper::after {
+    content: "";
 
     position: absolute;
 
-    top: 16px;
-    right: 16px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    height: 1px;
+
+    background: #071a2b;
 
     z-index: 2;
-
-    padding: 7px 14px;
-
-    border-radius: 20px;
-
-    background: #2563eb;
-
-    color: white;
-
-    font-size: 13px;
-
-    font-weight: bold;
-
-    box-shadow:
-        0 5px 15px rgba(37, 99, 235, 0.25);
 }
 
 
-.offer-card:hover {
-    transform: translateY(-6px);
-
-    border-color: rgba(37, 99, 235, 0.25);
-
-    box-shadow:
-        0 20px 45px rgba(0, 0, 0, 0.15);
-}
-
-
-/* =========================================================
-   OFFER IMAGE
-========================================================= */
-
-.offer-image {
-    width: 100%;
-
-    height: 230px;
-
+.offer-image-wrapper img {
     display: block;
+
+    width: 100%;
+    height: 100%;
 
     object-fit: cover;
 
-    background: #f3f6fb;
+    transition: none;
+}
+
+
+.offer-card:hover
+.offer-image-wrapper img {
+    transform: none;
 }
 
 
 /* =========================================================
-   OFFER CONTENT
-========================================================= */
+   IMAGE PLACEHOLDER
+   ========================================================= */
 
-.offer-content {
-    padding: 24px;
-}
-
-
-.offer-content h2 {
-    margin: 0 0 18px;
-
-    color: #111827;
-
-    font-size: 22px;
-
-    line-height: 1.5;
-}
-
-
-/* =========================================================
-   OFFER PRICE
-========================================================= */
-
-.offer-price {
-    display: inline-flex;
+.offer-image-placeholder {
+    display: flex;
 
     align-items: center;
-
     justify-content: center;
 
-    min-width: 105px;
+    color: #17344d;
 
-    padding: 9px 18px;
-
-    border-radius: 14px;
-
-    background: #eff6ff;
-
-    color: #2563eb;
-
-    font-size: 23px;
+    font-size: 0.9rem;
 
     font-weight: 800;
 }
 
 
 /* =========================================================
-   OFFER DETAILS PAGE
-========================================================= */
+   SPECIAL OFFER STRIP
+   ========================================================= */
 
-.offer-details-page {
-    width: 92%;
+.offer-special-strip {
+    position: relative;
 
-    max-width: 1150px;
+    width: 100%;
 
-    margin: 110px auto 60px;
+    height: 30px;
+    min-height: 30px;
+
+    overflow: hidden;
+
+    background: #d62828;
+
+    color: #ffffff;
+
+    direction: ltr;
+
+    white-space: nowrap;
+}
+
+
+.offer-special-track {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    height: 100%;
+
+    display: flex;
+
+    width: max-content;
+
+    direction: ltr;
+
+    animation:
+        offerSpecialMarquee
+        11s
+        linear
+        infinite;
+}
+
+
+.offer-special-group {
+    display: flex;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    height: 100%;
+}
+
+
+.offer-special-group span {
+    display: flex;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    height: 100%;
+
+    padding:
+        0 28px;
+
+    font-size: 0.72rem;
+
+    line-height: 1;
+
+    font-weight: 900;
+
+    letter-spacing: 0.08em;
+
+    color: #ffffff;
+}
+
+
+@keyframes offerSpecialMarquee {
+
+    from {
+        transform:
+            translateX(0);
+    }
+
+    to {
+        transform:
+            translateX(-50%);
+    }
 }
 
 
 /* =========================================================
-   MOBILE
-========================================================= */
+   OFFER CONTENT
+   ========================================================= */
 
-@media (max-width: 700px) {
+.offer-content {
+    display: flex;
 
-    .offers-page {
-        width: 94%;
+    flex-direction: column;
 
-        margin-top: 100px;
+    flex: none;
 
-        padding: 20px 5px;
-    }
+    min-height: 0;
+
+    height: 205px;
+
+    padding:
+        17px
+        17px
+        18px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    background: #ffffff;
+
+    color: #071a2b;
+}
 
 
-    .offers-page > h1 {
-        font-size: 32px;
-    }
+/* =========================================================
+   OFFER NAME
+   ========================================================= */
+
+.offer-content h2 {
+    margin: 0;
+
+    font-size:
+        clamp(0.98rem, 1.55vw, 1.18rem);
+
+    line-height: 1.55;
+
+    font-weight: 850;
+
+    color: #071a2b;
+}
 
 
-    .offers-page > p {
-        font-size: 15px;
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
 
-        margin-bottom: 25px;
-    }
+.offer-description {
+    margin:
+        8px 0 0;
 
+    font-size:
+        clamp(0.78rem, 1.2vw, 0.88rem);
+
+    line-height: 1.75;
+
+    color: #697783;
+
+    display: -webkit-box;
+
+    -webkit-box-orient: vertical;
+
+
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.offer-price {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 14px;
+
+    direction: ltr;
+
+    font-size:
+        clamp(1.25rem, 2vw, 1.55rem);
+
+    line-height: 1.2;
+
+    font-weight: 900;
+
+    color: #071a2b;
+}
+
+
+/* =========================================================
+   DISCOVER
+   ========================================================= */
+
+.offer-discover {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    min-height: 40px;
+
+    margin-top: auto;
+
+    padding:
+        10px 8px;
+
+    box-sizing: border-box;
+
+    border-radius: 7px;
+
+    background: #071a2b;
+
+    color: #ffffff;
+
+    font-size:
+        clamp(0.76rem, 1.2vw, 0.86rem);
+
+    line-height: 1.5;
+
+    font-weight: 750;
+
+    text-align: center;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+
+.offer-card:hover
+.offer-discover {
+    transform: none;
+
+    background: #0b243a;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.offers-loading {
+    grid-column: 1 / -1;
+
+    min-height: 180px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    border:
+        1px solid #e0e5e9;
+
+    border-radius: 12px;
+
+    background: #f7f8f9;
+
+    color: #596b79;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   EMPTY / ERROR
+   ========================================================= */
+
+.offers-empty,
+.offers-error {
+    grid-column: 1 / -1;
+
+    padding:
+        45px 20px;
+
+    text-align: center;
+
+    border:
+        1px solid #e0e5e9;
+
+    border-radius: 12px;
+
+    background: #f7f8f9;
+
+    color: #596b79;
+
+    font-size: 0.98rem;
+
+    line-height: 1.9;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   REVEAL
+   ========================================================= */
+
+.reveal-section {
+    opacity: 0;
+
+    transform:
+        translateY(25px);
+
+    transition:
+        opacity 0.7s ease,
+        transform 0.7s ease;
+}
+
+
+.reveal-section.is-visible {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+
+
+
+/* =========================================================
+   SENTINEL
+   ========================================================= */
+
+.offers-sentinel {
+    width: 100%;
+
+    height: 1px;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
 
     #offersContainer {
-        grid-template-columns: 1fr 1fr;
-
-        gap: 12px;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
     }
 
-
-    .offer-card {
-        border-radius: 18px;
+    .offers-hero {
+        min-height: 68vh;
+        min-height: 68svh;
     }
 
-
-    .offer-card::before {
-        top: 9px;
-        right: 9px;
-
-        padding: 5px 8px;
-
-        font-size: 10px;
+    .offers-hero-content {
+        padding:
+            65px 20px 150px;
     }
 
+    .offers-hero-bottom-text {
+        bottom: 42px;
+    }
+}
 
-    .offer-image {
-        height: 135px;
+
+/* =========================================================
+   MOBILE / TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    #offersContainer {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+
+        align-items: start;
     }
 
+    .offers-section {
+        padding:
+            55px 12px 80px;
+    }
+
+    .offers-hero {
+        min-height: 60vh;
+        min-height: 60svh;
+    }
+
+    .offers-hero-content {
+        width: 95%;
+
+        /*
+         * The main content remains centered vertically,
+         * while the extra lower padding keeps it clear
+         * of the bottom text box.
+         */
+        padding:
+            60px 15px 135px;
+    }
+
+    .offers-hero-discount {
+        font-size:
+            clamp(
+                4.5rem,
+                16vw,
+                7.5rem
+            );
+    }
+
+    .offers-hero-bottom-text {
+        bottom: 28px;
+
+        width: 90%;
+    }
 
     .offer-content {
-        padding: 13px;
+        height: 190px;
+
+        min-height: 190px;
+
+        padding:
+            14px 12px 15px;
+    }
+
+    .offer-special-strip {
+        height: 28px;
+
+        min-height: 28px;
+    }
+
+    .offer-special-group span {
+        padding:
+            0 20px;
+
+        font-size: 0.66rem;
+    }
+}
+
+
+/* =========================================================
+   PHONE
+   ========================================================= */
+
+@media (max-width: 560px) {
+
+    #offersContainer {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+
+        align-items: start;
+    }
+
+    .offers-section {
+        padding:
+            48px 10px 70px;
+    }
+
+    .offers-section-heading {
+        margin-bottom: 30px;
+    }
+
+    .offers-section-heading h1 {
+        font-size: 1.95rem;
+    }
+
+    .offers-section-heading p {
+        margin-top: 13px;
+
+        font-size: 0.88rem;
     }
 
 
-    .offer-content h2 {
-        margin-bottom: 10px;
+    /* -----------------------------------------
+       HERO
+       ----------------------------------------- */
 
-        font-size: 15px;
+    .offers-hero {
+        /*
+         * The Hero is intentionally shorter on phones.
+         * The top spacing is preserved while the unused
+         * lower area is removed.
+         */
+        min-height: 50vh;
+        min-height: 50svh;
+    }
+
+    .offers-hero-content {
+        width: 95%;
+
+        padding:
+            55px 10px 115px;
+    }
+
+    .offers-hero-eyebrow {
+        margin-bottom: 16px;
+
+        font-size: 0.78rem;
+    }
+
+    .offers-hero-offer {
+        gap: 5px;
+    }
+
+    .offers-hero-up-to {
+        margin-top: 8px;
+
+        font-size: 0.72rem;
+    }
+
+    .offers-hero-discount {
+        font-size:
+            clamp(
+                3.7rem,
+                20vw,
+                5.7rem
+            );
+    }
+
+    .offers-hero-off {
+        left: 8px;
+        top: 10px;
+
+        margin-bottom: 5px;
+
+        font-size: 0.95rem;
+    }
+
+
+    /* -----------------------------------------
+       PHONE HERO CIRCLE
+       ----------------------------------------- */
+
+    .offers-hero::before {
+        width: 320px;
+        height: 320px;
+
+        top: 50%;
+        left: 50%;
+
+        border:
+            1px solid rgba(255, 255, 255, 0.055);
+
+        box-shadow:
+            0 0 0 45px rgba(255, 255, 255, 0.018),
+            0 0 0 90px rgba(255, 255, 255, 0.012);
+
+        opacity: 1;
+    }
+
+
+    /* -----------------------------------------
+       HERO BOTTOM TEXT
+       ----------------------------------------- */
+
+    .offers-hero-bottom-text {
+        bottom: 10px;
+
+        width: 92%;
+
+        padding:
+            11px 14px;
+
+        border-radius: 14px;
+    }
+
+    .offers-hero-bottom-text
+    .offers-hero-description {
+        max-width: none;
+
+        margin-top: 0;
+
+        font-size: 0.84rem;
+    }
+
+    .offers-hero-bottom-text
+    .offers-hero-caption {
+        max-width: none;
+
+        margin-top: 5px;
+
+        font-size: 0.68rem;
+    }
+
+
+    /* -----------------------------------------
+       PHONE CARDS
+       ----------------------------------------- */
+
+    .offer-card {
+        align-self: start;
+
+        border-radius: 9px;
+
+        box-shadow:
+            0 3px 10px rgba(7, 26, 43, 0.07);
+    }
+
+    .offer-card:hover {
+        box-shadow:
+            0 3px 10px rgba(7, 26, 43, 0.07);
+    }
+
+
+    /* -----------------------------------------
+       SPECIAL STRIP
+       ----------------------------------------- */
+
+    .offer-special-strip {
+        height: 25px;
+
+        min-height: 25px;
+    }
+
+    .offer-special-group span {
+        padding:
+            0 16px;
+
+        font-size: 0.59rem;
+    }
+
+
+    /* -----------------------------------------
+       PHONE CONTENT
+       ----------------------------------------- */
+
+    .offer-content {
+        height: 175px;
+
+        min-height: 175px;
+
+        padding:
+            12px 10px 12px;
+    }
+
+    .offer-content h2 {
+        font-size: 0.86rem;
 
         line-height: 1.5;
     }
 
+    .offer-description {
+        margin-top: 6px;
 
-    .offer-price {
-        min-width: auto;
+        font-size: 0.7rem;
 
-        padding: 6px 11px;
+        line-height: 1.65;
 
-        border-radius: 10px;
-
-        font-size: 16px;
+        -webkit-line-clamp: 2;
     }
 
+    .offer-price {
+        margin-top: 10px;
+
+        font-size: 1.15rem;
+    }
+
+    .offer-discover {
+        min-height: 34px;
+
+        margin-top: auto;
+
+        padding:
+            7px 5px;
+
+        border-radius: 6px;
+
+        font-size: 0.66rem;
+    }
 }
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    #offersContainer {
+        gap: 9px;
+    }
+
+    .offers-section {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .offers-hero {
+        min-height: 58vh;
+        min-height: 58svh;
+    }
+
+    .offers-hero-content {
+        padding:
+            48px 8px 105px;
+    }
+
+    .offer-content {
+        height: 165px;
+
+        min-height: 165px;
+
+        padding:
+            10px 8px 10px;
+    }
+
+    .offer-content h2 {
+        font-size: 0.81rem;
+    }
+
+    .offer-description {
+        font-size: 0.66rem;
+    }
+
+    .offer-price {
+        font-size: 1.05rem;
+    }
+
+    .offer-discover {
+        font-size: 0.61rem;
+    }
+
+    .offer-special-group span {
+        padding-left: 13px;
+        padding-right: 13px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE LANDSCAPE
+   ========================================================= */
+
+@media (max-height: 520px) and (orientation: landscape) {
+
+    .offers-hero {
+        min-height: 100vh;
+        min-height: 100svh;
+    }
+
+    .offers-hero-content {
+        padding:
+            35px 20px 90px;
+    }
+
+    .offers-hero-eyebrow {
+        margin-bottom: 10px;
+    }
+
+    .offers-hero-discount {
+        font-size:
+            clamp(
+                3.5rem,
+                12vw,
+                6rem
+            );
+    }
+
+    .offers-hero-bottom-text {
+        bottom: 18px;
+
+        width: min(650px, 90%);
+
+        padding:
+            10px 18px;
+    }
+
+    .offers-hero-description {
+        margin-top: 0;
+
+        font-size: 0.9rem;
+    }
+
+    .offers-hero-caption {
+        margin-top: 3px;
+    }
+}
+
+
+
+@media (max-width: 800px) {
+    .offers-hero-bottom-text {
+        bottom: 1px;
+    }
+
+    .offers-hero-description {
+        font-size: clamp(1.15rem, 3.2vw, 1.4rem);
+    }
+
+    .offers-hero-caption {
+        font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+    }
+}
+
+

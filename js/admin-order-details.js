@@ -1,3 +1,4 @@
+
 // ==========================================
 // Admin Order Details
 // ==========================================
@@ -117,6 +118,22 @@ async function loadOrderDetails(
 
 
         // ----------------------------------
+        // حساب تكلفة الطلب تلقائيًا
+        // ----------------------------------
+
+        const orderCostData =
+            await calculateOrderCost(
+                items || []
+            );
+
+
+        console.log(
+            "ORDER COST DATA:",
+            orderCostData
+        );
+
+
+        // ----------------------------------
         // تعبئة البيانات
         // ----------------------------------
 
@@ -169,22 +186,48 @@ async function loadOrderDetails(
         );
 
 
+        // ----------------------------------
+        // إجمالي الطلب
+        // ----------------------------------
+
+        const orderTotal =
+            Number(
+                order.total || 0
+            );
+
+
         document.getElementById(
             "orderTotal"
         ).textContent =
-        "$" +
+            "$" +
             formatPrice(
-                order.total
+                orderTotal
             );
+
+
+        // ----------------------------------
+        // تكلفة الطلب
+        // ----------------------------------
+
+        renderOrderFinancialData(
+            orderTotal,
+            orderCostData
+        );
 
 
         // ----------------------------------
         // المنتجات
         // ----------------------------------
 
-        renderOrderItems(
-            items || []
-        );
+      const variantOptions =
+    await loadVariantOptions(
+        items || []
+    );
+
+renderOrderItems(
+    items || [],
+    variantOptions
+);
 
 
         loading.hidden = true;
@@ -203,6 +246,387 @@ async function loadOrderDetails(
         showOrderError();
 
     }
+
+}
+
+
+// ==========================================
+// Calculate Order Cost
+// ==========================================
+
+async function calculateOrderCost(
+    items
+) {
+
+    if (!items.length) {
+
+        return {
+            cost: 0,
+            complete: true,
+            missingProducts: []
+        };
+
+    }
+
+
+    // ----------------------------------
+    // استخراج معرفات المنتجات
+    // ----------------------------------
+
+    const productIds =
+        [
+            ...new Set(
+                items
+                    .map(
+                        item =>
+                            item.product_id
+                    )
+                    .filter(
+                        productId =>
+                            productId !== null &&
+                            productId !== undefined
+                    )
+            )
+        ];
+
+
+    // ----------------------------------
+    // التحقق من وجود product_id
+    // ----------------------------------
+
+    const itemsWithoutProductId =
+        items.filter(
+            item =>
+                item.product_id === null ||
+                item.product_id === undefined
+        );
+
+
+    if (
+        !productIds.length
+    ) {
+
+        return {
+            cost: 0,
+            complete: false,
+            missingProducts:
+                itemsWithoutProductId.length
+                    ? itemsWithoutProductId
+                    : items
+        };
+
+    }
+
+
+    // ----------------------------------
+    // جلب تكاليف المنتجات
+    // ----------------------------------
+
+    const {
+        data: productCosts,
+        error: costError
+    } =
+        await supabaseClient
+            .from("product_costs")
+            .select(
+                "product_id, purchase_cost"
+            )
+            .in(
+                "product_id",
+                productIds
+            );
+
+
+    if (costError) {
+
+        console.error(
+            "Product costs error:",
+            costError
+        );
+
+        throw costError;
+
+    }
+
+
+    // ----------------------------------
+    // تحويل التكاليف إلى Map
+    // ----------------------------------
+
+    const costMap =
+        new Map();
+
+
+    (productCosts || []).forEach(
+        function(cost) {
+
+            costMap.set(
+                String(
+                    cost.product_id
+                ),
+                Number(
+                    cost.purchase_cost
+                )
+            );
+
+        }
+    );
+
+
+    // ----------------------------------
+    // حساب التكلفة
+    // ----------------------------------
+
+    let totalCost = 0;
+
+    const missingProducts = [];
+
+
+    items.forEach(
+        function(item) {
+
+            const productId =
+                item.product_id;
+
+
+            const purchaseCost =
+                costMap.get(
+                    String(
+                        productId
+                    )
+                );
+
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            if (
+                !Number.isFinite(
+                    purchaseCost
+                ) ||
+                purchaseCost <= 0
+            ) {
+
+                missingProducts.push(
+                    item
+                );
+
+                return;
+
+            }
+
+
+            totalCost +=
+                quantity *
+                purchaseCost;
+
+        }
+    );
+
+
+    return {
+
+        cost:
+            totalCost,
+
+        complete:
+            missingProducts.length === 0,
+
+        missingProducts
+
+    };
+
+}
+
+
+// ==========================================
+// Render Order Financial Data
+// ==========================================
+
+function renderOrderFinancialData(
+    orderTotal,
+    orderCostData
+) {
+
+    const orderCostElement =
+        document.getElementById(
+            "orderCost"
+        );
+
+
+    if (!orderCostElement) {
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // التكلفة غير مكتملة
+    // ----------------------------------
+
+    if (
+        !orderCostData.complete
+    ) {
+
+        orderCostElement.innerHTML =
+            `<span class="order-cost-error">
+                ⚠️ تكلفة بعض المنتجات غير مسجلة
+            </span>`;
+
+        renderOrderProfit(
+            null
+        );
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // عرض التكلفة
+    // ----------------------------------
+
+    orderCostElement.textContent =
+        "$" +
+        formatPrice(
+            orderCostData.cost
+        );
+
+
+    // ----------------------------------
+    // حساب الربح الإجمالي
+    // ----------------------------------
+
+    const grossProfit =
+        orderTotal -
+        orderCostData.cost;
+
+
+    renderOrderProfit(
+        grossProfit
+    );
+
+}
+
+
+// ==========================================
+// Render Order Profit
+// ==========================================
+
+function renderOrderProfit(
+    grossProfit
+) {
+
+    const totalCard =
+        document.querySelector(
+            ".order-total-card"
+        );
+
+
+    if (!totalCard) {
+
+        return;
+
+    }
+
+
+    let profitRow =
+        document.getElementById(
+            "orderProfitRow"
+        );
+
+
+    // ----------------------------------
+    // إنشاء صف الربح مرة واحدة
+    // ----------------------------------
+
+    if (!profitRow) {
+
+        profitRow =
+            document.createElement(
+                "div"
+            );
+
+
+        profitRow.id =
+            "orderProfitRow";
+
+
+        profitRow.className =
+            "order-total-row";
+
+
+        profitRow.innerHTML = `
+            <span>
+                الربح الإجمالي
+            </span>
+
+            <strong
+                id="orderProfit"
+            >
+                —
+            </strong>
+        `;
+
+
+        totalCard.appendChild(
+            profitRow
+        );
+
+    }
+
+
+    const profitElement =
+        document.getElementById(
+            "orderProfit"
+        );
+
+
+    if (!profitElement) {
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // التكلفة غير مكتملة
+    // ----------------------------------
+
+    if (
+        grossProfit === null ||
+        grossProfit === undefined
+    ) {
+
+        profitElement.innerHTML =
+            `<span class="order-cost-error">
+                ⚠️ غير مكتمل
+            </span>`;
+
+        return;
+
+    }
+
+
+    // ----------------------------------
+    // عرض الربح / الخسارة
+    // ----------------------------------
+
+    profitElement.textContent =
+        "$" +
+        formatPrice(
+            grossProfit
+        );
+
+
+    profitElement.style.color =
+        grossProfit >= 0
+            ? "#198754"
+            : "#c62828";
 
 }
 
@@ -313,10 +737,12 @@ function createStatusSelector(
     select.dataset.previousStatus =
         currentStatus || "pending";
 
-        console.log(
-    "Initial order status:",
-    select.dataset.previousStatus
-);
+
+    console.log(
+        "Initial order status:",
+        select.dataset.previousStatus
+    );
+
 
     select.addEventListener(
         "change",
@@ -339,6 +765,10 @@ function createStatusSelector(
 
             }
 
+
+            // ----------------------------------
+            // تحديث الحالة مباشرة
+            // ----------------------------------
 
             await updateOrderStatus(
                 orderId,
@@ -372,13 +802,21 @@ async function updateOrderStatus(
     select.disabled = true;
 
 
+    const updateData = {
+
+        status:
+            newStatus
+
+    };
+
+
     const {
         error
     } = await supabaseClient
         .from("orders")
-        .update({
-            status: newStatus
-        })
+        .update(
+            updateData
+        )
         .eq("id", orderId);
 
 
@@ -487,8 +925,141 @@ function showStatusMessage(
                     "";
 
             },
-            3000
+            3500
         );
+
+}
+
+// ==========================================
+// Load Variant Options
+// ==========================================
+
+async function loadVariantOptions(
+    items
+) {
+
+    const variantIds =
+        [
+            ...new Set(
+                items
+                    .map(
+                        item =>
+                            item.variant_id
+                    )
+                    .filter(
+                        variantId =>
+                            variantId !== null &&
+                            variantId !== undefined
+                    )
+            )
+        ];
+
+
+    if (!variantIds.length) {
+
+        return new Map();
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "product_variant_options"
+            )
+            .select(`
+                variant_id,
+                product_option_values (
+                    value,
+                    product_option_groups (
+                        name
+                    )
+                )
+            `)
+            .in(
+                "variant_id",
+                variantIds
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Variant options error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    const optionsMap =
+        new Map();
+
+
+    (data || []).forEach(
+        function(row) {
+
+            const variantId =
+                String(
+                    row.variant_id
+                );
+
+
+            const optionValue =
+                row.product_option_values;
+
+
+            const optionGroup =
+                optionValue
+                    ?.product_option_groups;
+
+
+            if (
+                !optionValue ||
+                !optionGroup
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !optionsMap.has(
+                    variantId
+                )
+            ) {
+
+                optionsMap.set(
+                    variantId,
+                    []
+                );
+
+            }
+
+
+            optionsMap
+                .get(variantId)
+                .push({
+
+                    group:
+                        optionGroup.name || "",
+
+                    value:
+                        optionValue.value || ""
+
+                });
+
+        }
+    );
+
+
+    return optionsMap;
 
 }
 
@@ -497,7 +1068,8 @@ function showStatusMessage(
 // ==========================================
 
 function renderOrderItems(
-    items
+    items,
+    variantOptions = new Map()
 ) {
 
     const container =
@@ -518,6 +1090,7 @@ function renderOrderItems(
         `;
 
         return;
+
     }
 
 
@@ -534,20 +1107,68 @@ function renderOrderItems(
                 "order-item";
 
 
-            element.innerHTML = `
+            let optionsHtml = "";
 
+
+            if (
+                item.variant_id !== null &&
+                item.variant_id !== undefined
+            ) {
+
+                const options =
+                    variantOptions.get(
+                        String(
+                            item.variant_id
+                        )
+                    ) || [];
+
+
+                if (options.length) {
+
+                    optionsHtml = `
+                        <div class="order-item-options">
+                            ${options.map(
+                                function(option) {
+
+                                    return `
+                                        <div class="order-item-option">
+                                            <span class="order-item-option-name">
+                                                ${escapeHtml(
+                                                    option.group
+                                                )}
+                                            </span>
+
+                                            <span class="order-item-option-value">
+                                                ${escapeHtml(
+                                                    option.value
+                                                )}
+                                            </span>
+                                        </div>
+                                    `;
+
+                                }
+                            ).join("")}
+                        </div>
+                    `;
+
+                }
+
+            }
+
+
+            element.innerHTML = `
                 <div class="order-item-name">
                     ${escapeHtml(
                         item.product_name || "-"
                     )}
                 </div>
 
+                ${optionsHtml}
+
                 <div class="order-item-quantity">
                     الكمية:
                     ${item.quantity}
                 </div>
-
-           
 
                 <div class="order-item-subtotal">
                     ${formatPrice(
@@ -555,7 +1176,6 @@ function renderOrderItems(
                     )}
                 $
                 </div>
-
             `;
 
 
@@ -580,10 +1200,9 @@ function formatPrice(
     return Number(
         value || 0
     ).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-}
-);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 
 }
 
@@ -682,8 +1301,183 @@ document.addEventListener(
             "backToOrders"
         ) {
 
-        window.location.href =
-    "admin-dashboard.html?section=orders";
+            window.location.href =
+                "admin-dashboard.html?section=orders";
+
+        }
+
+    }
+);
+
+
+// ==========================================
+// Delete Order
+// ==========================================
+
+document.addEventListener(
+    "click",
+    async function(event) {
+
+        if (
+            event.target.id !==
+            "deleteOrderButton"
+        ) {
+
+            return;
+
+        }
+
+
+        const button =
+            event.target;
+
+
+        const orderId =
+            new URLSearchParams(
+                window.location.search
+            ).get("id");
+
+
+        if (!orderId) {
+
+            showStatusMessage(
+                "تعذر تحديد الطلب.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        // ==================================
+        // تأكيد الحذف
+        // ==================================
+
+        const confirmed =
+            confirm(
+                "هل أنت متأكد من حذف هذا الطلب؟\n\nسيتم حذف الطلب وإعادة الكميات إلى المخزون."
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        // ==================================
+        // منع الضغط المتكرر
+        // ==================================
+
+        if (button.disabled) {
+
+            return;
+
+        }
+
+
+        button.disabled =
+            true;
+
+
+        const originalText =
+            button.textContent;
+
+
+        button.textContent =
+            "جاري حذف الطلب...";
+
+
+        try {
+
+            // ==================================
+            // استدعاء دالة قاعدة البيانات
+            // ==================================
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.rpc(
+                    "delete_order",
+                    {
+                        p_order_id:
+                            Number(orderId)
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "Delete order error:",
+                    error
+                );
+
+                throw error;
+
+            }
+
+
+            // ==================================
+            // التحقق من النتيجة
+            // ==================================
+
+            if (
+                !data ||
+                data.success !== true
+            ) {
+
+                throw new Error(
+                    "لم يتم حذف الطلب بشكل صحيح."
+                );
+
+            }
+
+
+            // ==================================
+            // نجاح الحذف
+            // ==================================
+
+            showStatusMessage(
+                "تم حذف الطلب وإعادة الكميات إلى المخزون بنجاح.",
+                "success"
+            );
+
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        "admin-dashboard.html?section=orders";
+
+                },
+                3500
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "خطأ أثناء حذف الطلب:",
+                error
+            );
+
+
+            showStatusMessage(
+                "تعذر حذف الطلب حاليًا.",
+                "error"
+            );
+
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                originalText;
 
         }
 

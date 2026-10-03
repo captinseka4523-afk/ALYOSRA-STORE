@@ -138,6 +138,100 @@
 }
 
 
+/* ==========================================
+   فاصل طرق تسجيل الدخول
+   ========================================== */
+
+.admin-login-divider {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 20px 0;
+
+    color: #888;
+
+    font-size: 14px;
+
+}
+
+
+.admin-login-divider::before,
+.admin-login-divider::after {
+
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background: #e5e5e5;
+
+}
+
+
+.admin-login-divider span {
+
+    flex-shrink: 0;
+
+}
+
+
+/* ==========================================
+   زر Passkey
+   ========================================== */
+
+#adminPasskeyButton {
+
+    width: 100%;
+
+    padding: 14px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    background: #fff;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+
+}
+
+
+#adminPasskeyButton:hover {
+
+    background: #f8fafc;
+
+    border-color: #2563eb;
+
+}
+
+
+#adminPasskeyButton:disabled {
+
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+}
+
+
+/* ==========================================
+   رسالة تسجيل الدخول
+   ========================================== */
+
 .admin-login-message {
 
     min-height: 24px;
@@ -152,6 +246,13 @@
 .admin-login-message.error {
 
     color: #dc2626;
+
+}
+
+
+.admin-login-message.info {
+
+    color: #2563eb;
 
 }
 

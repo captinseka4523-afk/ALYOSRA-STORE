@@ -192,35 +192,36 @@
                 </section>
 
 
-                <div class="order-total-card">
+               <div class="order-total-card">
+    <div class="order-total-row">
+        <span>إجمالي الطلب</span>
+        <strong id="orderTotal">$0.00</strong>
+    </div>
 
-                    <span>
-                        إجمالي الطلب
-                    </span>
+    <div class="order-total-row order-cost-row">
+        <span>تكلفة الطلب</span>
+        <strong id="orderCost">⚠️ التكلفة غير مسجلة</strong>
+    </div>
+</div>
+               <div class="order-details-actions">
 
-                    <strong id="orderTotal">
-                        0
-                    </strong>
+    <button
+        type="button"
+        class="admin-secondary-button"
+        id="backToOrders"
+    >
+        العودة إلى الطلبات
+    </button>
 
-                    <span>
-                        ل.س
-                    </span>
+    <button
+        type="button"
+        class="admin-delete-button"
+        id="deleteOrderButton"
+    >
+        حذف الطلب
+    </button>
 
-                </div>
-
-
-                <div class="order-details-actions">
-
-                    <button
-                        type="button"
-                        class="admin-secondary-button"
-                        id="backToOrders"
-                    >
-                        العودة إلى الطلبات
-                    </button>
-
-                </div>
-
+</div>
             </section>
 
         </main>

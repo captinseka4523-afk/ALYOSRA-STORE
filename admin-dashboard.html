@@ -10,7 +10,7 @@
 
 <title>لوحة الإدارة | AL YOSRA STORE</title>
 
-<link rel="stylesheet" href="css/style.css">
+
 <link rel="stylesheet" href="css/admin.css">
 
 </head>
@@ -73,6 +73,22 @@
                 الطلبات
             </button>
 
+<a
+    href="admin-offers.html"
+    class="admin-nav-item"
+>
+    العروض
+</a>
+
+<a
+    href="admin-finance.html"
+    class="admin-nav-item"
+>
+    المالية
+</a>
+
+
+            
         </nav>
 
 
@@ -97,26 +113,38 @@
 
         <header class="admin-header">
 
-            <div>
+    <div>
 
-                <h1>
-                    لوحة التحكم
-                </h1>
+        <h1>
+            لوحة التحكم
+        </h1>
 
-                <p>
-                    مرحبًا بك في إدارة متجر اليُسرى
-                </p>
+        <p>
+            مرحبًا بك في إدارة متجر اليُسرى
+        </p>
 
-            </div>
+    </div>
 
 
-            <div
-                id="adminUserEmail"
-                class="admin-user-email"
-            ></div>
+    <div class="admin-header-actions">
 
-        </header>
+        <div
+            id="adminUserEmail"
+            class="admin-user-email"
+        ></div>
 
+
+        <button
+            id="registerPasskeyButton"
+            type="button"
+            class="admin-secondary-button admin-passkey-button"
+        >
+            إضافة Passkey
+        </button>
+
+    </div>
+
+</header>
 
 
         <!-- ================================= -->
@@ -310,7 +338,7 @@
             </div>
 
 
-            <div
+           <div
                 id="productsEmpty"
                 class="admin-empty"
                 hidden
@@ -318,10 +346,18 @@
                 لا توجد منتجات.
             </div>
 
+            <!-- ================================= -->
+            <!-- Pagination Controls (إضافة جديدة) -->
+            <!-- ================================= -->
+            <div class="admin-pagination" id="productsPagination" hidden>
+                <button type="button" id="prevPageBtn" class="admin-secondary-button" disabled>السابق</button>
+                <span class="admin-pagination-info">
+                    صفحة <strong id="currentPageNum">1</strong> من <strong id="totalPagesNum">1</strong>
+                </span>
+                <button type="button" id="nextPageBtn" class="admin-secondary-button" disabled>التالي</button>
+            </div>
 
         </section>
-
-
 
         <!-- ================================= -->
         <!-- Categories -->
@@ -405,7 +441,9 @@
         class="admin-empty"
         hidden
     >
-        لا توجد تصنيفات.
+        لا توجد تصنيفات<div class="g282">
+
+        </div>
     </div>
 
 </section>
@@ -584,40 +622,55 @@
                 </div>
 
 
+<div class="admin-form-group">
 
-                <div class="admin-form-group">
+    <label for="productPrice">
+        السعر
+    </label>
 
-                    <label for="productPrice">
-                        السعر
-                    </label>
+    <input
+        id="productPrice"
+        type="number"
+        min="0"
+        step="any"
+        required
+    >
 
-                    <input
-                        id="productPrice"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
+</div>
 
 
-                <div class="admin-form-group">
+<div class="admin-form-group">
 
-                    <label for="productQuantity">
-                        الكمية
-                    </label>
+    <label for="productPurchaseCost">
+        تكلفة الشراء
+    </label>
 
-                    <input
-                        id="productQuantity"
-                        type="number"
-                        min="0"
-                        step="1"
-                        required
-                    >
+    <input
+        id="productPurchaseCost"
+        type="number"
+        min="0"
+        step="any"
+        required
+    >
 
-                </div>
+</div>
+
+
+<div class="admin-form-group">
+
+    <label for="productQuantity">
+        الكمية
+    </label>
+
+    <input
+        id="productQuantity"
+        type="number"
+        min="0"
+        step="1"
+        required
+    >
+
+</div>
 
 
 
@@ -657,19 +710,74 @@
 
 
 
-                <div class="admin-form-group admin-form-full">
+               <div class="admin-form-group admin-form-full">
+  <label for="productImageFile">صورة المنتج</label>
 
-                    <label for="productImage">
-                        رابط الصورة
-                    </label>
+  <input
+    id="productImageFile"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+  >
 
-                    <input
-                        id="productImage"
-                        type="text"
-                        placeholder="images/product1.png"
-                    >
+ <div
+    id="productImageEditor"
+    class="admin-product-image-editor"
+    hidden
+>
 
-                </div>
+    <div class="admin-product-image-editor-stage">
+        <img
+            id="productImageEditorImage"
+            src=""
+            alt="تحرير صورة المنتج"
+            draggable="false"
+        >
+    </div>
+
+    <div class="admin-product-image-editor-controls">
+
+        <label for="productImageZoom">
+            حجم الصورة
+        </label>
+
+        <input
+            id="productImageZoom"
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.01"
+            value="1"
+        >
+
+        <button
+            type="button"
+            id="resetProductImageEditor"
+            class="admin-secondary-button"
+        >
+            إعادة ضبط الصورة
+        </button>
+
+    </div>
+
+</div>
+
+<!-- المعاينة النهائية -->
+<div
+    id="productImagePreview"
+    class="admin-product-image-preview"
+    hidden
+>
+    <img
+        id="productImagePreviewImage"
+        src=""
+        alt="معاينة صورة المنتج"
+    >
+</div>
+
+  <small id="productImageStatus" class="admin-form-help">
+    اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ المنتج.
+  </small>
+</div>
 
 
 
@@ -687,7 +795,200 @@
                 </div>
 
 
-            </div>
+        </div>
+
+
+            <!-- ================================= -->
+            <!-- Product Variants -->
+            <!-- ================================= -->
+
+            <section
+                id="productVariantsSection"
+                class="admin-product-variants-section"
+                aria-labelledby="productVariantsTitle"
+            >
+
+                <div class="admin-product-variants-header">
+
+                    <div>
+
+                        <h3 id="productVariantsTitle">
+                            خيارات المنتج
+                        </h3>
+
+                        <p class="admin-form-help">
+                            استخدم الخيارات عندما يختلف المنتج حسب اللون أو المقاس أو أي صفة أخرى.
+                        </p>
+
+                    </div>
+
+                    <label
+                        class="admin-product-variants-toggle"
+                        for="productVariantsEnabled"
+                    >
+
+                        <input
+                            id="productVariantsEnabled"
+                            type="checkbox"
+                        >
+
+                        <span>
+                            هذا المنتج لديه خيارات متعددة
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div
+                    id="productVariantsEditor"
+                    class="admin-product-variants-editor"
+                    hidden
+                >
+
+                    <!-- Option Groups -->
+
+                    <div class="admin-product-variants-subsection">
+
+                        <div class="admin-product-variants-subsection-header">
+
+                            <div>
+
+                                <h4>
+                                    مجموعات الخيارات
+                                </h4>
+
+                                <p class="admin-form-help">
+                                    مثال: اللون، المقاس، النوع.
+                                </p>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                id="addOptionGroupButton"
+                                class="admin-secondary-button"
+                            >
+                                + إضافة مجموعة
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="productOptionGroups"
+                            class="admin-product-option-groups"
+                        ></div>
+
+
+                        <div
+                            id="productOptionGroupsEmpty"
+                            class="admin-product-variants-empty"
+                        >
+                            لم تتم إضافة أي مجموعة خيارات بعد.
+                        </div>
+
+                    </div>
+
+
+                    <!-- Generated Variants -->
+
+                    <div class="admin-product-variants-subsection">
+
+                        <div class="admin-product-variants-subsection-header">
+
+                            <div>
+
+                                <h4>
+                                    التركيبات والـ Variants
+                                </h4>
+
+                                <p class="admin-form-help">
+                                    سيتم إنشاء تركيبة لكل مجموعة من القيم التي تمت إضافتها.
+                                </p>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                id="regenerateProductVariantsButton"
+                                class="admin-secondary-button"
+                            >
+                                تحديث التركيبات
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="productVariantsStatus"
+                            class="admin-form-message"
+                            aria-live="polite"
+                        ></div>
+
+
+                        <div
+                            id="productVariantsTableContainer"
+                            class="admin-table-wrapper admin-product-variants-table-wrapper"
+                        >
+
+                            <table class="admin-table admin-product-variants-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            الخيارات
+                                        </th>
+
+                                        <th>
+                                            SKU
+                                        </th>
+
+                                        <th>
+                                            السعر
+                                        </th>
+
+                                        <th>
+                                            المخزون
+                                        </th>
+
+                                        <th>
+                                            تكلفة الشراء
+                                        </th>
+
+                                        <th>
+                                            فعال
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody
+                                    id="productVariantsTable"
+                                ></tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div
+                            id="productVariantsEmpty"
+                            class="admin-product-variants-empty"
+                        >
+                            أضف مجموعات وقيمًا لإنشاء التركيبات.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
 
@@ -821,11 +1122,18 @@
 
 <script src="js/admin-auth.js"></script>
 
+<script src="js/admin-passkey.js"></script>
+
 <script src="js/admin-products.js"></script>
 
 <script src="js/admin-categories.js"></script>
 
 <script src="js/admin-order.js"></script>
+
+
+
+
+
 
 </body>
 

@@ -5,105 +5,239 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+  <link rel="icon" type="image/png" href="/images/LOGO.png">
+
+
+<meta property="og:type" content="website">
+
+<meta property="og:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta property="og:description"
+      content="">
+
+<meta property="og:image"
+   content="https://alyosra-store.netlify.app/images/og-image.png">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta property="og:site_name"
+      content="AL YOSRA STORE">
+
+<meta property="og:locale"
+      content="ar_AR">
+
+
+
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="twitter:title"
+      content="AL YOSRA STORE — أدوات ومستلزمات طب الأسنان">
+
+<meta name="twitter:description"
+      content="">
+
+<meta name="twitter:image"
+     content="https://alyosra-store.netlify.app/images/og-image.png">
+
+
+
+
+<meta name="description"
+      content="AL YOSRA STORE — متجر إلكتروني متخصص في أدوات ومستلزمات طب الأسنان للطلاب والأطباء والعيادات، بتشكيلة متنوعة وأسعار مناسبة.">
 
     <title>AL YOSRA STORE | متجر اليُسرى</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+       <link
+        rel="stylesheet"
+        href="css/index.css"
+    >
 
 </head>
 
 
-<body>
+<body class="home-body">
 
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
 <nav class="navbar">
 
     <button
-    class="menu-toggle"
-    id="menuToggle"
-    aria-label="فتح القائمة"
-    type="button"
->
-    ☰
-</button>
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="فتح القائمة"
+    >
+        ☰
+    </button>
+
 
     <div class="nav-logo">
-        متجر اليُسرى
-    </div>
 
+        <span class="nav-logo-ar">
+            متجر اليُسرى
+        </span>
+
+    </div>
 
 
     <ul class="nav-links">
 
         <li>
-            <a class="active"href="index.html">الرئيسية</a>
+            <a
+                class="active"
+                href="index.html"
+            >
+                الرئيسية
+            </a>
         </li>
 
         <li>
-            <a href="products.html">المنتجات</a>
-        </li>
-
-        
-<li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
-        <li>
-            <a href="cart.html">السلة</a>
+            <a href="products.html">
+                المنتجات
+            </a>
         </li>
 
         <li>
-            <a href="contact.html">تواصل معنا</a>
+            <a href="offers.html">
+                العروض
+            </a>
+        </li>
+
+        <li>
+            <a href="cart.html">
+                السلة
+            </a>
+        </li>
+
+        <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
         </li>
 
     </ul>
 
 
-    <a href="cart.html" class="cart-icon">
+    <a
+        href="cart.html"
+        class="cart-icon"
+        aria-label="السلة"
+        title="السلة"
+    >
 
-
-        <svg class="cart-svg"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
-
+        <svg
+            class="cart-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
 
             <path d="M6 6h15l-2 8H8L6 6Z"></path>
 
             <path d="M6 6L5 3H2"></path>
 
-            <circle cx="9" cy="20" r="1.5"></circle>
+            <circle
+                cx="9"
+                cy="20"
+                r="1.5"
+            ></circle>
 
-            <circle cx="18" cy="20" r="1.5"></circle>
-
+            <circle
+                cx="18"
+                cy="20"
+                r="1.5"
+            ></circle>
 
         </svg>
-
 
         <span id="cartCount">
             0
         </span>
 
-
     </a>
-
 
 </nav>
 
-<div class="side-menu-overlay" id="sideMenuOverlay"></div>
 
 
-<aside class="side-menu" id="sideMenu">
+<!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== -->
+
+<nav
+    class="mobile-bottom-nav"
+    aria-label="التنقل الرئيسي"
+>
+
+    <a
+        class="active"
+        href="index.html"
+    >
+        الرئيسية
+    </a>
+
+    <a href="products.html">
+        المنتجات
+    </a>
+
+    <a href="offers.html">
+        العروض
+    </a>
+
+    <a href="cart.html">
+        السلة
+    </a>
+
+    <a href="contact.html">
+        تواصل معنا
+    </a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     SIDE MENU
+===================================================== -->
+
+<div
+    class="side-menu-overlay"
+    id="sideMenuOverlay"
+></div>
+
+
+<aside
+    class="side-menu"
+    id="sideMenu"
+    aria-hidden="true"
+    inert
+>
 
     <div class="side-menu-header">
 
-        <span>القائمة</span>
+        <span>
+        الاقسام
+        </span>
 
         <button
             class="side-menu-close"
@@ -120,118 +254,653 @@
     <ul class="side-menu-links">
 
         <li>
-            <a href="index.html">الرئيسية</a>
+             
+            <a 
+             class="active"
+            href="index.html">
+                الرئيسية
+            </a>
         </li>
 
         <li>
-            <a href="products.html">المنتجات</a>
+            <a href="products.html">
+                المنتجات
+            </a>
         </li>
 
         <li>
-            <a href="cart.html">السلة</a>
+            <a href="offers.html">
+                العروض
+            </a>
         </li>
 
         <li>
-            <a href="contact.html">تواصل معنا</a>
+            <a href="cart.html">
+                السلة
+            </a>
         </li>
 
-    <li>
-    <a href="offers.html">
-        العروض
-    </a>
-</li>
+
+
+        <li>
+            <a href="clinic-setup.html">
+          تجهيز العيادات
+            </a>
+
+        </li>
+
+
+       <li>
+            <a href="student-consultation.html">
+             استشارات الطلاب
+            </a>
+
+        </li>
+
+           <li>
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+        </li>
+
 
     </ul>
 
 </aside>
 
-<main class="container">
 
 
-    <img 
-    src="images/LOGO.png"
-    alt="AL YOSRA LOGO"
-    class="main-logo">
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="home-page">
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="hero" id="hero" aria-labelledby="heroTitle">
+    <div class="hero-panel">
+
+        <div class="hero-visual">
+            <img
+                src="images/hero-smile-transparent.png"
+                alt="ابتسامة جميلة"
+                class="hero-image"
+            >
+        </div>
+
+        <div class="hero-content">
+
+            <div class="hero-brand">
+                <img src="images/LOGO.png" alt="شعار متجر اليُسرى">
+                <div class="hero-brand-name">
+                  
+                    <span class="hero-brand-en">AL YOSRA STORE</span>
+                </div>
+            </div>
+
+            <div class="hero-message" id="heroTitle">
+                <h1>ابتسامتك أولويتنا</h1>
+                <p> your smile is our priority.</p>
+            </div>
+
+            <a href="products.html" class="hero-button">
+                <span>ابدأ التسوق الآن</span>
+                <span class="hero-button-arrow" aria-hidden="true">←</span>
+            </a>
+
+        </div>
+
+    </div>
+</section>
 
 
 
-    <h1>
-        AL YOSRA STORE
-    </h1>
+<!-- SERVICES GATEWAY -->
+<section class="services-gateway" id="services" aria-labelledby="servicesTitle">
+
+    <div class="services-gateway-container">
+
+        <div class="services-gateway-heading">
+            <span class="services-gateway-eyebrow">AL YOSRA SERVICES</span>
+
+            <h2 id="servicesTitle">
+                أكثر من مجرد متجر
+            </h2>
+
+            <p>
+                خدمات مصممة لتقديم المساعدة المناسبة
+                لطلاب طب الأسنان وأصحاب العيادات.
+            </p>
+        </div>
+
+
+        <div class="services-gateway-grid">
+
+            <!-- CLINIC SETUP -->
+            <a
+                href="clinic-setup.html"
+                class="service-gateway-card service-gateway-card-clinic"
+                aria-label="تجهيز العيادات"
+            >
+
+                <span class="service-gateway-number" aria-hidden="true">
+                    01
+                </span>
+
+                <div class="service-gateway-content">
+
+                    <span class="service-gateway-label">
+                        للعيادات
+                    </span>
+
+                    <h3>
+                        تجهيز العيادات
+                    </h3>
+
+                    <p>
+                        تحتاج إلى تجهيز عيادتك ولا تعرف من أين تبدأ؟
+                        أخبرنا باحتياجاتك وسنساعدك في تحديد الأدوات
+                        والمستلزمات المناسبة لطبيعة عملك.
+                    </p>
+
+                </div>
+
+                <span class="service-gateway-action">
+                    <span>ابدأ تجهيز عيادتك</span>
+                    <span class="service-gateway-arrow" aria-hidden="true">←</span>
+                </span>
+
+            </a>
+
+
+            <!-- STUDENT CONSULTATION -->
+            <a
+                href="student-consultation.html"
+                class="service-gateway-card service-gateway-card-student"
+                aria-label="استشارات الطلاب"
+            >
+
+                <span class="service-gateway-number" aria-hidden="true">
+                    02
+                </span>
+
+                <div class="service-gateway-content">
+
+                    <span class="service-gateway-label">
+                        لطلاب طب الأسنان
+                    </span>
+
+                    <h3>
+                        استشارات الطلاب
+                    </h3>
+
+                    <p>
+                        محتار في اختيار أداة أو تحتاج إلى مساعدة
+                        بخصوص مادة دراسية؟ أخبرنا بما تحتاجه
+                        وسنساعدك في الوصول إلى الخيار المناسب.
+                    </p>
+
+                </div>
+
+                <span class="service-gateway-action">
+                    <span>اطلب استشارة</span>
+                    <span class="service-gateway-arrow" aria-hidden="true">←</span>
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 
 
-    <p id="message">
-        متجر اليُسرى الإلكتروني
-    </p>
+<!-- =====================================================
+     ABOUT
+===================================================== -->
+
+<section
+    class="about-section reveal-section"
+    id="about"
+>
+
+    <div class="section-container">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    ABOUT AL YOSRA
+                </span>
+
+                <h2>
+                    من نحن؟
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="about-content">
+
+            <!-- =========================================
+                 ABOUT COPY
+            ========================================== -->
+
+            <div class="about-copy reveal-child">
+
+                <p class="placeholder-copy">
+               نحن في متجر اليُسرى، مجموعة من طلاب طب الأسنان والأطباء، نعيش واقع المهنة وندرك احتياجاتها عن قرب.
+ومن قلب تجربتنا، لمسنا التحديات التي يواجهها الطلاب في تأمين الأدوات والمستلزمات التي يحتاجونها خلال مسيرتهم الدراسية.
+لذلك جاء اليُسرى ليكون حلًا أقرب إلى الطالب، وأكثر فهمًا لاحتياجاته.
+نسعى إلى توفير أدوات ومستلزمات طب الأسنان بجودة موثوقة، وأسعار منافسة، وخيارات تلائم مختلف الاحتياجات.
+ولا نقتصر في رؤيتنا على الطلاب فحسب، بل نطمح إلى خدمة الأطباء والعيادات بكل ما يحتاجونه من أدوات ومستلزمات.
+نختار ما نقدمه بعناية، لأننا نؤمن أن جودة الأداة جزء من جودة العمل والتعلّم.
+هدفنا أن نجعل الوصول إلى الأدوات المناسبة أسهل، وأن نبني متجرًا يثق به كل طالب وطبيب.
+اليُسرى… من تجربتنا، لاحتياجاتكم.
+                </p>
+
+              
+
+            </div>
+
+
+            <!-- =========================================
+                 ABOUT STATS
+            ========================================== -->
+
+            <div class="about-stats">
+
+                <div class="about-stats reveal-child">
+
+    <div class="about-stats-glow about-stats-glow-one"></div>
+    <div class="about-stats-glow about-stats-glow-two"></div>
+
+    <div class="about-stats-inner">
+
+        <div
+            class="about-stat"
+            data-stat-target="1000"
+            data-stat-suffix="+"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                عميل يثق بنا
+            </div>
+        </div>
+
+
+        <div
+            class="about-stat"
+            data-stat-target="200"
+            data-stat-suffix="+"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                أكثر من 200 منتج
+            </div>
+        </div>
+
+
+        <div
+            class="about-stat"
+            data-stat-target="100"
+            data-stat-suffix="%"
+        >
+            <div class="about-stat-number">0</div>
+
+            <div class="about-stat-label">
+                اهتمام بالجودة
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+        </div>
+
+    </div>
+
+</section>
 
 
 
+<!-- =====================================================
+     VISION
+===================================================== -->
 
-    <a href="products.html" class="shop-button">
+<section
+    class="vision-section reveal-section"
+    id="vision"
+>
 
-        إبدأ التسوق الآن
+    <div
+        class="vision-decoration"
+        aria-hidden="true"
+    ></div>
 
+
+    <div class="section-container">
+
+
+        <div class="vision-top">
+
+            <span class="section-eyebrow">
+                OUR VISION
+            </span>
+
+        
+
+        </div>
+
+
+        <div class="vision-content">
+
+
+            <div class="vision-title reveal-child">
+
+                <span>
+                    رؤيتنا
+                </span>
+
+            </div>
+
+
+            <div class="vision-copy reveal-child">
+
+         أن نصبح الوجهة الموثوقة لكل طالب وطبيب يبحث عن أدوات ومستلزمات طب الأسنان بجودة تستحق الثقة.
+نطمح إلى بناء متجر يتجاوز فكرة البيع، ليكون جزءًا من رحلة التعلّم والتطور والنجاح في المجال.
+ونسعى إلى توسيع نطاق اليُسرى ليصل إلى مختلف أنحاء سوريا، ثم إلى آفاق أوسع مستقبلًا.
+
+          
+
+
+           
+
+            </div>
+
+
+        </div>
+
+
+        <div class="vision-footer">
+
+            <span>
+                AL YOSRA STORE
+            </span>
+
+           
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MISSION & VALUES
+===================================================== -->
+
+<section
+    class="mission-section reveal-section"
+    id="mission"
+>
+
+    <div class="section-container">
+
+
+        <div class="section-heading">
+
+         
+
+            <div>
+
+                <span class="section-eyebrow">
+                    OUR MISSION
+                </span>
+
+                <h2>
+
+                    رسالتنا
+
+                    <strong>
+                        وقيمنا
+                    </strong>
+
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="mission-copy reveal-child">
+
+         
+
+            <p class="placeholder-copy">
+              رسالتنا في اليُسرى أن نقرّب الأدوات والمستلزمات التي يحتاجها طلاب طب الأسنان والأطباء، ونوفرها بجودة موثوقة وأسعار منافسة.
+نبدأ من احتياجات حقيقية نعرفها ونفهم تفاصيلها، لأننا جزء من هذا الميدان ولسنا بعيدين عنه.
+نحرص على اختيار منتجاتنا بعناية، وتقديمها بوضوح واهتمام، لتكون رحلة الحصول على الأداة المناسبة أبسط وأكثر اطمئنانًا.
+ونؤمن أن خدمتنا لا تنتهي عند إتمام الطلب، بل تبدأ من الثقة التي نبنيها مع كل عميل.
+
+            </p>
+
+        </div>
+
+
+        <div class="values-grid">
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    01
+                </span>
+
+                <h3>
+                  الجودة
+                </h3>
+
+                <p>
+                  نختار ما نقدمه بعناية، لأن الأداة الجيدة تصنع فرقًا في التعلّم والعمل.
+                </p>
+
+            </article>
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    02
+                </span>
+
+                <h3>
+                 الثقة
+                </h3>
+
+                <p>
+             نبني علاقتنا مع عملائنا على الوضوح والصدق والالتزام في تقديم الخدمات.
+                </p>
+
+            </article>
+
+
+            <article class="value-card reveal-child">
+
+                <span class="value-number">
+                    03
+                </span>
+
+                <h3>
+              التميز
+                </h3>
+
+                <p>
+                    
+       لا نبحث عن تقديم المزيد فحسب، بل عن تقديم الأفضل؛ من جودة المنتجات
+                    إلى طريقة الخدمة والتجربة التي يعيشها العميل مع اليُسرى.
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     IMPORTANT LINKS / FOOTER
+===================================================== -->
+
+<footer class="home-footer">
+
+    <div class="footer-container">
+
+
+        <div class="footer-brand">
+
+            <img
+                src="images/LOGO.png"
+                alt="AL YOSRA STORE"
+            >
+
+            <div>
+
+                <h2>
+                    متجر اليُسرى
+                </h2>
+
+                <span>
+                    AL YOSRA STORE 
+                </span>
+
+            </div>
+
+        </div>
+
+
+       <div class="footer-links-group">
+    <h3>
+        روابط مهمة
+    </h3>
+
+    <a href="#" id="privacyPolicyBtn">
+        سياسة الخصوصية
     </a>
 
+    <a href="#" id="returnsPolicyBtn">
+        سياسة الاستبدال والاسترجاع
+    </a>
+
+    <a href="#" id="shippingPolicyBtn">
+        سياسة الشحن والتوصيل
+    </a>
+
+    <a href="#" id="termsBtn">
+        الشروط والأحكام
+    </a>
+</div>
+
+
+        <div class="footer-links-group">
+
+            <h3>
+                المتجر
+            </h3>
+
+            <a href="products.html">
+                المنتجات
+            </a>
+
+            <a href="offers.html">
+                العروض
+            </a>
+
+            <a href="cart.html">
+                السلة
+            </a>
+
+            <a href="contact.html">
+                تواصل معنا
+            </a>
+
+            <a 
+            href="student-consultation.html">
+             استشارات الطلاب
+            </a>
+
+                <a href="clinic-setup.html">
+          تجهيز العيادات
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 AL YOSRA STORE
+        </span>
+
+        <span>
+            جميع الحقوق محفوظة
+        </span>
+
+       <span>
+  powered by <a href="https://www.instagram.com/blwy0/">Mohamad Balwi</a>
+</span>
+    </div>
+
+</footer>
 
 
 </main>
 
 
 
+
+<!-- =====================================================
+     POLICY MODAL (نافذة السياسات المنبثقة)
+===================================================== -->
+<div id="policyModal" class="policy-modal-overlay" hidden>
+    <div class="policy-modal-box">
+        <div class="policy-modal-header">
+            <h2 id="policyModalTitle">عنوان السياسة</h2>
+            <button type="button" id="policyModalClose" class="policy-modal-close">×</button>
+        </div>
+        <div class="policy-modal-body" id="policyModalContent">
+            <!-- سيتم تعبئة النص هنا برمجياً -->
+        </div>
+    </div>
+</div>
+
+
+
 <script src="js/cart-count.js"></script>
-
-<script>
-
-    const menuToggle =
-        document.getElementById("menuToggle");
-
-    const sideMenu =
-        document.getElementById("sideMenu");
-
-    const sideMenuClose =
-        document.getElementById("sideMenuClose");
-
-            const sideMenuOverlay =
-    document.getElementById("sideMenuOverlay");
-
-
-  menuToggle.addEventListener(
-    "click",
-    () => {
-
-        sideMenu.classList.add("open");
-        sideMenuOverlay.classList.add("open");
-
-    }
-);
-
-
-sideMenuClose.addEventListener(
-    "click",
-    () => {
-
-        sideMenu.classList.remove("open");
-        sideMenuOverlay.classList.remove("open");
-
-    }
-);
-
-sideMenuOverlay.addEventListener(
-    "click",
-    () => {
-
-        sideMenu.classList.remove("open");
-        sideMenuOverlay.classList.remove("open");
-
-    }
-);
-
-
-
-</script>
+<script src="js/index.js"></script>
+<script src="js/navbar.js"></script>
 
 </body>
-
 </html>
+
