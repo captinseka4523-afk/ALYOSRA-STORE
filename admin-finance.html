@@ -1641,6 +1641,99 @@
 
 </div>
 
+
+<!-- =========================
+     Variant Inventory Modal
+========================== -->
+<div
+    id="variantInventoryModal"
+    class="finance-modal"
+    hidden
+>
+
+    <div
+        class="finance-modal-backdrop"
+        data-close-variant-modal
+    ></div>
+
+    <div
+        class="finance-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="variantInventoryTitle"
+    >
+
+        <div class="finance-modal-header">
+
+            <div>
+
+                <span id="variantInventorySubtitle">
+                    تفاصيل مخزون الخيارات
+                </span>
+
+                <h2 id="variantInventoryTitle">
+                    جاري التحميل...
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="finance-modal-close"
+                id="closeVariantInventoryButton"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="finance-table-wrapper" style="margin: 24px; border-radius: 14px; box-shadow: none;">
+
+            <table class="finance-table">
+
+                <thead>
+                    <tr>
+                        <th>الخيار</th>
+                        <th>الكمية</th>
+                        <th>سعر البيع</th>
+                        <th>تكلفة الشراء</th>
+                        <th>قيمة المخزون</th>
+                        <th>الربح المتوقع</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+
+                <tbody id="variantInventoryTableBody">
+
+                    <tr class="finance-empty-row">
+                        <td colspan="7">
+                            جاري تحميل الخيارات...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="finance-modal-footer">
+
+            <button
+                type="button"
+                class="finance-secondary-button"
+                data-close-variant-modal
+            >
+                إغلاق
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- =========================
      Finance Toast
 ========================== -->
@@ -1656,7 +1749,7 @@
      Scripts
 ========================== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script src="js/supabase-client.js"></script>
 <script src="js/admin-finance.js"></script>
 

@@ -1330,3 +1330,81 @@ body {
     }
 
 }
+
+
+
+
+/* ==========================================
+   Admin Header Actions
+========================================== */
+
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+
+.admin-passkey-button {
+    white-space: nowrap;
+}
+
+
+.admin-passkey-message {
+    width: 100%;
+    flex-basis: 100%;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+}
+
+
+.admin-passkey-message.success {
+    color: #16a34a;
+}
+
+
+.admin-passkey-message.error {
+    color: #dc2626;
+}
+
+
+/* ==========================================
+   Admin Header Actions - Mobile
+========================================== */
+
+@media (max-width: 992px) {
+
+    .admin-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .admin-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .admin-header-actions .admin-user-email {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .admin-header-actions .admin-passkey-button {
+        width: 100%;
+    }
+
+    .admin-passkey-message {
+        text-align: center;
+    }
+
+}

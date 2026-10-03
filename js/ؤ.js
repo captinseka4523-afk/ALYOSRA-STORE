@@ -12,11 +12,6 @@ let financeOrders = [];
 let financeOrderItems = [];
 let financeProducts = [];
 let financeProductCosts = {};
-
-// متغيرات نظام الفارينيتس (Variants) المضافة حديثاً
-let financeProductVariants = []; 
-let financeVariantCosts = {};
-
 const FINANCE_INVENTORY_PER_PAGE = 10;
 let financeInventoryCurrentPage = 1;
 let financeInventorySearchTerm = "";
@@ -355,22 +350,29 @@ Modals
 
 function initializeFinanceModals() {
     const closeOrderButton = getElement("closeOrderDetailsButton");
-    if (closeOrderButton) closeOrderButton.addEventListener("click", closeOrderDetailsModal);
+    if (closeOrderButton) {
+        closeOrderButton.addEventListener("click", closeOrderDetailsModal);
+    }
 
     const closeExpenseButton = getElement("closeExpenseModalButton");
-    if (closeExpenseButton) closeExpenseButton.addEventListener("click", closeExpenseModal);
+    if (closeExpenseButton) {
+        closeExpenseButton.addEventListener("click", closeExpenseModal);
+    }
 
     const cancelExpenseButton = getElement("cancelExpenseButton");
-    if (cancelExpenseButton) cancelExpenseButton.addEventListener("click", closeExpenseModal);
+    if (cancelExpenseButton) {
+        cancelExpenseButton.addEventListener("click", closeExpenseModal);
+    }
 
     const closeCapitalButton = getElement("closeCapitalMovementModalButton");
-    if (closeCapitalButton) closeCapitalButton.addEventListener("click", closeCapitalMovementModal);
+    if (closeCapitalButton) {
+        closeCapitalButton.addEventListener("click", closeCapitalMovementModal);
+    }
 
     const cancelCapitalButton = getElement("cancelCapitalMovementButton");
-    if (cancelCapitalButton) cancelCapitalButton.addEventListener("click", closeCapitalMovementModal);
-
-    const closeVariantModalButton = getElement("closeVariantInventoryButton");
-    if (closeVariantModalButton) closeVariantModalButton.addEventListener("click", closeVariantInventoryModal);
+    if (cancelCapitalButton) {
+        cancelCapitalButton.addEventListener("click", closeCapitalMovementModal);
+    }
 
     document.querySelectorAll("[data-close-modal]").forEach(element => {
         element.addEventListener("click", closeOrderDetailsModal);
@@ -384,70 +386,22 @@ function initializeFinanceModals() {
         element.addEventListener("click", closeCapitalMovementModal);
     });
 
-    document.querySelectorAll("[data-close-variant-modal]").forEach(element => {
-        element.addEventListener("click", closeVariantInventoryModal);
-    });
-
     const saveCostButton = getElement("saveOrderCostButton");
-    if (saveCostButton) saveCostButton.addEventListener("click", saveOrderCost);
+    if (saveCostButton) {
+        saveCostButton.addEventListener("click", saveOrderCost);
+    }
 
     const printInvoiceButton = getElement("printInvoiceButton");
-    if (printInvoiceButton) printInvoiceButton.addEventListener("click", handlePrintInvoice);
+    if (printInvoiceButton) {
+        printInvoiceButton.addEventListener("click", handlePrintInvoice);
+    }
 
     document.addEventListener("keydown", function (event) {
         if (event.key !== "Escape") return;
         closeOrderDetailsModal();
         closeExpenseModal();
         closeCapitalMovementModal();
-        closeVariantInventoryModal();
     });
-}
-
-
-/* =========================================================
-Variant Options Fetcher (جديد: يجلب تفاصيل وأسماء الخيارات)
-========================================================= */
-
-async function fetchVariantNamesForIds(variantIds) {
-    if (!variantIds || variantIds.length === 0) return {};
-    
-    try {
-        const { data: pvo, error: pvoError } = await supabaseClient
-            .from('product_variant_options')
-            .select('variant_id, option_value_id')
-            .in('variant_id', variantIds);
-            
-        if (pvoError || !pvo || pvo.length === 0) return {};
-
-        const valueIds = [...new Set(pvo.map(v => v.option_value_id))];
-        
-        const { data: pov, error: povError } = await supabaseClient
-            .from('product_option_values')
-            .select('id, value')
-            .in('id', valueIds);
-            
-        if (povError || !pov) return {};
-
-        const valueMap = {};
-        pov.forEach(v => { valueMap[v.id] = v.value; });
-
-        const variantNames = {};
-        pvo.forEach(link => {
-            if (!variantNames[link.variant_id]) variantNames[link.variant_id] = [];
-            if (valueMap[link.option_value_id]) {
-                variantNames[link.variant_id].push(valueMap[link.option_value_id]);
-            }
-        });
-
-        for (let vid in variantNames) {
-            variantNames[vid] = variantNames[vid].join(' - ');
-        }
-        
-        return variantNames;
-    } catch (error) {
-        console.error("Error fetching variant names:", error);
-        return {};
-    }
 }
 
 
@@ -462,8 +416,6 @@ async function loadFinanceData() {
         loadDeliveredOrders(),
         loadProducts(),
         loadProductCosts(),
-        loadProductVariants(), // جلب أساسيات الفارينيتس لحساب المخزون
-        loadVariantCosts(),    // جلب تكاليف الفارينيتس
         loadExpenses(),
         loadCapitalMovements()
     ]);
@@ -573,12 +525,13 @@ function updateCustomDateVisibility() {
 
 
 /* =========================================================
-Orders & Order Items
+Orders
 ========================================================= */
 
 async function loadDeliveredOrders() {
     let query = supabaseClient.from("orders").select("*").eq("status", "delivered");
 
+    // تطبيق فلترة التواريخ لجلب الطلبات المسلمة في الفترة المحددة فقط
     if (currentStartDate) {
         query = query.gte("created_at", currentStartDate + "T00:00:00.000Z");
     }
@@ -588,9 +541,17 @@ async function loadDeliveredOrders() {
 
     const { data, error } = await query.order("created_at", { ascending: false }).order("id", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+        throw error;
+    }
+
     financeOrders = Array.isArray(data) ? data : [];
 }
+
+
+/* =========================================================
+Order Items
+========================================================= */
 
 async function loadOrderItems(orderIds) {
     if (!orderIds.length) {
@@ -600,13 +561,16 @@ async function loadOrderItems(orderIds) {
 
     const { data, error } = await supabaseClient.from("order_items").select("*").in("order_id", orderIds);
 
-    if (error) throw error;
+    if (error) {
+        throw error;
+    }
+
     financeOrderItems = Array.isArray(data) ? data : [];
 }
 
 
 /* =========================================================
-Products & Costs Fetching
+Products
 ========================================================= */
 
 async function loadProducts() {
@@ -614,6 +578,11 @@ async function loadProducts() {
     if (error) throw error;
     financeProducts = Array.isArray(data) ? data : [];
 }
+
+
+/* =========================================================
+Product Costs
+========================================================= */
 
 async function loadProductCosts() {
     const { data, error } = await supabaseClient.from("product_costs").select("product_id, purchase_cost");
@@ -625,33 +594,9 @@ async function loadProductCosts() {
     });
 }
 
-async function loadProductVariants() {
-    const { data, error } = await supabaseClient.from("product_variants").select("id, product_id, quantity, price");
-    if (error) {
-        console.error("Error loading product variants:", error);
-        financeProductVariants = [];
-        return;
-    }
-    financeProductVariants = Array.isArray(data) ? data : [];
-}
-
-async function loadVariantCosts() {
-    const { data, error } = await supabaseClient.from("product_variant_costs").select("variant_id, purchase_cost");
-    if (error) {
-        console.error("Error loading variant costs:", error);
-        financeVariantCosts = {};
-        return;
-    }
-
-    financeVariantCosts = {};
-    (data || []).forEach(cost => {
-        financeVariantCosts[String(cost.variant_id)] = Number(cost.purchase_cost);
-    });
-}
-
 
 /* =========================================================
-Expenses & Capital
+Expenses
 ========================================================= */
 
 async function loadExpenses() {
@@ -671,7 +616,7 @@ async function loadCapitalMovements() {
     const { data, error } = await supabaseClient
         .from("capital_movements")
         .select("*")
-        .gte("movement_date", currentStartDate)
+        .gte("movement_date", currentStartDate) // Added filtering for capital by date to match the period
         .lte("movement_date", currentEndDate)
         .order("movement_date", { ascending: false })
         .order("id", { ascending: false });
@@ -682,7 +627,7 @@ async function loadCapitalMovements() {
 
 
 /* =========================================================
-Financial Calculations (مُحدّث لدعم الفارينيتس)
+Financial Calculations
 ========================================================= */
 
 function calculateFinanceMetrics() {
@@ -693,17 +638,8 @@ function calculateFinanceMetrics() {
     financeOrderItems.forEach(item => {
         const orderId = String(item.order_id);
         const productId = item.product_id;
-        const variantId = item.variant_id;
         const quantity = Number(item.quantity || 0);
-
-        let purchaseCost;
-        
-        // التحقق من المسار: إذا كان يملك variant_id جلب التكلفة من جدول الفارينيتس أولاً
-        if (variantId && financeVariantCosts[String(variantId)]) {
-            purchaseCost = financeVariantCosts[String(variantId)];
-        } else {
-            purchaseCost = financeProductCosts[String(productId)];
-        }
+        const purchaseCost = financeProductCosts[String(productId)];
 
         if (!Number.isFinite(Number(purchaseCost)) || Number(purchaseCost) <= 0) {
             incompleteOrderIds.add(orderId);
@@ -767,44 +703,23 @@ function calculateFinanceMetrics() {
 
 
 /* =========================================================
-Inventory Calculations (مُحدّث لدمج أصول الفارينيتس)
+Inventory Calculations
 ========================================================= */
 
 function calculateInventoryCostValue() {
     return financeProducts.reduce((sum, product) => {
-        const variants = financeProductVariants.filter(v => v.product_id === product.id);
-        
-        if (variants.length > 0) {
-            return sum + variants.reduce((vSum, v) => {
-                const vQty = Number(v.quantity || 0);
-                const vCost = Number(financeVariantCosts[String(v.id)] || 0);
-                if (!Number.isFinite(vCost) || vCost <= 0) return vSum;
-                return vSum + (vQty * vCost);
-            }, 0);
-        } else {
-            const quantity = Number(product.quantity || 0);
-            const purchaseCost = Number(financeProductCosts[String(product.id)]);
-            if (!Number.isFinite(purchaseCost) || purchaseCost <= 0) return sum;
-            return sum + (quantity * purchaseCost);
-        }
+        const quantity = Number(product.quantity || 0);
+        const purchaseCost = Number(financeProductCosts[String(product.id)]);
+        if (!Number.isFinite(purchaseCost) || purchaseCost <= 0) return sum;
+        return sum + (quantity * purchaseCost);
     }, 0);
 }
 
 function calculateInventoryRetailValue() {
     return financeProducts.reduce((sum, product) => {
-        const variants = financeProductVariants.filter(v => v.product_id === product.id);
-        
-        if (variants.length > 0) {
-            return sum + variants.reduce((vSum, v) => {
-                const vQty = Number(v.quantity || 0);
-                const vPrice = Number(v.price || 0);
-                return vSum + (vQty * vPrice);
-            }, 0);
-        } else {
-            const quantity = Number(product.quantity || 0);
-            const price = Number(product.price || 0);
-            return sum + (quantity * price);
-        }
+        const quantity = Number(product.quantity || 0);
+        const price = Number(product.price || 0);
+        return sum + (quantity * price);
     }, 0);
 }
 
@@ -824,17 +739,9 @@ function calculateInventoryStats() {
     let outOfStock = 0;
 
     financeProducts.forEach(product => {
-        const variants = financeProductVariants.filter(v => v.product_id === product.id);
-        
-        if (variants.length > 0) {
-            const totalQty = variants.reduce((sum, v) => sum + Number(v.quantity || 0), 0);
-            if (totalQty <= 0) outOfStock++;
-            else if (totalQty <= 5) lowStock++;
-        } else {
-            const quantity = Number(product.quantity || 0);
-            if (quantity <= 0) outOfStock++;
-            else if (quantity <= 5) lowStock++;
-        }
+        const quantity = Number(product.quantity || 0);
+        if (quantity <= 0) outOfStock++;
+        else if (quantity <= 5) lowStock++;
     });
 
     return { productCount, costValue, retailValue, expectedProfit, lowStock, outOfStock };
@@ -896,6 +803,8 @@ function renderFinanceOrders() {
 
         const costHTML = hasCost ? formatMoney(cost) : `<span class="finance-warning-text">⚠️ غير مسجلة</span>`;
         const statusHTML = hasCost ? `<span class="finance-status success">مسجلة</span>` : `<span class="finance-status warning">تحتاج تكلفة</span>`;
+
+        // استخراج وعرض تاريخ الطلب بشكل نظيف
         const orderDateStr = order.created_at ? order.created_at.split('T')[0] : "—";
 
         return `
@@ -924,7 +833,7 @@ function renderFinanceOrders() {
 
 
 /* =========================================================
-Order Details (مُحدّث لدعم أسماء الفارينيتس)
+Order Details
 ========================================================= */
 
 async function openOrderDetails(orderId) {
@@ -944,19 +853,6 @@ async function openOrderDetails(orderId) {
     }
 
     selectedFinanceOrderItems = Array.isArray(data) ? data : [];
-
-    // جلب أسماء الخيارات لدمجها مع اسم المنتج
-    const variantIds = selectedFinanceOrderItems.map(item => item.variant_id).filter(id => id);
-    const variantNamesMap = await fetchVariantNamesForIds(variantIds);
-
-    selectedFinanceOrderItems.forEach(item => {
-        if (item.variant_id && variantNamesMap[item.variant_id]) {
-            item._display_name = `${item.product_name} (${variantNamesMap[item.variant_id]})`;
-        } else {
-            item._display_name = item.product_name;
-        }
-    });
-
     populateOrderDetailsModal();
 
     const modal = getElement("orderDetailsModal");
@@ -1018,11 +914,10 @@ function renderOrderItems() {
         const quantity = Number(item.quantity || 0);
         const unitPrice = Number(item.unit_price || 0);
         const subtotal = Number(item.subtotal ?? unitPrice * quantity);
-        const displayName = item._display_name || item.product_name || "منتج";
 
         return `
             <tr>
-                <td>${escapeHTML(displayName)}</td>
+                <td>${escapeHTML(item.product_name || "منتج")}</td>
                 <td>${formatNumber(quantity)}</td>
                 <td>${formatMoney(unitPrice)}</td>
                 <td>${formatMoney(subtotal)}</td>
@@ -1087,7 +982,7 @@ async function saveOrderCost() {
 
     } catch (error) {
         console.error("Save order cost error:", error);
-        showFinanceToast("تعذر حفظ تكلفة الطلب.", "error");
+        showFinanceToast("تعذر حفظ تكلفة الطلب. تأكد من إضافة حقل order_cost إلى جدول orders.", "error");
     } finally {
         if (saveButton) {
             saveButton.disabled = false;
@@ -1098,7 +993,7 @@ async function saveOrderCost() {
 
 
 /* =========================================================
-Expense & Capital Modals
+Expenses & Capital Movements Modals (Skipped repitition - keeping exactly as is)
 ========================================================= */
 
 function openExpenseModal(expense = null) {
@@ -1294,7 +1189,6 @@ async function saveExpense() {
     }
 }
 
-
 /* =========================================================
 Expenses Rendering
 ========================================================= */
@@ -1437,7 +1331,7 @@ async function deleteExpense(expenseId) {
 
 
 /* =========================================================
-Inventory & Capital Rendering (مُحدّث لدعم زر الخيارات)
+Inventory & Capital Rendering (Keeping the exact same code)
 ========================================================= */
 
 function renderFinanceInventory() {
@@ -1479,85 +1373,33 @@ function renderFinanceInventory() {
     const currentProducts = filteredProducts.slice(startIndex, startIndex + FINANCE_INVENTORY_PER_PAGE);
 
     tbody.innerHTML = currentProducts.map(product => {
-        // فحص الفارينيتس لهذا المنتج
-        const variants = financeProductVariants.filter(v => v.product_id === product.id);
-        const hasVariants = variants.length > 0;
+        const quantity = Number(product.quantity || 0);
+        const price = Number(product.price || 0);
+        const purchaseCost = Number(financeProductCosts[String(product.id)]);
+        
+        const retailValue = quantity * price;
+        const costValue = Number.isFinite(purchaseCost) && purchaseCost > 0 ? quantity * purchaseCost : null;
+        const expectedProfit = costValue !== null ? retailValue - costValue : null;
+        
+        let status = "متوفر";
+        if (quantity <= 0) status = "نافد";
+        else if (quantity <= 5) status = "منخفض";
 
-        if (hasVariants) {
-            // المسار الموازي: المنتج يحتوي على خيارات
-            let totalQty = 0;
-            let totalRetailValue = 0;
-            let totalCostValue = 0;
-            let missingCost = false;
+        const purchaseCostHTML = costValue !== null ? formatMoney(purchaseCost) : `<span class="finance-warning-text">⚠️ غير مسجلة</span>`;
+        const costValueHTML = costValue !== null ? formatMoney(costValue) : "—";
+        const expectedProfitHTML = expectedProfit !== null ? `<span class="${expectedProfit >= 0 ? "finance-positive" : "finance-negative"}">${formatMoney(expectedProfit)}</span>` : "—";
 
-            variants.forEach(v => {
-                const vQty = Number(v.quantity || 0);
-                const vPrice = Number(v.price || 0);
-                const vCost = Number(financeVariantCosts[String(v.id)]);
-                
-                totalQty += vQty;
-                totalRetailValue += (vQty * vPrice);
-                if (Number.isFinite(vCost) && vCost > 0) {
-                    totalCostValue += (vQty * vCost);
-                } else {
-                    missingCost = true;
-                }
-            });
-
-            const expectedProfit = missingCost ? null : totalRetailValue - totalCostValue;
-            let status = "متوفر";
-            if (totalQty <= 0) status = "نافد";
-            else if (totalQty <= 5) status = "منخفض";
-
-            const costValueHTML = missingCost ? `<span class="finance-warning-text">⚠️ تكاليف ناقصة</span>` : formatMoney(totalCostValue);
-            const expectedProfitHTML = expectedProfit !== null ? `<span class="${expectedProfit >= 0 ? "finance-positive" : "finance-negative"}">${formatMoney(expectedProfit)}</span>` : "—";
-
-            return `
-                <tr style="background-color: #f8fafc;">
-                    <td><strong>${escapeHTML(product.name || "—")}</strong></td>
-                    <td>${formatNumber(totalQty)} <small style="color:#64748b;">(الإجمالي)</small></td>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>${costValueHTML}</td>
-                    <td>${expectedProfitHTML}</td>
-                    <td>
-                        <button type="button" class="finance-table-action finance-primary-button" onclick="openVariantInventoryModal(${product.id}, '${escapeHTML(product.name)}')">
-                            عرض الخيارات
-                        </button>
-                    </td>
-                </tr>
-            `;
-
-        } else {
-            // المسار القديم: منتج عادي لا يحتوي خيارات
-            const quantity = Number(product.quantity || 0);
-            const price = Number(product.price || 0);
-            const purchaseCost = Number(financeProductCosts[String(product.id)]);
-            
-            const retailValue = quantity * price;
-            const costValue = Number.isFinite(purchaseCost) && purchaseCost > 0 ? quantity * purchaseCost : null;
-            const expectedProfit = costValue !== null ? retailValue - costValue : null;
-            
-            let status = "متوفر";
-            if (quantity <= 0) status = "نافد";
-            else if (quantity <= 5) status = "منخفض";
-
-            const purchaseCostHTML = costValue !== null ? formatMoney(purchaseCost) : `<span class="finance-warning-text">⚠️ غير مسجلة</span>`;
-            const costValueHTML = costValue !== null ? formatMoney(costValue) : "—";
-            const expectedProfitHTML = expectedProfit !== null ? `<span class="${expectedProfit >= 0 ? "finance-positive" : "finance-negative"}">${formatMoney(expectedProfit)}</span>` : "—";
-
-            return `
-                <tr>
-                    <td>${escapeHTML(product.name || "—")}</td>
-                    <td>${formatNumber(quantity)}</td>
-                    <td>${formatMoney(price)}</td>
-                    <td>${purchaseCostHTML}</td>
-                    <td>${costValueHTML}</td>
-                    <td>${expectedProfitHTML}</td>
-                    <td><span class="finance-status ${quantity <= 0 ? "danger" : quantity <= 5 ? "warning" : "success"}">${status}</span></td>
-                </tr>
-            `;
-        }
+        return `
+            <tr>
+                <td>${escapeHTML(product.name || "—")}</td>
+                <td>${formatNumber(quantity)}</td>
+                <td>${formatMoney(price)}</td>
+                <td>${purchaseCostHTML}</td>
+                <td>${costValueHTML}</td>
+                <td>${expectedProfitHTML}</td>
+                <td><span class="finance-status ${quantity <= 0 ? "danger" : quantity <= 5 ? "warning" : "success"}">${status}</span></td>
+            </tr>
+        `;
     }).join("");
 
     renderFinanceInventoryPagination(filteredProducts.length);
@@ -1640,88 +1482,6 @@ function setupFinanceExpensesPaginationContainer() {
         tableContainer.parentElement.insertBefore(pagination, tableContainer.nextSibling);
     }
 }
-
-
-/* =========================================================
-Variant Inventory Modal Logic (جديد كلياً - Lazy Loading)
-========================================================= */
-
-async function openVariantInventoryModal(productId, productName) {
-    const modal = getElement("variantInventoryModal");
-    if (!modal) return;
-    
-    setText("variantInventoryTitle", productName);
-    const tbody = getElement("variantInventoryTableBody");
-    tbody.innerHTML = `<tr class="finance-empty-row"><td colspan="7">جاري تحميل الخيارات...</td></tr>`;
-    
-    modal.hidden = false;
-    requestAnimationFrame(() => { modal.classList.add("show"); });
-
-    try {
-        // جلب تفاصيل الفارينيتس لهذا المنتج حصراً (Lazy Load)
-        const { data: variants, error } = await supabaseClient
-            .from('product_variants')
-            .select('*')
-            .eq('product_id', productId);
-            
-        if (error) throw error;
-        
-        if (!variants || variants.length === 0) {
-            tbody.innerHTML = `<tr class="finance-empty-row"><td colspan="7">لا توجد خيارات مسجلة لهذا المنتج.</td></tr>`;
-            return;
-        }
-
-        const variantIds = variants.map(v => v.id);
-        const variantNamesMap = await fetchVariantNamesForIds(variantIds);
-
-        tbody.innerHTML = variants.map(v => {
-            const name = variantNamesMap[v.id] || `خيار #${v.id}`;
-            const quantity = Number(v.quantity || 0);
-            const price = Number(v.price || 0);
-            const purchaseCost = financeVariantCosts[String(v.id)];
-            
-            const retailValue = quantity * price;
-            const costValue = Number.isFinite(purchaseCost) && purchaseCost > 0 ? quantity * purchaseCost : null;
-            const expectedProfit = costValue !== null ? retailValue - costValue : null;
-            
-            let status = "متوفر";
-            if (quantity <= 0) status = "نافد";
-            else if (quantity <= 5) status = "منخفض";
-
-            const purchaseCostHTML = costValue !== null ? formatMoney(purchaseCost) : `<span class="finance-warning-text">⚠️ غير مسجلة</span>`;
-            const costValueHTML = costValue !== null ? formatMoney(costValue) : "—";
-            const expectedProfitHTML = expectedProfit !== null ? `<span class="${expectedProfit >= 0 ? "finance-positive" : "finance-negative"}">${formatMoney(expectedProfit)}</span>` : "—";
-
-            return `
-                <tr>
-                    <td><strong>${escapeHTML(name)}</strong><br><small style="color:#64748b; font-family: monospace;">SKU: ${escapeHTML(v.sku || "—")}</small></td>
-                    <td>${formatNumber(quantity)}</td>
-                    <td>${formatMoney(price)}</td>
-                    <td>${purchaseCostHTML}</td>
-                    <td>${costValueHTML}</td>
-                    <td>${expectedProfitHTML}</td>
-                    <td><span class="finance-status ${quantity <= 0 ? "danger" : quantity <= 5 ? "warning" : "success"}">${status}</span></td>
-                </tr>
-            `;
-        }).join("");
-
-    } catch (error) {
-        console.error("Error loading variant inventory:", error);
-        tbody.innerHTML = `<tr class="finance-empty-row"><td colspan="7">حدث خطأ أثناء تحميل الخيارات.</td></tr>`;
-    }
-}
-
-function closeVariantInventoryModal() {
-    const modal = getElement("variantInventoryModal");
-    if (!modal) return;
-    modal.classList.remove("show");
-    setTimeout(() => { modal.hidden = true; }, 180);
-}
-
-
-/* =========================================================
-Capital
-========================================================= */
 
 function renderCapitalSummary() {
     const movements = Array.isArray(financeCapitalMovements) ? financeCapitalMovements : [];
@@ -1841,13 +1601,14 @@ async function initializeCapitalMovementDeleteButtons() {
 
 
 /* =========================================================
-Cash Flow
+Cash Flow (تم التفعيل والتوليد التفصيلي للحركة النقدية)
 ========================================================= */
 
 function renderCashflowSummary() {
     const sales = financeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
     const expenses = financeExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
     
+    // إضافة حركات رأس المال للتدفق النقدي
     const capitalInvestments = financeCapitalMovements.filter(m => m.movement_type === "investment").reduce((sum, m) => sum + Number(m.amount || 0), 0);
     const capitalWithdrawals = financeCapitalMovements.filter(m => m.movement_type === "withdrawal").reduce((sum, m) => sum + Number(m.amount || 0), 0);
 
@@ -1858,8 +1619,9 @@ function renderCashflowSummary() {
     setText("cashInflow", formatMoney(inflow));
     setText("cashOutflow", formatMoney(outflow));
     setText("netCashflow", formatMoney(net));
-    setText("currentCashBalance", formatMoney(net)); 
+    setText("currentCashBalance", formatMoney(net)); // يمثل رصيد الفترة المحددة
 
+    // بناء مصفوفة الحركات لدمج كل المعاملات وترتيبها زمنياً
     let transactions = [];
     
     financeOrders.forEach(order => {
@@ -1898,6 +1660,7 @@ function renderCashflowSummary() {
         }
     });
 
+    // الترتيب التصاعدي حسب التاريخ ليكون الجدول كشف حساب منطقي
     transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const tbody = getElement("cashflowTableBody");
@@ -1936,7 +1699,7 @@ function renderAnalyticsSummary() {
     const productSales = {};
 
     financeOrderItems.forEach(item => {
-        const name = item._display_name || item.product_name || "منتج";
+        const name = item.product_name || "منتج";
         const quantity = Number(item.quantity || 0);
         if (!productSales[name]) productSales[name] = 0;
         productSales[name] += quantity;
@@ -1952,6 +1715,7 @@ function renderAnalyticsSummary() {
         setText("bestSellingProductSales", "لا توجد بيانات بعد");
     }
 
+    // حساب أفضل يوم مبيعات خلال الفترة المحددة
     const dailySales = {};
     financeOrders.forEach(order => {
         const dateStr = order.created_at ? order.created_at.split('T')[0] : null;
@@ -1970,6 +1734,9 @@ function renderAnalyticsSummary() {
         setText("bestSalesDayValue", "لا توجد مبيعات في هذه الفترة");
     }
 
+    setText("highestExpenseCategory", "—");
+    setText("highestExpenseCategoryValue", "لا توجد مصروفات مسجلة");
+
     const ordersWithCost = financeOrders.filter(order => Number.isFinite(Number(order.order_cost)));
     if (ordersWithCost.length) {
         const totalMargin = ordersWithCost.reduce((sum, order) => {
@@ -1979,8 +1746,9 @@ function renderAnalyticsSummary() {
             return sum + (((total - cost) / total) * 100);
         }, 0);
         const averageMargin = totalMargin / ordersWithCost.length;
-        // Check if averageProfitMargin element exists (was removed from HTML sample, but keeping logic safe)
-        if(getElement("averageProfitMargin")) setText("averageProfitMargin", `${averageMargin.toFixed(1)}%`);
+        setText("averageProfitMargin", `${averageMargin.toFixed(1)}%`);
+    } else {
+        setText("averageProfitMargin", "غير مكتمل");
     }
 }
 
@@ -2007,7 +1775,14 @@ function updateFinancePeriodLabel() {
 
 
 /* =========================================================
-Invoice (مُحدّث لدعم أسماء الفارينيتس)
+Invoice (نظام توليد وطباعة الفاتورة الفعلي)
+========================================================= */
+
+/* =========================================================
+Invoice (تصميم فاتورة عالمي فخم مع روابط QR مخصصة)
+========================================================= */
+/* =========================================================
+Invoice (تصميم فاتورة عالمي فخم - QR في الأسفل)
 ========================================================= */
 
 function handlePrintInvoice() {
@@ -2022,19 +1797,22 @@ function handlePrintInvoice() {
     const printWindow = window.open('', '_blank');
     const dateStr = order.created_at ? new Date(order.created_at).toLocaleString('ar-SY', { dateStyle: 'medium', timeStyle: 'short' }) : 'غير متوفر';
     
+    // رابط QR Code (يمكنك استبداله برابط حسابك أو رقم واتساب)
     const businessSocialUrl = encodeURIComponent("https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg==");
     const qrSocialUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${businessSocialUrl}&margin=0`;
 
+    // توليد جدول المنتجات
     let itemsHtml = items.map((item, index) => `
         <tr>
             <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #64748b;">${index + 1}</td>
-            <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a;">${escapeHTML(item._display_name || item.product_name)}</td>
+            <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a;">${escapeHTML(item.product_name)}</td>
             <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #334155;">${item.quantity}</td>
             <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #334155;">${formatMoney(item.unit_price)}</td>
             <td style="padding: 14px 10px; border-bottom: 1px solid #f1f5f9; text-align: left; font-weight: 700; color: #0f172a;">${formatMoney(item.subtotal ?? (item.quantity * item.unit_price))}</td>
         </tr>
     `).join('');
 
+    // القالب التصميمي الفاخر
     const invoiceHtml = `
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
@@ -2062,6 +1840,7 @@ function handlePrintInvoice() {
                     box-shadow: 0 10px 30px rgba(0,0,0,0.03);
                 }
                 
+                /* الترويسة العليا */
                 .invoice-header { 
                     display: flex; 
                     justify-content: space-between; 
@@ -2097,6 +1876,7 @@ function handlePrintInvoice() {
                     font-size: 13px; 
                 }
 
+                /* صندوق معلومات العميل */
                 .customer-box { 
                     background: #f8fafc; 
                     border: 1px solid #e2e8f0; 
@@ -2123,6 +1903,7 @@ function handlePrintInvoice() {
                     width: 70px; 
                 }
 
+                /* جدول المنتجات */
                 table { 
                     width: 100%; 
                     border-collapse: collapse; 
@@ -2139,6 +1920,7 @@ function handlePrintInvoice() {
                     font-size: 14px; 
                 }
 
+                /* قسم الأسفل: الـ QR بجانب صندوق الصافي النهائي */
                 .bottom-section {
                     display: flex;
                     justify-content: space-between;
@@ -2194,6 +1976,7 @@ function handlePrintInvoice() {
                     color: #0f172a;
                 }
                 
+                /* التذييل */
                 .footer { 
                     text-align: center; 
                     margin-top: 40px; 
@@ -2248,6 +2031,7 @@ function handlePrintInvoice() {
                     </tbody>
                 </table>
 
+                <!-- القسم السفلي: QR Code على اليمين وصندوق الإجمالي على اليسار -->
                 <div class="bottom-section">
                     <div class="qr-box">
                         <img src="${qrSocialUrl}" alt="QR Code">
@@ -2297,17 +2081,24 @@ function handlePrintInvoice() {
 Export
 ========================================================= */
 
+/* =========================================================
+Export (تصدير التقارير كملفات PDF عبر الطباعة - شامل)
+========================================================= */
+
 function exportFinanceReport() {
     const printWindow = window.open('', '_blank');
     
+    // 1. حسابات المبيعات والأرباح
     const sales = financeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
     const costs = financeOrders.reduce((sum, order) => sum + Number(order.order_cost || 0), 0);
     const grossProfit = sales - costs;
     const profitMargin = sales > 0 ? ((grossProfit / sales) * 100).toFixed(1) : 0;
     
+    // 2. حسابات المصاريف وصافي الربح
     const expenses = financeExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
     const netProfit = grossProfit - expenses;
 
+    // 3. حسابات رأس المال
     const movements = Array.isArray(financeCapitalMovements) ? financeCapitalMovements : [];
     const investments = movements.filter(m => m.movement_type === "investment");
     const initialCapital = investments.length ? Number(investments[investments.length - 1].amount || 0) : 0;
@@ -2315,6 +2106,7 @@ function exportFinanceReport() {
     const withdrawals = movements.filter(m => m.movement_type === "withdrawal").reduce((sum, m) => sum + Number(m.amount || 0), 0);
     const currentCapital = initialCapital + additions - withdrawals;
 
+    // 4. التدفق النقدي
     const cashInflow = sales + initialCapital + additions;
     const cashOutflow = expenses + withdrawals;
     const netCashflow = cashInflow - cashOutflow;
@@ -2507,3 +2299,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     initializeFinanceLogout();
     await checkFinanceAccess();
 });
+
+
+
