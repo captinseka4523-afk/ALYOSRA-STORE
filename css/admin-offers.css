@@ -917,7 +917,7 @@ body {
 
 
 /* ==========================================
-   العروض الحالية
+   العروض الحالية (مع العزل الهندسي لمنع المساحة البيضاء)
 ========================================== */
 
 #offersList {
@@ -944,6 +944,10 @@ body {
     height: auto;
 
     min-height: 0;
+
+    /* الحل الجذري لمنع تسرب الارتفاع الوهمي وخلق المساحة البيضاء */
+    contain: layout style;
+    overflow: hidden;
 }
 
 
@@ -1951,6 +1955,8 @@ body {
     flex-direction: column;
 
     gap: 2px;
+
+    overflow: hidden;
 }
 
 
@@ -2873,4 +2879,118 @@ body {
 
 [hidden] {
     display: none !important;
+}
+
+
+/* =========================================================
+   تنسيقات محرر الصور (Cropper) ومعاينة الصور - معدلة واحترافية
+========================================================= */
+
+/* الحاوية الأساسية للمحرر */
+.admin-product-image-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+    width: 100%;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* المسرح (الإطار) الذي يحتوي على الصورة */
+.admin-product-image-editor-stage {
+    position: relative;
+    width: 100%;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    background-color: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    cursor: grab;
+    
+    touch-action: none !important; 
+    overflow: hidden !important;
+    contain: paint; 
+    transform: translateZ(0); 
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+.admin-product-image-editor-stage:active {
+    cursor: grabbing;
+}
+
+/* الصورة داخل المسرح */
+.admin-product-image-editor-stage img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+}
+
+/* شريط التحكم (التكبير وزر إعادة الضبط) */
+.admin-product-image-editor-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.admin-product-image-editor-controls label {
+    margin: 0;
+    font-weight: 700;
+    color: #475467;
+}
+
+.admin-product-image-editor-controls input[type="range"] {
+    flex: 1;
+    min-width: 150px;
+    cursor: pointer;
+}
+
+/* =========================================================
+   إصلاح مكان المعاينة في نافذة التعديل والإنشاء (مربع متناسق 1:1)
+========================================================= */
+.admin-offer-image-preview {
+    width: 100%;
+    max-width: 280px;
+    margin: 15px auto 0;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+.admin-offer-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+}
+
+/* =========================================================
+   تنسيقات محرر الصور - للهواتف والشاشات الصغيرة
+========================================================= */
+
+@media (max-width: 768px) {
+    .admin-product-image-editor-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
 }

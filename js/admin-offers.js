@@ -121,6 +121,29 @@ let adminOfferToastTimer;
 
 
 // ==========================================
+// حالة محرر الصور الجديد للعروض
+// ==========================================
+
+let offerImageLoadToken = 0;
+
+let offerImageEditorState = {
+    mode: null, // 'create' or 'edit'
+    file: null,
+    image: null,
+    objectUrl: null,
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+    baseScale: 1,
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    startOffsetX: 0,
+    startOffsetY: 0
+};
+
+
+// ==========================================
 // حالة اختيار الـVariants
 // ==========================================
 
@@ -195,6 +218,27 @@ function escapeHtml(
             "&#039;"
         );
 
+}
+
+
+function isSafeImageUrl(url) {
+    if (!url) return false;
+    try {
+        const parsed = new URL(String(url), window.location.href);
+        return (parsed.protocol === "https:" || parsed.protocol === "http:");
+    } catch {
+        return false;
+    }
+}
+
+
+function revokeObjectUrl(url) {
+    if (!url) return;
+    try {
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.warn("Revoke failed:", error);
+    }
 }
 
 
@@ -1487,306 +1531,400 @@ function renderProductsSelection(
 
 
 // ==========================================
-// معاينة الصورة وتجهيزها
+// محرك محرر الصور (Cropper & Smart Compression)
 // ==========================================
 
-async function prepareOfferImage(
-    file
-) {
-
-    if (!file) {
-        return null;
-    }
-
-
-    if (
-        !file.type.startsWith(
-            "image/"
-        )
-    ) {
-
-        throw new Error(
-            "الملف المحدد ليس صورة."
-        );
-
-    }
-
-
-    const image =
-        await createImageBitmap(
-            file
-        );
-
-
-    const canvasSize =
-        1600;
-
-    const maxContentSize =
-        1560;
-
-
-    let contentWidth =
-        image.width;
-
-    let contentHeight =
-        image.height;
-
-
-    if (
-        contentWidth >
-            maxContentSize ||
-        contentHeight >
-            maxContentSize
-    ) {
-
-        const scale =
-            Math.min(
-                maxContentSize /
-                    contentWidth,
-                maxContentSize /
-                    contentHeight
-            );
-
-
-        contentWidth =
-            Math.round(
-                contentWidth *
-                scale
-            );
-
-
-        contentHeight =
-            Math.round(
-                contentHeight *
-                scale
-            );
-
-    }
-
-
-    const canvas =
-        document.createElement(
-            "canvas"
-        );
-
-
-    canvas.width =
-        canvasSize;
-
-    canvas.height =
-        canvasSize;
-
-
-    const context =
-        canvas.getContext(
-            "2d"
-        );
-
-
-    if (!context) {
-
-        image.close();
-
-        throw new Error(
-            "تعذر تجهيز الصورة."
-        );
-
-    }
-
-
-    context.fillStyle =
-        "#ffffff";
-
-
-    context.fillRect(
-        0,
-        0,
-        canvasSize,
-        canvasSize
-    );
-
-
-    const x =
-        (
-            canvasSize -
-            contentWidth
-        ) / 2;
-
-
-    const y =
-        (
-            canvasSize -
-            contentHeight
-        ) / 2;
-
-
-    context.drawImage(
-        image,
-        x,
-        y,
-        contentWidth,
-        contentHeight
-    );
-
-
-    image.close();
-
-
-    const blob =
-        await new Promise(
-            (
-                resolve,
-                reject
-            ) => {
-
-                canvas.toBlob(
-                    result => {
-
-                        if (result) {
-
-                            resolve(
-                                result
-                            );
-
-                        } else {
-
-                            reject(
-                                new Error(
-                                    "تعذر ضغط الصورة."
-                                )
-                            );
-
-                        }
-
-                    },
-                    "image/webp",
-                    0.82
-                );
-
-            }
-        );
-
-
-    return blob;
-
+function getOfferImageEditorElements(mode) {
+    const prefix = mode === 'edit' ? 'editOffer' : 'offer';
+    return {
+        editor: document.getElementById(`${prefix}ImageEditor`),
+        stage: document.querySelector(`.${prefix}-image-editor-stage`),
+        image: document.getElementById(`${prefix}ImageEditorImage`),
+        zoom: document.getElementById(`${prefix}ImageZoom`),
+        reset: document.getElementById(`reset${prefix.charAt(0).toUpperCase() + prefix.slice(1)}ImageEditor`)
+    };
 }
 
-
-async function uploadOfferImage(
-    file
-) {
-
-    if (!file) {
-        return null;
+function resetOfferImageEditorState() {
+    offerImageLoadToken++;
+    revokeObjectUrl(offerImageEditorState.objectUrl);
+    
+    const mode = offerImageEditorState.mode;
+    if (mode) {
+        const elements = getOfferImageEditorElements(mode);
+        if (elements.image) {
+            elements.image.removeAttribute("src");
+            elements.image.style.transform = "";
+        }
+        if (elements.editor) {
+            elements.editor.hidden = true;
+        }
+        if (elements.zoom) {
+            elements.zoom.min = "0.05";
+            elements.zoom.max = "3";
+            elements.zoom.step = "0.01";
+            elements.zoom.value = "1";
+        }
     }
 
+    offerImageEditorState = {
+        mode: null,
+        file: null,
+        image: null,
+        objectUrl: null,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        baseScale: 1,
+        dragging: false,
+        startX: 0,
+        startY: 0,
+        startOffsetX: 0,
+        startOffsetY: 0
+    };
+}
 
-    const optimizedImage =
-        await prepareOfferImage(
-            file
-        );
+function updateOfferImageEditor(mode) {
+    const elements = getOfferImageEditorElements(mode);
+    if (!elements.image || !offerImageEditorState.image || offerImageEditorState.mode !== mode) {
+        return;
+    }
+    const { scale, offsetX, offsetY } = offerImageEditorState;
+    elements.image.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
+}
 
+function resetOfferImageEditor(mode) {
+    if (offerImageEditorState.mode !== mode) return;
+    offerImageEditorState.scale = offerImageEditorState.baseScale || 1;
+    offerImageEditorState.offsetX = 0;
+    offerImageEditorState.offsetY = 0;
+    
+    const elements = getOfferImageEditorElements(mode);
+    if (elements.zoom) {
+        elements.zoom.value = offerImageEditorState.scale;
+    }
+    updateOfferImageEditor(mode);
+}
 
-    if (!optimizedImage) {
+function setupOfferImageEditor(mode) {
+    const elements = getOfferImageEditorElements(mode);
+    if (!elements.stage) return;
 
-        throw new Error(
-            "تعذر تجهيز الصورة."
-        );
+    elements.stage.addEventListener("pointerdown", event => {
+        if (!offerImageEditorState.image || offerImageEditorState.mode !== mode) return;
+        event.preventDefault();
+        offerImageEditorState.dragging = true;
+        offerImageEditorState.startX = event.clientX;
+        offerImageEditorState.startY = event.clientY;
+        offerImageEditorState.startOffsetX = offerImageEditorState.offsetX;
+        offerImageEditorState.startOffsetY = offerImageEditorState.offsetY;
+        try { elements.stage.setPointerCapture(event.pointerId); } catch {}
+    });
 
+    elements.stage.addEventListener("pointermove", event => {
+        if (!offerImageEditorState.dragging || offerImageEditorState.mode !== mode) return;
+        offerImageEditorState.offsetX = offerImageEditorState.startOffsetX + (event.clientX - offerImageEditorState.startX);
+        offerImageEditorState.offsetY = offerImageEditorState.startOffsetY + (event.clientY - offerImageEditorState.startY);
+        updateOfferImageEditor(mode);
+    });
+
+    const stopDragging = event => {
+        offerImageEditorState.dragging = false;
+        try { elements.stage.releasePointerCapture(event.pointerId); } catch {}
+    };
+
+    elements.stage.addEventListener("pointerup", stopDragging);
+    elements.stage.addEventListener("pointercancel", stopDragging);
+
+    if (elements.zoom) {
+        elements.zoom.addEventListener("input", function () {
+            if (offerImageEditorState.mode !== mode) return;
+            const value = Number(this.value);
+            if (!Number.isFinite(value)) return;
+            offerImageEditorState.scale = value;
+            updateOfferImageEditor(mode);
+        });
     }
 
+    if (elements.reset) {
+        elements.reset.addEventListener("click", () => resetOfferImageEditor(mode));
+    }
+}
 
-    const maxFileSize =
-        3 * 1024 * 1024;
-
-
-    if (
-        optimizedImage.size >
-        maxFileSize
-    ) {
-
-        throw new Error(
-            "حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت."
-        );
-
+async function loadOfferImageIntoEditor(file, mode) {
+    if (!file || !file.type.startsWith("image/")) {
+        throw new Error("الملف المحدد ليس صورة صالحة.");
     }
 
+    const currentToken = ++offerImageLoadToken;
+    revokeObjectUrl(offerImageEditorState.objectUrl);
 
-    const filePath =
-        `${crypto.randomUUID()}.webp`;
+    const objectUrl = URL.createObjectURL(file);
 
+    offerImageEditorState.mode = mode;
+    offerImageEditorState.file = file;
+    offerImageEditorState.objectUrl = objectUrl;
 
-    const {
-        error: uploadError
-    } =
-        await supabaseClient
-            .storage
-            .from(
-                "product-images"
-            )
-            .upload(
-                filePath,
-                optimizedImage,
-                {
-                    contentType:
-                        "image/webp",
+    const image = new Image();
 
-                    cacheControl:
-                        "31536000",
+    try {
+        await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error("تعذر قراءة الصورة."));
+            image.src = objectUrl;
+        });
+    } catch (error) {
+        image.removeAttribute("src");
+        revokeObjectUrl(objectUrl);
+        if (offerImageEditorState.objectUrl === objectUrl) {
+            resetOfferImageEditorState();
+        }
+        throw error;
+    }
 
-                    upsert:
-                        false
-                }
+    if (currentToken !== offerImageLoadToken) {
+        image.removeAttribute("src");
+        revokeObjectUrl(objectUrl);
+        return;
+    }
+
+    if (image.naturalWidth <= 0 || image.naturalHeight <= 0 || image.naturalWidth > 6000 || image.naturalHeight > 6000) {
+        image.removeAttribute("src");
+        revokeObjectUrl(objectUrl);
+        if (offerImageEditorState.objectUrl === objectUrl) {
+            resetOfferImageEditorState();
+        }
+        throw new Error("أبعاد الصورة غير صالحة أو ضخمة جدًا للحماية.");
+    }
+
+    const elements = getOfferImageEditorElements(mode);
+
+    if (!elements.image || !elements.editor || !elements.stage) {
+        image.removeAttribute("src");
+        revokeObjectUrl(objectUrl);
+        throw new Error("تعذر تجهيز محرر الصورة.");
+    }
+
+    offerImageEditorState.image = image;
+    elements.image.src = objectUrl;
+    elements.editor.hidden = false;
+
+    // إخفاء المعاينة القديمة إن وجدت في الـ HTML
+    const oldPreview = mode === 'edit' ? editOfferImagePreview : offerImagePreview;
+    if (oldPreview) oldPreview.hidden = true;
+
+    const stageWidth = elements.stage.clientWidth;
+    const stageHeight = elements.stage.clientHeight;
+
+    if (stageWidth <= 0 || stageHeight <= 0) {
+        resetOfferImageEditorState();
+        throw new Error("تعذر تحديد حجم محرر الصورة.");
+    }
+
+    const baseScale = Math.max(stageWidth / image.naturalWidth, stageHeight / image.naturalHeight);
+    
+    offerImageEditorState.baseScale = baseScale;
+    offerImageEditorState.scale = baseScale;
+    offerImageEditorState.offsetX = 0;
+    offerImageEditorState.offsetY = 0;
+
+    if (elements.zoom) {
+        const minZoom = Math.max(0.05, baseScale * 0.5);
+        const maxZoom = Math.max(minZoom + 0.01, baseScale * 3);
+        elements.zoom.min = String(minZoom);
+        elements.zoom.max = String(maxZoom);
+        elements.zoom.step = String(Math.max(0.001, baseScale / 100));
+        elements.zoom.value = String(baseScale);
+    }
+
+    updateOfferImageEditor(mode);
+}
+
+async function exportEditedOfferImage(mode) {
+    if (offerImageEditorState.mode !== mode) {
+        throw new Error("حالة محرر الصور غير متطابقة.");
+    }
+    const elements = getOfferImageEditorElements(mode);
+    const stage = elements.stage;
+    const state = offerImageEditorState;
+
+    if (!stage || !state.image) {
+        throw new Error("لم يتم اختيار صورة.");
+    }
+
+    const sourceWidth = state.image.naturalWidth;
+    const sourceHeight = state.image.naturalHeight;
+    const originalFileSize = Number(state.file?.size) || 0;
+
+    if (!sourceWidth || !sourceHeight) {
+        throw new Error("تعذر قراءة أبعاد الصورة.");
+    }
+
+    const TARGET_SIZE = 50 * 1024;
+    const MAX_OUTPUT_SIZE = Math.min(1200, sourceWidth, sourceHeight);
+    const MIN_OUTPUT_SIZE = Math.min(MAX_OUTPUT_SIZE, 640);
+    const MIN_QUALITY = 0.45;
+    const MAX_QUALITY = 0.85;
+
+    const stageWidth = stage.clientWidth;
+    const stageHeight = stage.clientHeight;
+
+    if (!stageWidth || !stageHeight) {
+        throw new Error("تعذر تحديد مساحة الصورة.");
+    }
+
+    // حساب الأبعاد بناءً على نسبة التكبير
+    const renderedWidth = sourceWidth * state.scale;
+    const renderedHeight = sourceHeight * state.scale;
+    
+    // حساب موقع الصورة بالنسبة لمركز الـ stage
+    const renderedLeft = (stageWidth - renderedWidth) / 2 + state.offsetX;
+    const renderedTop = (stageHeight - renderedHeight) / 2 + state.offsetY;
+
+    const createWebP = (outputSize, quality) => {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement("canvas");
+            const finalSize = Math.max(1, Math.round(outputSize));
+            
+            canvas.width = finalSize;
+            canvas.height = finalSize;
+            
+            const context = canvas.getContext("2d");
+            if (!context) {
+                reject(new Error("تعذر تجهيز الصورة."));
+                return;
+            }
+
+            // ملء الخلفية باللون الأبيض (في حال كانت الصورة شفافة أو أصغر من الإطار)
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // حساب نسبة التصغير/التكبير من الـ stage إلى الـ canvas النهائي
+            const cropScale = finalSize / stageWidth;
+            
+            // حساب الإحداثيات الدقيقة للرسم على الـ canvas
+            const drawX = renderedLeft * cropScale;
+            const drawY = renderedTop * cropScale;
+            const drawWidth = renderedWidth * cropScale;
+            const drawHeight = renderedHeight * cropScale;
+
+            context.drawImage(
+                state.image,
+                drawX,
+                drawY,
+                drawWidth,
+                drawHeight
             );
 
+            canvas.toBlob(
+                blob => {
+                    if (!blob) {
+                        reject(new Error("تعذر استخراج الصورة."));
+                        return;
+                    }
+                    resolve(blob);
+                },
+                "image/webp",
+                quality
+            );
+        });
+    };
+
+    const findBestResult = async (outputSize, maximumSize = TARGET_SIZE) => {
+        const qualities = [MAX_QUALITY, 0.70, 0.55, MIN_QUALITY];
+        let smallestResult = null;
+        let bestUnderLimit = null;
+
+        for (const quality of qualities) {
+            const blob = await createWebP(outputSize, quality);
+            const result = { blob, quality, size: blob.size, outputSize };
+            
+            if (!smallestResult || result.size < smallestResult.size) {
+                smallestResult = result;
+            }
+            if (result.size <= maximumSize) {
+                bestUnderLimit = result;
+                break;
+            }
+        }
+        return (bestUnderLimit || smallestResult);
+    };
+
+    if (originalFileSize > 0 && originalFileSize <= TARGET_SIZE) {
+        let bestSmallResult = await findBestResult(MAX_OUTPUT_SIZE, originalFileSize);
+        if (bestSmallResult && bestSmallResult.size <= originalFileSize) return bestSmallResult.blob;
+        
+        const secondResult = await createWebP(MAX_OUTPUT_SIZE, 0.55);
+        if (secondResult.size <= originalFileSize) return secondResult;
+        
+        if (!bestSmallResult || secondResult.size < bestSmallResult.size) {
+            bestSmallResult = { blob: secondResult, quality: 0.55, size: secondResult.size, outputSize: MAX_OUTPUT_SIZE };
+        }
+        
+        if (MAX_OUTPUT_SIZE > MIN_OUTPUT_SIZE) {
+            const reducedSizes = [Math.round(MAX_OUTPUT_SIZE * 0.80), Math.round(MAX_OUTPUT_SIZE * 0.65)];
+            for (const outputSize of reducedSizes) {
+                const safeOutputSize = Math.max(MIN_OUTPUT_SIZE, Math.min(MAX_OUTPUT_SIZE, outputSize));
+                if (safeOutputSize >= bestSmallResult.outputSize) continue;
+                
+                const candidate = await findBestResult(safeOutputSize, originalFileSize);
+                if (!candidate) continue;
+                if (candidate.size <= originalFileSize) return candidate.blob;
+                if (candidate.size < bestSmallResult.size) bestSmallResult = candidate;
+            }
+        }
+        return bestSmallResult.blob;
+    }
+
+    let bestResult = await findBestResult(MAX_OUTPUT_SIZE, TARGET_SIZE);
+    if (!bestResult) throw new Error("تعذر تجهيز الصورة.");
+    if (bestResult.size <= TARGET_SIZE) return bestResult.blob;
+
+    if (MAX_OUTPUT_SIZE > MIN_OUTPUT_SIZE) {
+        const reducedSizes = [Math.round(MAX_OUTPUT_SIZE * 0.80), Math.round(MAX_OUTPUT_SIZE * 0.65)];
+        for (const outputSize of reducedSizes) {
+            const safeOutputSize = Math.max(MIN_OUTPUT_SIZE, Math.min(MAX_OUTPUT_SIZE, outputSize));
+            if (safeOutputSize >= bestResult.outputSize) continue;
+            
+            const candidate = await findBestResult(safeOutputSize, TARGET_SIZE);
+            if (!candidate) continue;
+            if (candidate.size <= TARGET_SIZE) return candidate.blob;
+            if (candidate.size < bestResult.size) bestResult = candidate;
+        }
+    }
+    return bestResult.blob;
+}
+
+async function uploadOfferBlob(blob) {
+    if (!blob) return null;
+
+    if (blob.size > 3 * 1024 * 1024) {
+        throw new Error("حجم الصورة بعد الضغط ما زال أكبر من 3 ميغابايت.");
+    }
+
+    const filePath = `${crypto.randomUUID()}.webp`;
+
+    const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(filePath, blob, {
+        contentType: "image/webp",
+        cacheControl: "31536000",
+        upsert: false
+    });
 
     if (uploadError) {
         throw uploadError;
     }
 
+    const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(filePath);
 
-    const {
-        data: publicUrlData
-    } =
-        supabaseClient
-            .storage
-            .from(
-                "product-images"
-            )
-            .getPublicUrl(
-                filePath
-            );
-
-
-    if (
-        !publicUrlData?.publicUrl
-    ) {
-
-        await supabaseClient
-            .storage
-            .from(
-                "product-images"
-            )
-            .remove([
-                filePath
-            ]);
-
-
-        throw new Error(
-            "تعذر الحصول على رابط الصورة."
-        );
-
+    if (!publicUrlData?.publicUrl) {
+        await supabaseClient.storage.from("product-images").remove([filePath]);
+        throw new Error("تعذر الحصول على رابط الصورة.");
     }
 
-
     return {
-        path:
-            filePath,
-
-        url:
-            publicUrlData.publicUrl
+        path: filePath,
+        url: publicUrlData.publicUrl
     };
-
 }
 
 
@@ -1947,375 +2085,69 @@ function showVariantModalMessage(
 
 
 // ==========================================
-// معاينة صورة إنشاء العرض
+// أحداث اختيار الصور
 // ==========================================
 
 if (offerImageFile) {
-
-    offerImageFile.addEventListener(
-        "change",
-        async function () {
-
-            const file =
-                this.files?.[0];
-
-
-            if (!file) {
-
-                if (offerImagePreview) {
-                    offerImagePreview.hidden =
-                        true;
-                }
-
-                if (offerImagePreviewImage) {
-                    offerImagePreviewImage.src =
-                        "";
-                }
-
-                if (offerImageStatus) {
-
-                    offerImageStatus.textContent =
-                        "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.";
-
-                }
-
-                return;
-
-            }
-
-
-            if (
-                !file.type.startsWith(
-                    "image/"
-                )
-            ) {
-
-                showAdminOfferMessage(
-                    "يرجى اختيار ملف صورة صالح.",
-                    "error"
-                );
-
-
-                this.value =
-                    "";
-
-
-                if (offerImagePreview) {
-                    offerImagePreview.hidden =
-                        true;
-                }
-
-
-                if (offerImagePreviewImage) {
-                    offerImagePreviewImage.src =
-                        "";
-                }
-
-
-                return;
-
-            }
-
-
-            try {
-
-                if (offerImageStatus) {
-
-                    offerImageStatus.textContent =
-                        "جاري تجهيز معاينة الصورة...";
-
-                }
-
-
-                const optimizedImage =
-                    await prepareOfferImage(
-                        file
-                    );
-
-
-                if (!optimizedImage) {
-
-                    throw new Error(
-                        "تعذر تجهيز الصورة."
-                    );
-
-                }
-
-
-                const previewUrl =
-                    URL.createObjectURL(
-                        optimizedImage
-                    );
-
-
-                if (
-                    offerImagePreviewImage
-                ) {
-
-                    if (
-                        offerImagePreviewImage
-                            .dataset
-                            .previewUrl
-                    ) {
-
-                        URL.revokeObjectURL(
-                            offerImagePreviewImage
-                                .dataset
-                                .previewUrl
-                        );
-
-                    }
-
-
-                    offerImagePreviewImage.src =
-                        previewUrl;
-
-
-                    offerImagePreviewImage
-                        .dataset
-                        .previewUrl =
-                        previewUrl;
-
-                }
-
-
-                if (offerImagePreview) {
-                    offerImagePreview.hidden =
-                        false;
-                }
-
-
-                if (offerImageStatus) {
-
-                    offerImageStatus.textContent =
-                        `تم تجهيز الصورة: ${file.name}`;
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Offer image preview error:",
-                    error
-                );
-
-
-                this.value =
-                    "";
-
-
-                if (offerImagePreview) {
-                    offerImagePreview.hidden =
-                        true;
-                }
-
-
-                if (
-                    offerImagePreviewImage
-                ) {
-
-                    offerImagePreviewImage.src =
-                        "";
-
-
-                    if (
-                        offerImagePreviewImage
-                            .dataset
-                            .previewUrl
-                    ) {
-
-                        URL.revokeObjectURL(
-                            offerImagePreviewImage
-                                .dataset
-                                .previewUrl
-                        );
-
-
-                        delete offerImagePreviewImage
-                            .dataset
-                            .previewUrl;
-
-                    }
-
-                }
-
-
-                if (offerImageStatus) {
-
-                    offerImageStatus.textContent =
-                        "تعذر تجهيز الصورة للمعاينة.";
-
-                }
-
-
-                showAdminOfferMessage(
-                    error.message ||
-                    "تعذر تجهيز الصورة.",
-                    "error"
-                );
-
-            }
-
+    offerImageFile.addEventListener("change", async function () {
+        const file = this.files?.[0];
+        
+        if (!file) {
+            resetOfferImageEditorState();
+            if (offerImagePreview) offerImagePreview.hidden = true;
+            if (offerImagePreviewImage) offerImagePreviewImage.src = "";
+            if (offerImageStatus) offerImageStatus.textContent = "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.";
+            return;
         }
-    );
 
+        if (!file.type.startsWith("image/")) {
+            showAdminOfferMessage("يرجى اختيار ملف صورة صالح.", "error");
+            this.value = "";
+            resetOfferImageEditorState();
+            if (offerImagePreview) offerImagePreview.hidden = true;
+            if (offerImagePreviewImage) offerImagePreviewImage.src = "";
+            return;
+        }
+
+        try {
+            if (offerImageStatus) offerImageStatus.textContent = "جاري تجهيز محرر الصورة...";
+            await loadOfferImageIntoEditor(file, 'create');
+            if (offerImageStatus) offerImageStatus.textContent = "حرّك الصورة لاختيار الجزء المناسب.";
+        } catch (error) {
+            console.error("Offer image editor error:", error);
+            this.value = "";
+            resetOfferImageEditorState();
+            if (offerImageStatus) offerImageStatus.textContent = "تعذر تجهيز الصورة للمعاينة.";
+            showAdminOfferMessage(error.message || "تعذر تجهيز الصورة.", "error");
+        }
+    });
 }
 
-
-// ==========================================
-// معاينة صورة التعديل
-// ==========================================
-
 if (editOfferImageFile) {
+    editOfferImageFile.addEventListener("change", async function () {
+        const file = this.files?.[0];
+        
+        if (!file) return;
 
-    editOfferImageFile.addEventListener(
-        "change",
-        async function () {
-
-            const file =
-                this.files?.[0];
-
-
-            if (!file) {
-                return;
-            }
-
-
-            if (
-                !file.type.startsWith(
-                    "image/"
-                )
-            ) {
-
-                showEditMessage(
-                    "يرجى اختيار ملف صورة صالح.",
-                    "error"
-                );
-
-
-                this.value =
-                    "";
-
-
-                return;
-
-            }
-
-
-            try {
-
-                if (
-                    editOfferImageStatus
-                ) {
-
-                    editOfferImageStatus.textContent =
-                        "جاري تجهيز معاينة الصورة...";
-
-                }
-
-
-                const optimizedImage =
-                    await prepareOfferImage(
-                        file
-                    );
-
-
-                if (!optimizedImage) {
-
-                    throw new Error(
-                        "تعذر تجهيز الصورة."
-                    );
-
-                }
-
-
-                const previewUrl =
-                    URL.createObjectURL(
-                        optimizedImage
-                    );
-
-
-                if (
-                    editOfferImagePreviewImage
-                ) {
-
-                    if (
-                        editOfferImagePreviewImage
-                            .dataset
-                            .previewUrl
-                    ) {
-
-                        URL.revokeObjectURL(
-                            editOfferImagePreviewImage
-                                .dataset
-                                .previewUrl
-                        );
-
-                    }
-
-
-                    editOfferImagePreviewImage.src =
-                        previewUrl;
-
-
-                    editOfferImagePreviewImage
-                        .dataset
-                        .previewUrl =
-                        previewUrl;
-
-                }
-
-
-                if (editOfferImagePreview) {
-
-                    editOfferImagePreview.hidden =
-                        false;
-
-                }
-
-
-                if (
-                    editOfferImageStatus
-                ) {
-
-                    editOfferImageStatus.textContent =
-                        `تم تجهيز الصورة: ${file.name}`;
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Edit offer image preview error:",
-                    error
-                );
-
-
-                this.value =
-                    "";
-
-
-                if (
-                    editOfferImageStatus
-                ) {
-
-                    editOfferImageStatus.textContent =
-                        "تعذر تجهيز الصورة للمعاينة.";
-
-                }
-
-
-                showEditMessage(
-                    error.message ||
-                    "تعذر تجهيز الصورة.",
-                    "error"
-                );
-
-            }
-
+        if (!file.type.startsWith("image/")) {
+            showEditMessage("يرجى اختيار ملف صورة صالح.", "error");
+            this.value = "";
+            resetOfferImageEditorState();
+            return;
         }
-    );
 
+        try {
+            if (editOfferImageStatus) editOfferImageStatus.textContent = "جاري تجهيز محرر الصورة...";
+            await loadOfferImageIntoEditor(file, 'edit');
+            if (editOfferImageStatus) editOfferImageStatus.textContent = "حرّك الصورة لاختيار الجزء المناسب.";
+        } catch (error) {
+            console.error("Edit offer image editor error:", error);
+            this.value = "";
+            resetOfferImageEditorState();
+            if (editOfferImageStatus) editOfferImageStatus.textContent = "تعذر تجهيز الصورة للمعاينة.";
+            showEditMessage(error.message || "تعذر تجهيز الصورة.", "error");
+        }
+    });
 }
 
 
@@ -2924,12 +2756,15 @@ async function loadOffers() {
 // عرض العروض
 // ==========================================
 
+// ==========================================
+// عرض العروض
+// ==========================================
+
 function renderOffers() {
 
     if (!offersList) {
         return;
     }
-
 
     if (offers.length === 0) {
 
@@ -2943,48 +2778,23 @@ function renderOffers() {
 
     }
 
-
-    offersList.innerHTML =
-        "";
-
+    offersList.innerHTML = "";
 
     offers.forEach(
         offer => {
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+            const card = document.createElement("div");
+            card.className = "offer-admin-item";
 
+            const productsText = (offer.offer_items || [])
+                .map(
+                    item =>
+                        `${getOfferItemDisplayName(item)} × ${Number(item.quantity) || 0}`
+                )
+                .join("، ");
 
-            card.className =
-                "offer-admin-item";
-
-
-            const productsText =
-                (offer.offer_items || [])
-                    .map(
-                        item =>
-                            `${getOfferItemDisplayName(
-                                item
-                            )} × ${Number(
-                                item.quantity
-                            ) || 0}`
-                    )
-                    .join("، ");
-
-
-            const statusText =
-                offer.active
-                    ? "فعال"
-                    : "غير فعال";
-
-
-            const toggleText =
-                offer.active
-                    ? "تعطيل العرض"
-                    : "تفعيل العرض";
-
+            const statusText = offer.active ? "فعال" : "غير فعال";
+            const toggleText = offer.active ? "تعطيل العرض" : "تفعيل العرض";
 
             card.innerHTML = `
 
@@ -2992,146 +2802,68 @@ function renderOffers() {
                     offer.image
                         ? `
                             <img
-                                src="${escapeHtml(
-                                    offer.image
-                                )}"
-                                alt="${escapeHtml(
-                                    offer.name
-                                )}"
+                                src="${escapeHtml(offer.image)}"
+                                alt="${escapeHtml(offer.name)}"
                                 class="offer-admin-image"
                             >
                           `
-                        : ""
+                        : `
+                            <div class="offer-admin-image" style="display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#94a3b8; font-weight:800; font-size:12px;">
+                                اليُسرى
+                            </div>
+                          `
                 }
 
-
                 <h3>
-                    ${escapeHtml(
-                        offer.name
-                    )}
+                    ${escapeHtml(offer.name)}
                 </h3>
-
 
                 ${
                     offer.description
                         ? `
                             <p>
-                                ${escapeHtml(
-                                    offer.description
-                                )}
+                                ${escapeHtml(offer.description)}
                             </p>
                           `
                         : ""
                 }
 
-
                 <div class="offer-admin-products">
-
-                    <strong>
-                        محتويات العرض:
-                    </strong>
-
+                    <strong>محتويات العرض:</strong>
                     <span>
-                        ${
-                            escapeHtml(
-                                productsText ||
-                                "لا توجد منتجات"
-                            )
-                        }
+                        ${escapeHtml(productsText || "لا توجد منتجات")}
                     </span>
-
                 </div>
-
 
                 <div class="offer-admin-meta">
-
                     <strong>
-                        $${Number(
-                            offer.price
-                        ).toFixed(2)}
+                        $${Number(offer.price).toFixed(2)}
                     </strong>
-
-
                     <span>
-                        الكمية:
-                        ${Number(
-                            offer.quantity
-                        ) || 0}
+                        الكمية: ${Number(offer.quantity) || 0}
                     </span>
-
-
-                    <span
-                        class="${
-                            offer.active
-                                ? "offer-active"
-                                : "offer-inactive"
-                        }"
-                    >
+                    <span class="${offer.active ? "offer-active" : "offer-inactive"}">
                         ${statusText}
                     </span>
-
                 </div>
 
-
-                <div
-                    class="offer-admin-actions"
-                >
-
-                    <button
-                        type="button"
-                        class="offer-admin-action offer-details-action"
-                        data-action="details"
-                        data-id="${escapeHtml(
-                            offer.id
-                        )}"
-                    >
+                <div class="offer-admin-actions">
+                    <button type="button" class="offer-admin-action offer-details-action" data-action="details" data-id="${escapeHtml(offer.id)}">
                         التفاصيل
                     </button>
-
-
-                    <button
-                        type="button"
-                        class="offer-admin-action offer-edit-action"
-                        data-action="edit"
-                        data-id="${escapeHtml(
-                            offer.id
-                        )}"
-                    >
+                    <button type="button" class="offer-admin-action offer-edit-action" data-action="edit" data-id="${escapeHtml(offer.id)}">
                         تعديل
                     </button>
-
-
-                    <button
-                        type="button"
-                        class="offer-admin-action offer-toggle-action"
-                        data-action="toggle"
-                        data-id="${escapeHtml(
-                            offer.id
-                        )}"
-                    >
+                    <button type="button" class="offer-admin-action offer-toggle-action" data-action="toggle" data-id="${escapeHtml(offer.id)}">
                         ${toggleText}
                     </button>
-
-
-                    <button
-                        type="button"
-                        class="offer-admin-action offer-delete-action"
-                        data-action="delete"
-                        data-id="${escapeHtml(
-                            offer.id
-                        )}"
-                    >
+                    <button type="button" class="offer-admin-action offer-delete-action" data-action="delete" data-id="${escapeHtml(offer.id)}">
                         حذف
                     </button>
-
                 </div>
-
             `;
 
-
-            offersList.appendChild(
-                card
-            );
+            offersList.appendChild(card);
 
         }
     );
@@ -3278,58 +3010,23 @@ async function openOfferEditModal(
 
 
     if (editOfferImageFile) {
-
-        editOfferImageFile.value =
-            "";
-
+        editOfferImageFile.value = "";
     }
 
+    resetOfferImageEditorState();
 
-    if (
-        editOfferImagePreviewImage
-    ) {
-
-        if (
-            editOfferImagePreviewImage
-                .dataset
-                .previewUrl
-        ) {
-
-            URL.revokeObjectURL(
-                editOfferImagePreviewImage
-                    .dataset
-                    .previewUrl
-            );
-
-
-            delete editOfferImagePreviewImage
-                .dataset
-                .previewUrl;
-
-        }
-
-
-        editOfferImagePreviewImage.src =
-            offer.image || "";
-
+    if (editOfferImagePreviewImage) {
+        editOfferImagePreviewImage.src = offer.image || "";
     }
-
 
     if (editOfferImagePreview) {
-
-        editOfferImagePreview.hidden =
-            !offer.image;
-
+        editOfferImagePreview.hidden = !offer.image;
     }
 
-
     if (editOfferImageStatus) {
-
-        editOfferImageStatus.textContent =
-            offer.image
-                ? "الصورة الحالية للعرض. اختر صورة جديدة لاستبدالها."
-                : "لا توجد صورة حالية. يمكنك اختيار صورة من جهازك.";
-
+        editOfferImageStatus.textContent = offer.image
+            ? "الصورة الحالية للعرض. اختر صورة جديدة لاستبدالها."
+            : "لا توجد صورة حالية. يمكنك اختيار صورة من جهازك.";
     }
 
 
@@ -4864,7 +4561,8 @@ function closeOfferEditModal() {
 
 
     editVariantSelections.clear();
-
+    
+    resetOfferImageEditorState();
 
     if (offerVariantModal) {
 
@@ -5050,13 +4748,10 @@ if (offerEditForm) {
                 );
 
 
-                if (selectedImageFile) {
-
-                    uploadedOfferImage =
-                        await uploadOfferImage(
-                            selectedImageFile
-                        );
-
+                // رفع الصورة إذا تم التقاطها من المحرر في وضع التعديل
+                if (selectedImageFile && offerImageEditorState.image && offerImageEditorState.mode === 'edit') {
+                    const blob = await exportEditedOfferImage('edit');
+                    uploadedOfferImage = await uploadOfferBlob(blob);
                 }
 
 
@@ -5780,13 +5475,10 @@ if (offerForm) {
 
             try {
 
-                if (selectedImageFile) {
-
-                    uploadedOfferImage =
-                        await uploadOfferImage(
-                            selectedImageFile
-                        );
-
+                // رفع الصورة إذا تم التقاطها من المحرر في وضع الإنشاء
+                if (selectedImageFile && offerImageEditorState.image && offerImageEditorState.mode === 'create') {
+                    const blob = await exportEditedOfferImage('create');
+                    uploadedOfferImage = await uploadOfferBlob(blob);
                 }
 
 
@@ -5876,56 +5568,15 @@ if (offerForm) {
 
 
                 createVariantSelections.clear();
-
-
-                if (offerImagePreview) {
-
-                    offerImagePreview.hidden =
-                        true;
-
-                }
-
-
-                if (
-                    offerImagePreviewImage
-                ) {
-
-                    if (
-                        offerImagePreviewImage
-                            .dataset
-                            .previewUrl
-                    ) {
-
-                        URL.revokeObjectURL(
-                            offerImagePreviewImage
-                                .dataset
-                                .previewUrl
-                        );
-
-
-                        delete offerImagePreviewImage
-                            .dataset
-                            .previewUrl;
-
-                    }
-
-
-                    offerImagePreviewImage.src =
-                        "";
-
-                }
-
+                
+                resetOfferImageEditorState();
 
                 if (offerImageStatus) {
-
                     offerImageStatus.textContent =
                         "اختر صورة من جهازك. سيتم تحسينها ورفعها تلقائيًا عند حفظ العرض.";
-
                 }
 
-
                 renderCreateProducts();
-
 
                 await loadOffers();
 
@@ -6017,6 +5668,10 @@ document.addEventListener(
 // ==========================================
 
 (async function initAdminOffers() {
+
+    // تفعيل المحرر لقسمي الإضافة والتعديل
+    setupOfferImageEditor('create');
+    setupOfferImageEditor('edit');
 
     /*
      * تحميل المنتجات والـvariants مرة واحدة.

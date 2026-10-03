@@ -12,10 +12,7 @@
 
     <title>إدارة العروض - متجر اليُسرى</title>
 
-    <link
-        rel="stylesheet"
-        href="css/admin.css"
-    >
+
 
     <link
         rel="stylesheet"
@@ -136,7 +133,7 @@
 
 
 
-                <div class="form-group">
+              <div class="form-group admin-form-full">
 
                     <label for="offerImageFile">
                         صورة العرض
@@ -148,18 +145,53 @@
                         accept="image/jpeg,image/png,image/webp"
                     >
 
+                    <!-- محرر الصور الجديد -->
+                    <div
+                        id="offerImageEditor"
+                        class="admin-product-image-editor"
+                        hidden
+                    >
+                        <div class="admin-product-image-editor-stage offer-image-editor-stage">
+                            <img
+                                id="offerImageEditorImage"
+                                src=""
+                                alt="تحرير صورة العرض"
+                                draggable="false"
+                            >
+                        </div>
+                        <div class="admin-product-image-editor-controls">
+                            <label for="offerImageZoom">
+                                حجم الصورة
+                            </label>
+                            <input
+                                id="offerImageZoom"
+                                type="range"
+                                min="0.5"
+                                max="3"
+                                step="0.01"
+                                value="1"
+                            >
+                            <button
+                                type="button"
+                                id="resetOfferImageEditor"
+                                class="admin-secondary-button"
+                            >
+                                إعادة ضبط الصورة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- المعاينة النهائية للرجوع إليها إن لزم الأمر -->
                     <div
                         id="offerImagePreview"
                         class="admin-offer-image-preview"
                         hidden
                     >
-
                         <img
                             id="offerImagePreviewImage"
                             src=""
                             alt="معاينة صورة العرض"
                         >
-
                     </div>
 
                     <small
@@ -336,7 +368,7 @@
 
 
 
-                    <div class="form-group">
+                  <div class="form-group admin-form-full">
 
                         <label for="editOfferImageFile">
                             صورة العرض
@@ -348,18 +380,53 @@
                             accept="image/jpeg,image/png,image/webp"
                         >
 
+                        <!-- محرر الصور الجديد (للتعديل) -->
+                        <div
+                            id="editOfferImageEditor"
+                            class="admin-product-image-editor"
+                            hidden
+                        >
+                            <div class="admin-product-image-editor-stage editOffer-image-editor-stage">
+                                <img
+                                    id="editOfferImageEditorImage"
+                                    src=""
+                                    alt="تحرير صورة العرض"
+                                    draggable="false"
+                                >
+                            </div>
+                            <div class="admin-product-image-editor-controls">
+                                <label for="editOfferImageZoom">
+                                    حجم الصورة
+                                </label>
+                                <input
+                                    id="editOfferImageZoom"
+                                    type="range"
+                                    min="0.5"
+                                    max="3"
+                                    step="0.01"
+                                    value="1"
+                                >
+                                <button
+                                    type="button"
+                                    id="resetEditOfferImageEditor"
+                                    class="admin-secondary-button"
+                                >
+                                    إعادة ضبط الصورة
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- المعاينة النهائية -->
                         <div
                             id="editOfferImagePreview"
                             class="admin-offer-image-preview"
                             hidden
                         >
-
                             <img
                                 id="editOfferImagePreviewImage"
                                 src=""
                                 alt="معاينة صورة العرض"
                             >
-
                         </div>
 
                         <small
