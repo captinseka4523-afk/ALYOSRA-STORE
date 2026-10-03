@@ -2050,10 +2050,10 @@ function handlePrintInvoice() {
             <meta charset="UTF-8">
             <title>فاتورة مبيعات - ${order.order_number || order.id}</title>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+   
                 
                 body { 
-                    font-family: 'Cairo', Tahoma, Arial, sans-serif; 
+             font-family: Tahoma, Arial, sans-serif;
                     padding: 50px; 
                     color: #1e293b; 
                     background: #ffffff; 
@@ -2287,17 +2287,17 @@ function handlePrintInvoice() {
                 </div>
             </div>
             
-            <script>
-                window.onload = function() {
-                    setTimeout(function() { window.print(); }, 800);
-                };
-            </script>
+    
         </body>
         </html>
     `;
     
     printWindow.document.write(invoiceHtml);
     printWindow.document.close();
+    setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+}, 800);
 }
 
 
