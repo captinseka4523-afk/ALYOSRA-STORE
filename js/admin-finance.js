@@ -1521,9 +1521,9 @@ function renderFinanceInventory() {
                     <td>${costValueHTML}</td>
                     <td>${expectedProfitHTML}</td>
                     <td>
-                        <button type="button" class="finance-table-action finance-primary-button" onclick="openVariantInventoryModal(${product.id}, '${escapeHTML(product.name)}')">
-                            عرض الخيارات
-                        </button>
+                       <button type="button" class="finance-table-action finance-primary-button" data-variant-product-id="${product.id}" data-variant-product-name="${escapeHTML(product.name)}">
+    عرض الخيارات
+</button>
                     </td>
                 </tr>
             `;
@@ -1559,6 +1559,14 @@ function renderFinanceInventory() {
             `;
         }
     }).join("");
+
+    tbody.querySelectorAll("[data-variant-product-id]").forEach(button => {
+    button.addEventListener("click", function () {
+        const productId = Number(this.dataset.variantProductId);
+        const productName = this.dataset.variantProductName || "";
+        openVariantInventoryModal(productId, productName);
+    });
+});
 
     renderFinanceInventoryPagination(filteredProducts.length);
 }
