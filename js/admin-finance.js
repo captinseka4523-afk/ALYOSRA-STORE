@@ -2030,7 +2030,7 @@ function handlePrintInvoice() {
     const printWindow = window.open('', '_blank');
     const dateStr = order.created_at ? new Date(order.created_at).toLocaleString('ar-SY', { dateStyle: 'medium', timeStyle: 'short' }) : 'غير متوفر';
     
-    const businessSocialUrl = encodeURIComponent("https://www.instagram.com/blwy0?stkn=MXRnMHZnb2o5ZHZzYg==");
+    const businessSocialUrl = encodeURIComponent("https://whatsapp.com/channel/0029Vb9EEfoJ3juvPrPmll0a");
     const qrSocialUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${businessSocialUrl}&margin=0`;
 
     let itemsHtml = items.map((item, index) => `
@@ -2050,10 +2050,10 @@ function handlePrintInvoice() {
             <meta charset="UTF-8">
             <title>فاتورة مبيعات - ${order.order_number || order.id}</title>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+   
                 
                 body { 
-                    font-family: 'Cairo', Tahoma, Arial, sans-serif; 
+             font-family: Tahoma, Arial, sans-serif;
                     padding: 50px; 
                     color: #1e293b; 
                     background: #ffffff; 
@@ -2260,8 +2260,8 @@ function handlePrintInvoice() {
                     <div class="qr-box">
                         <img src="${qrSocialUrl}" alt="QR Code">
                         <div class="qr-text">
-                            <h4>تابع حساباتنا</h4>
-                            <p>امسح الكود للتواصل<br>أو زيارة المتجر</p>
+                            <h4>تابع قناتنا </h4>
+                            <p>امسح ال QR للمتابعة<br>عبر واتس أب  </p>
                         </div>
                     </div>
 
@@ -2287,17 +2287,17 @@ function handlePrintInvoice() {
                 </div>
             </div>
             
-            <script>
-                window.onload = function() {
-                    setTimeout(function() { window.print(); }, 800);
-                };
-            </script>
+    
         </body>
         </html>
     `;
     
     printWindow.document.write(invoiceHtml);
     printWindow.document.close();
+    setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+}, 800);
 }
 
 
