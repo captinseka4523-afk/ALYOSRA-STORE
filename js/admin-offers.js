@@ -2875,62 +2875,28 @@ function renderOffers() {
 // تجهيز حالة تعديل العرض
 // ==========================================
 
-function initializeEditVariantSelections(
-    offer
-) {
-
+function initializeEditVariantSelections(offer) {
     editVariantSelections.clear();
 
+    (offer?.offer_items || []).forEach(item => {
+        const productId = String(item.product_id);
 
-    (offer?.offer_items || [])
-        .forEach(
-            item => {
+        // التعديل الجذري: تخطي المنتجات البسيطة (التي ليس لها خيارات)
+        if (getProductVariants(productId).length === 0) {
+            return;
+        }
 
-                const productId =
-                    String(
-                        item.product_id
-                    );
+        if (!editVariantSelections.has(productId)) {
+            editVariantSelections.set(productId, new Map());
+        }
 
+        const selectionMap = editVariantSelections.get(productId);
+        const variantKey = item.variant_id === null || item.variant_id === undefined
+            ? "legacy-null"
+            : String(item.variant_id);
 
-                if (
-                    !editVariantSelections.has(
-                        productId
-                    )
-                ) {
-
-                    editVariantSelections.set(
-                        productId,
-                        new Map()
-                    );
-
-                }
-
-
-                const selectionMap =
-                    editVariantSelections.get(
-                        productId
-                    );
-
-
-                const variantKey =
-                    item.variant_id === null ||
-                    item.variant_id === undefined
-                        ? "legacy-null"
-                        : String(
-                            item.variant_id
-                        );
-
-
-                selectionMap.set(
-                    variantKey,
-                    normalizeQuantity(
-                        item.quantity
-                    )
-                );
-
-            }
-        );
-
+        selectionMap.set(variantKey, normalizeQuantity(item.quantity));
+    });
 }
 
 
@@ -4273,275 +4239,95 @@ function collectCreateOfferItems() {
 // ==========================================
 
 function collectEditOfferItems() {
-
-    const selectedItems =
-        [];
-
+    const selectedItems = [];
 
     if (!editOfferProductsList) {
         return selectedItems;
     }
 
+    /*
+     * 1. المنتجات بدون Variants
+     */
+    editOfferProductsList.querySelectorAll(".offer-product-checkbox:checked").forEach(checkbox => {
+        const productId = Number(checkbox.value);
+        const product = getProductById(productId);
+
+        if (!product) {
+            throw new Error("تعذر العثور على أحد المنتجات المحددة.");
+        }
+
+        const row = checkbox.closest(".offer-product-item");
+        const quantityInput = row?.querySelector(".offer-simple-product-quantity");
+        const quantity = Number(quantityInput?.value);
+        const maxQuantity = Math.max(1, Number(product.quantity) || 1);
+
+        if (!Number.isInteger(quantity) || quantity <= 0 || quantity > maxQuantity) {
+            throw new Error(`أدخل كمية صحيحة للمنتج "${product.name}".`);
+        }
+
+        selectedItems.push({
+            product_id: productId,
+            variant_id: null,
+            quantity
+        });
+    });
 
     /*
-     * المنتجات بدون Variants.
+     * 2. المنتجات ذات الـVariants
      */
-    editOfferProductsList
-        .querySelectorAll(
-            ".offer-product-checkbox:checked"
-        )
-        .forEach(
-            checkbox => {
+    editVariantSelections.forEach((selectionMap, productIdString) => {
+        if (!selectionMap || selectionMap.size === 0) {
+            return;
+        }
 
-                const productId =
-                    Number(
-                        checkbox.value
-                    );
+        const product = getProductById(productIdString);
+        if (!product) {
+            throw new Error("تعذر العثور على أحد المنتجات ذات الخيارات.");
+        }
 
+        // التعديل الجذري: حماية إضافية لتجاهل المنتجات البسيطة في حال وجدت هنا
+        if (getProductVariants(product.id).length === 0) {
+            return;
+        }
 
-                const product =
-                    getProductById(
-                        productId
-                    );
+        selectionMap.forEach((quantity, variantIdString) => {
+            if (variantIdString === "legacy-null") {
+                const maxQuantity = Math.max(1, Number(product.quantity) || 1);
+                const normalizedQuantity = Number(quantity);
 
-
-                if (!product) {
-
-                    throw new Error(
-                        "تعذر العثور على أحد المنتجات المحددة."
-                    );
-
+                if (!Number.isInteger(normalizedQuantity) || normalizedQuantity <= 0 || normalizedQuantity > maxQuantity) {
+                    throw new Error(`أدخل كمية صحيحة للمنتج "${product.name}".`);
                 }
-
-
-                const row =
-                    checkbox.closest(
-                        ".offer-product-item"
-                    );
-
-
-                const quantityInput =
-                    row?.querySelector(
-                        ".offer-simple-product-quantity"
-                    );
-
-
-                const quantity =
-                    Number(
-                        quantityInput?.value
-                    );
-
-
-                const maxQuantity =
-                    Math.max(
-                        1,
-                        Number(
-                            product.quantity
-                        ) || 1
-                    );
-
-
-                if (
-                    !Number.isInteger(
-                        quantity
-                    ) ||
-                    quantity <= 0 ||
-                    quantity > maxQuantity
-                ) {
-
-                    throw new Error(
-                        `أدخل كمية صحيحة للمنتج "${product.name}".`
-                    );
-
-                }
-
 
                 selectedItems.push({
-
-                    product_id:
-                        productId,
-
-                    variant_id:
-                        null,
-
-                    quantity
-
+                    product_id: Number(product.id),
+                    variant_id: null,
+                    quantity: normalizedQuantity
                 });
-
-            }
-        );
-
-
-    /*
-     * المنتجات ذات الـVariants.
-     */
-    editVariantSelections.forEach(
-        (
-            selectionMap,
-            productIdString
-        ) => {
-
-            if (
-                !selectionMap ||
-                selectionMap.size === 0
-            ) {
-
                 return;
-
             }
 
-
-            const product =
-                getProductById(
-                    productIdString
-                );
-
-
-            if (!product) {
-
-                throw new Error(
-                    "تعذر العثور على أحد المنتجات ذات الخيارات."
-                );
-
+            const variant = getVariantByProduct(product.id, variantIdString);
+            if (!variant) {
+                throw new Error(`الخيار المحدد للمنتج "${product.name}" غير صالح.`);
             }
 
+            const maxQuantity = getVariantMaxQuantity(product, variantIdString);
+            const normalizedQuantity = Number(quantity);
 
-            selectionMap.forEach(
-                (
-                    quantity,
-                    variantIdString
-                ) => {
+            if (!Number.isInteger(normalizedQuantity) || normalizedQuantity <= 0 || normalizedQuantity > maxQuantity) {
+                throw new Error(`أدخل كمية صحيحة للخيار "${getVariantLabel(variantIdString)}".`);
+            }
 
-                    if (
-                        variantIdString ===
-                        "legacy-null"
-                    ) {
-
-                        const maxQuantity =
-                            Math.max(
-                                1,
-                                Number(
-                                    product.quantity
-                                ) || 1
-                            );
-
-
-                        const normalizedQuantity =
-                            Number(
-                                quantity
-                            );
-
-
-                        if (
-                            !Number.isInteger(
-                                normalizedQuantity
-                            ) ||
-                            normalizedQuantity <= 0 ||
-                            normalizedQuantity >
-                                maxQuantity
-                        ) {
-
-                            throw new Error(
-                                `أدخل كمية صحيحة للمنتج "${product.name}".`
-                            );
-
-                        }
-
-
-                        selectedItems.push({
-
-                            product_id:
-                                Number(
-                                    product.id
-                                ),
-
-                            variant_id:
-                                null,
-
-                            quantity:
-                                normalizedQuantity
-
-                        });
-
-
-                        return;
-
-                    }
-
-
-                    const variant =
-                        getVariantByProduct(
-                            product.id,
-                            variantIdString
-                        );
-
-
-                    if (!variant) {
-
-                        throw new Error(
-                            `الخيار المحدد للمنتج "${product.name}" غير صالح.`
-                        );
-
-                    }
-
-
-                    const maxQuantity =
-                        getVariantMaxQuantity(
-                            product,
-                            variantIdString
-                        );
-
-
-                    const normalizedQuantity =
-                        Number(
-                            quantity
-                        );
-
-
-                    if (
-                        !Number.isInteger(
-                            normalizedQuantity
-                        ) ||
-                        normalizedQuantity <= 0 ||
-                        normalizedQuantity >
-                            maxQuantity
-                    ) {
-
-                        throw new Error(
-                            `أدخل كمية صحيحة للخيار "${getVariantLabel(
-                                variantIdString
-                            )}".`
-                        );
-
-                    }
-
-
-                    selectedItems.push({
-
-                        product_id:
-                            Number(
-                                product.id
-                            ),
-
-                        variant_id:
-                            Number(
-                                variantIdString
-                            ),
-
-                        quantity:
-                            normalizedQuantity
-
-                    });
-
-                }
-            );
-
-        }
-    );
-
+            selectedItems.push({
+                product_id: Number(product.id),
+                variant_id: Number(variantIdString),
+                quantity: normalizedQuantity
+            });
+        });
+    });
 
     return selectedItems;
-
 }
 
 
