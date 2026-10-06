@@ -5267,45 +5267,34 @@ async function saveProduct(
             }
         }
 
-        // ==================================
+   // ==================================
         // Remove Old Image After All Success
         // ==================================
 
         if (
             imageFile &&
             uploadedImagePath &&
-            oldImageUrl
+            oldImageUrl &&
+            uploadedImagePath !== getProductImagePath(oldImageUrl)
         ) {
-            const oldImagePath =
-                getProductImagePath(
-                    oldImageUrl
-                );
-
-            if (
-                oldImagePath &&
-                oldImagePath !==
-                    uploadedImagePath
-            ) {
-                await supabaseClient
-                    .storage
-                    .from(
-                        "product-images"
-                    )
-                    .remove([
-                        oldImagePath
-                    ])
-                    .catch(
-                        error =>
-                            console.warn(
-                                "Old image cleanup failed:",
-                                error
-                            )
-                    );
+            const oldImagePath = getProductImagePath(oldImageUrl);
+            
+            if (oldImagePath) {
+                try {
+                    await supabaseClient
+                        .storage
+                        .from("product-images")
+                        .remove([oldImagePath]);
+                } catch (cleanupError) {
+                    console.warn("Old image cleanup failed:", cleanupError);
+                }
             }
         }
 
-        productVariantsDirty =
-            false;
+        productVariantsDirty = false;
+        
+        // 🟢 السماح للنافذة بالإغلاق عبر فك قفل عملية الحفظ
+        isProductSaving = false;
 
         closeProductModalWindow();
 
